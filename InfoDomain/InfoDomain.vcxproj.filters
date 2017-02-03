@@ -11,12 +11,13 @@
     <ClCompile Include="domainimpl.cpp" />
     <ClCompile Include="domaindata.cpp" />
     <ClCompile Include="infostrings.cpp" />
+    <ClCompile Include="domainmanager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="domainimpl.h" />
-    <ClInclude Include="InfoDomain.h" />
     <ClInclude Include="domaindata.h" />
     <ClInclude Include="infostrings.h" />
+    <ClInclude Include="domainmanager.h" />
   </ItemGroup>
 </Project>

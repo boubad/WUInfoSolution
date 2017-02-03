@@ -7,8 +7,6 @@ using namespace Windows::Foundation::Collections;
 //
 namespace InfoDomain {
 	//
-	
-	//
 	public ref class InfoDataValue sealed {
 	private:
 		InfoDataValueImpl m_impl;
