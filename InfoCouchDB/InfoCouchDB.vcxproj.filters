@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>e4221801-d965-49e9-a79a-937b97e34f36</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="couchdb.cpp" />
+    <ClCompile Include="couchdbclient.cpp" />
+    <ClCompile Include="jsonutils.cpp" />
+    <ClCompile Include="couchdbproxy.cpp" />
+    <ClCompile Include="couchdbmanager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="couchdb.h" />
+    <ClInclude Include="couchdbclient.h" />
+    <ClInclude Include="docutils.h" />
+    <ClInclude Include="jsonutils.h" />
+    <ClInclude Include="couchdbproxy.h" />
+    <ClInclude Include="couchdbmanager.h" />
+  </ItemGroup>
+</Project>
