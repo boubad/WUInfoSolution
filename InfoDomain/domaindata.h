@@ -4,6 +4,7 @@
 using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Platform::Metadata;
 //
 namespace InfoDomain {
 	//
@@ -138,11 +139,10 @@ namespace InfoDomain {
 		std::unique_ptr<VariableImpl> m_pimpl;
 	public:
 		Variable();
-		Variable(Dataset^ pSet, Platform::String^ sigle),
-			Variable(IMap<Platform::String^, Object^>^ pMap);
+		Variable(Dataset^ pSet, Platform::String^ sigle);
+		Variable(IMap<Platform::String^, Object^>^ pMap);
 		property Platform::String^ DatasetSigle {
 			Platform::String^ get();
-			void set(Platform::String^ value);
 		}// DatasetSigle
 		property Platform::String^ Id {
 			Platform::String^ get();
@@ -203,6 +203,7 @@ namespace InfoDomain {
 	public:
 		InfoValue();
 		InfoValue(IMap<Platform::String^, Object^>^ oMap);
+		InfoValue(Indiv^ pInd, Variable^ pVar);
 		InfoValue(Indiv^ pInd, Variable^ pVar, InfoDataValue^ val);
 		//
 		property Platform::String^ Id {
@@ -224,15 +225,12 @@ namespace InfoDomain {
 		}// Observations
 		property Platform::String^ DatasetSigle {
 			Platform::String^ get();
-			void set(Platform::String^ value);
 		}// DatasetSigle
 		property Platform::String^ IndivSigle {
 			Platform::String^ get();
-			void set(Platform::String^ value);
 		}// IndivSigle
 		property Platform::String^ VariableSigle {
 			Platform::String^ get();
-			void set(Platform::String^ value);
 		}// VariableSigle
 		property Platform::String^ Type {
 			Platform::String^ get();

@@ -168,9 +168,6 @@ namespace InfoDomain {
 	Platform::String^ Variable::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
 	}
-	void Variable::DatasetSigle::set(Platform::String^ value) {
-		m_pimpl->set_DatasetSigle(value);
-	}
 	Platform::String^ Variable::Id::get() {
 		return m_pimpl->get_Id();
 	}
@@ -312,6 +309,18 @@ namespace InfoDomain {
 			}// datatype
 		}// val
 	}
+	InfoValue::InfoValue(Indiv^ pInd, Variable^ pVar) :m_status(InfoStatus::Unknown) {
+		if (pInd != nullptr) {
+			m_datasetsigle = pInd->DatasetSigle;
+			m_indivsigle = pInd->Sigle;
+		}
+		if (pVar != nullptr) {
+			m_variablesigle = pVar->Sigle;
+			if (m_datasetsigle->IsEmpty()) {
+				m_datasetsigle = pVar->DatasetSigle;
+			}
+		}
+	}
 	InfoValue::InfoValue(Indiv^ pInd, Variable^ pVar, InfoDataValue^ val) :m_status(InfoStatus::Unknown) {
 		if (pInd != nullptr) {
 			m_datasetsigle = pInd->DatasetSigle;
@@ -350,20 +359,11 @@ namespace InfoDomain {
 	Platform::String^ InfoValue::DatasetSigle::get() {
 		return m_datasetsigle;
 	}
-	void InfoValue::DatasetSigle::set(Platform::String^ value) {
-		m_datasetsigle = value;
-	}
 	Platform::String^ InfoValue::IndivSigle::get() {
 		return m_indivsigle;
 	}
-	void InfoValue::IndivSigle::set(Platform::String^ value) {
-		m_indivsigle = value;
-	}
 	Platform::String^ InfoValue::VariableSigle::get() {
 		return m_variablesigle;
-	}
-	void InfoValue::VariableSigle::set(Platform::String^ value) {
-		m_variablesigle = value;
 	}
 	Platform::String^ InfoValue::Type::get() {
 		return InfoStrings::TYPE_VALUE;
