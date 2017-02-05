@@ -10,6 +10,11 @@ namespace InfoDomain {
 		CouchDBManager^ m_pman;
 	public:
 		DomainManager(String^ baseUrl, String^ databaseName);
+		property CouchDBManager^ Manager{
+			CouchDBManager^ get(){
+				return m_pman;
+			}
+		}
 	public:
 		IAsyncOperation<int>^ GetDatasetsCountAsync(void);
 		IAsyncOperation<IVector<Dataset^>^>^ GetDatasetsAsync(int offset, int count);
