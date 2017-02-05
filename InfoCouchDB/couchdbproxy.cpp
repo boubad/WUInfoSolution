@@ -1,10 +1,13 @@
 #include "pch.h"
 #include "couchdbproxy.h"
+//////////////////////////////
+#include <robuffer.h>
 /////////////////////////////
 using namespace Platform::Collections;
 using namespace Windows::Web::Http::Headers;
 using namespace InfoCouchDB;
 using namespace concurrency;
+using namespace Microsoft::WRL;
 /////////////////////////
 String^ CouchDBProxy::JSON_MIME_TYPE = "application/json";
 String^ CouchDBProxy::KEY_ID = "_id";
@@ -14,6 +17,8 @@ String^ CouchDBProxy::STRING_FIND = "/_find";
 String^ CouchDBProxy::KEY_DELETED = "_deleted";
 String^ CouchDBProxy::STRING_BULKDOCS = "/_bulk_docs";
 String^ CouchDBProxy::KEY_ETAG = "ETag";
+String^ CouchDBProxy::KEY_ATTACHMENTS = "_attachments";
+String^ CouchDBProxy::KEY_CONTENT_TYPE = "content_type";
 ///////////////////////
 CouchDBProxy::CouchDBProxy(String^ url, String^ database) {
 	m_url = url;
@@ -24,6 +29,114 @@ CouchDBProxy::CouchDBProxy(String^ url, String^ database) {
 }
 CouchDBProxy::~CouchDBProxy() {
 }//
+////////////////////////////////////////////////
+IBuffer^ CouchDBProxy::GetDocumentAttachmentData(String^ docid, String^ attachmentName) {
+	String^ rev = this->GetDocumentVersion(docid);
+	if (rev->IsEmpty()) {
+		IBuffer^ oRet;
+		return oRet;
+	}
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid) + "/" + Uri::EscapeComponent(attachmentName) + "?rev=" + rev;
+	Uri^ uri = ref new Uri(sUri);
+	auto myop = this->m_client->GetAsync(uri);
+	auto operationTask = create_task(myop);
+	return operationTask.then([](HttpResponseMessage^ response) {
+		IBuffer^ oRet;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::NotModified) || (status == HttpStatusCode::Ok)) {
+			oRet  = create_task(response->Content->ReadAsBufferAsync()).get();
+		}// ok
+		return (oRet);
+	}).get();
+}//GetDocumentAttachmentData
+bool CouchDBProxy::RemoveDocumentAttachment(String^ docid, String^ attachmentName) {
+	String^ rev = this->GetDocumentVersion(docid);
+	if (rev->IsEmpty()) {
+		return false;
+	}
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid) + "/" + Uri::EscapeComponent(attachmentName) + "?rev=" + rev;
+	Uri^ uri = ref new Uri(sUri);
+	auto myop = this->m_client->DeleteAsync(uri);
+	auto operationTask = create_task(myop);
+	bool bRet = operationTask.then([](HttpResponseMessage^ response) {
+		bool b = false;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Accepted) || (status == HttpStatusCode::Ok)) {
+			b = true;
+		}
+		return (b);
+	}).get();
+	return (bRet);
+}//RemoveDocumentAttachment
+IMap<String^, String^> ^ CouchDBProxy::GetDocumentAttachmentNames(String^ docid) {
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid) + "?attachments=true";
+	Uri^ uri = ref new Uri(sUri);
+	auto myop = m_client->GetAsync(uri);
+	auto operationTask = create_task(myop);
+	return operationTask.then([](HttpResponseMessage^ response) {
+		IMap<String^, String^>^ oRet;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Ok) || (status == HttpStatusCode::NotModified)) {
+			auto myopx = response->Content->ReadAsStringAsync();
+			create_task(myopx).then([&oRet](String^ jsonText) {
+				oRet = ref new Map<String^, String^>();
+				JsonObject^ obj = JsonObject::Parse(jsonText);
+				if (obj->HasKey(KEY_ATTACHMENTS)) {
+					IJsonValue^ vo = obj->Lookup(KEY_ATTACHMENTS);
+					if (vo->ValueType == JsonValueType::Object) {
+						JsonObject^ oo = vo->GetObject();
+						auto it = oo->First();
+						while (it->HasCurrent) {
+							auto p = it->Current;
+							String^ key = p->Key;
+							IJsonValue^ vx = p->Value;
+							if (vx->ValueType == JsonValueType::Object) {
+								JsonObject^ o = vx->GetObject();
+								if (o->HasKey(KEY_CONTENT_TYPE)) {
+									IJsonValue^ vz = o->Lookup(KEY_CONTENT_TYPE);
+									if (vz->ValueType == JsonValueType::String) {
+										String^ sval = vz->GetString();
+										if (!sval->IsEmpty()) {
+											oRet->Insert(key, sval);
+										}
+									}
+								}//
+							}//
+							it->MoveNext();
+						}// it
+					}//oo
+				}// attachments
+			}).wait();
+		}
+		return (oRet);
+	}).get();
+}//GetDocumentAttachmentNames
+bool CouchDBProxy::MaintainsDocumentAttachment(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data){
+	String^ rev = this->GetDocumentVersion(docid);
+	if (rev->IsEmpty()) {
+		return false;
+	}
+	unsigned int len = 0;
+	byte *pData = CouchDBProxy::GetPointerToData(data, &len);
+	if ((pData == nullptr) || (len < 1)) {
+		return false;
+	}
+	HttpBufferContent^ sc = ref new HttpBufferContent(data);
+	sc->Headers->ContentType->MediaType = mimetype;
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid) + "/" + Uri::EscapeComponent(attachmentName) + "?rev=" + rev;
+	Uri^ uri = ref new Uri(sUri);
+	auto myop = this->m_client->PutAsync(uri, sc);
+	auto operationTask = create_task(myop);
+	bool bRet = operationTask.then([](HttpResponseMessage^ response) {
+		bool b = false;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Accepted) || (status == HttpStatusCode::Ok)) {
+			b = true;
+		}
+		return (b);
+	}).get();
+	return (bRet);
+}// MaintainsDocumentAttachment
 //////////////////////////////////////////////
 bool CouchDBProxy::RemoveDocuments(IMap<String^, Object^>^ oFetch) {
 	JsonArray^ oRetArray = ref new JsonArray();
@@ -197,7 +310,7 @@ bool CouchDBProxy::DeleteDocumentById(String^ docid) {
 	if (rev->IsEmpty()) {
 		return (false);
 	}
-	String^ sUri = this->m_url + m_database + "/" + docid + "?=" + rev;
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid) + "?=" + rev;
 	Uri^ uri = ref new Uri(sUri);
 	auto myop = this->m_client->DeleteAsync(uri);
 	auto operationTask = create_task(myop);
@@ -234,7 +347,7 @@ bool CouchDBProxy::UpdateDocument(IMap<String^, Object^>^ oMap) {
 	if (rev->IsEmpty()) {
 		return false;
 	}
-	String^ sUri = this->m_url + m_database + "/" + docid + "?rev=" + rev;
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid) + "?rev=" + rev;
 	Uri^ uri = ref new Uri(sUri);
 	String^ sp = MapToJson(oMap);
 	HttpStringContent^ sc = ref new HttpStringContent(sp);
@@ -273,7 +386,7 @@ bool CouchDBProxy::InsertDocument(IMap<String^, Object^>^ oMap) {
 	return (bRet);
 }//InsertDocument
 IMap<String^, Object^>^  CouchDBProxy::ReadDocumentById(String^ docid) {
-	String^ sUri = this->m_url + m_database + "/" + docid;
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid);
 	Uri^ uri = ref new Uri(sUri);
 	auto myop = m_client->GetAsync(uri);
 	auto operationTask = create_task(myop);
@@ -300,7 +413,7 @@ IMap<String^, Object^>^  CouchDBProxy::ReadDocumentById(String^ docid) {
 }// ReadDocumentById
 /////////////////////////////////////////////
 String^  CouchDBProxy::GetDocumentVersion(String^ docid) {
-	String^ sUri = this->m_url + m_database + "/" + docid;
+	String^ sUri = this->m_url + m_database + "/" + Uri::EscapeComponent(docid);
 	Uri^ uri = ref new Uri(sUri);
 	HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
 	auto myop = this->m_client->SendRequestAsync(req);
@@ -639,3 +752,16 @@ Object^CouchDBProxy::ConvertJsonObject(IJsonValue^ jsonVal) {
 		return o;
 	}
 }//ConvertJsonObject
+byte *CouchDBProxy::GetPointerToData(IBuffer^ pixelBuffer, unsigned int *length) {
+	if (length != nullptr)
+	{
+		*length = pixelBuffer->Length;
+	}
+	// Query the IBufferByteAccess interface.
+	ComPtr<IBufferByteAccess> bufferByteAccess;
+	reinterpret_cast<IInspectable*>(pixelBuffer)->QueryInterface(IID_PPV_ARGS(&bufferByteAccess));
+	// Retrieve the buffer data.
+	byte* pixels = nullptr;
+	bufferByteAccess->Buffer(&pixels);
+	return pixels;
+}//GetPointerToData

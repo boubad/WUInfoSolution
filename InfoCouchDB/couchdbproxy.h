@@ -4,8 +4,11 @@ using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Data::Json;
 using namespace Windows::Web::Http;
+using namespace Windows::Storage::Streams;
 //////////////////////////////
 namespace InfoCouchDB {
+	///////////////////////
+	using byte = uint8;
 ///////////////////////////
 	class CouchDBProxy {
 	private:
@@ -21,6 +24,8 @@ namespace InfoCouchDB {
 		static String^ KEY_DELETED;
 		static String^ STRING_BULKDOCS;
 		static String^ KEY_ETAG;
+		static String^ KEY_ATTACHMENTS;
+		static String^ KEY_CONTENT_TYPE;
 		//
 		static IJsonValue^ ConvertObject(Object^ obj);
 		static String^ ConvertFindFilter(IMap<String^, Object^>^ oFetch,
@@ -28,6 +33,7 @@ namespace InfoCouchDB {
 		static String^ MapToJson(IMap<String^, Object^>^ oMap);
 		static String^ MapToJson(IVector<IMap<String^, Object^>^>^ oAr);
 		static Object^ ConvertJsonObject(IJsonValue^ jsonVal);
+		static byte *GetPointerToData(IBuffer^ pixelData, unsigned int *length);
 		//
 	public:
 		CouchDBProxy(String^ url, String^ database);
@@ -49,6 +55,12 @@ namespace InfoCouchDB {
 		//
 		bool MaintainsDocuments(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete = false);
 		bool RemoveDocuments(IMap<String^, Object^>^ oFetch);
+		//
+		bool MaintainsDocumentAttachment(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data);
+		IMap<String^, String^> ^ GetDocumentAttachmentNames(String^ docid);
+		bool RemoveDocumentAttachment(String^ docid, String^ attachmentName);
+		IBuffer^ GetDocumentAttachmentData(String^ docid, String^ attachmentName);
+
 	};// class CouchDBProxy
 //////////////////////////////
 }// namespace InfoCouchDB
