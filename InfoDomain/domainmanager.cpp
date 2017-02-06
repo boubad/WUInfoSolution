@@ -17,6 +17,9 @@ DomainManager::DomainManager(String^ baseUrl, String^ databaseName) {
 	}
 	m_pman = ref new CouchDBManager(baseUrl, databaseName);
 }//DomainManager
+CouchDBManager^ DomainManager::Manager::get() {
+	return this->m_pman;
+}
 IAsyncOperation<int>^ DomainManager::GetDatasetsCountAsync(void) {
 	CouchDBManager^ pMan = this->m_pman;
 	return create_async([pMan]()->int {
@@ -674,3 +677,16 @@ IAsyncOperation<bool>^ DomainManager::MaintainsValuesAsync(IVector<InfoValue^>^ 
 		return (bRet);
 	});
 }//MaintainsValuesAsyn
+//
+IAsyncOperation<bool>^ DomainManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data) {
+	return m_pman->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data);
+}//MaintainsDocumentAttachmentAsync
+IAsyncOperation<IMap<String^, String^> ^>^ DomainManager::GetDocumentAttachmentNamesAsync(String^ docid) {
+	return m_pman->GetDocumentAttachmentNamesAsync(docid);
+}//GetDocumentAttachmentNamesAsync
+IAsyncOperation<bool>^ DomainManager::RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName) {
+	return m_pman->RemoveDocumentAttachmentAsync(docid, attachmentName);
+}//RemoveDocumentAttachmentAsync
+IAsyncOperation<IBuffer^>^ DomainManager::GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName) {
+	return m_pman->GetDocumentAttachmentDataAsync(docid, attachmentName);
+}//GetDocumentAttachmentDataAsync

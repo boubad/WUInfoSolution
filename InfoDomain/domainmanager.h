@@ -2,6 +2,7 @@
 #include "domaindata.h"
 //
 using namespace InfoCouchDB;
+using namespace Windows::Storage::Streams;
 ////////////////////////////////
 namespace InfoDomain {
 /////////////////////////
@@ -11,9 +12,7 @@ namespace InfoDomain {
 	public:
 		DomainManager(String^ baseUrl, String^ databaseName);
 		property CouchDBManager^ Manager{
-			CouchDBManager^ get(){
-				return m_pman;
-			}
+			CouchDBManager^ get();
 		}
 	public:
 		IAsyncOperation<int>^ GetDatasetsCountAsync(void);
@@ -47,6 +46,11 @@ namespace InfoDomain {
 		IAsyncOperation<bool>^ MaintainsValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ RemoveValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ MaintainsValuesAsync(IVector<InfoValue^>^ oVec, bool bDelete);
+		//
+		IAsyncOperation<bool>^ MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data);
+		IAsyncOperation<IMap<String^, String^> ^>^ GetDocumentAttachmentNamesAsync(String^ docid);
+		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
+		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
 	};// class DomainManager
 //////////////////////////
 }// namespace InfoDomain

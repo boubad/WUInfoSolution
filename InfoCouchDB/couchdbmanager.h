@@ -5,7 +5,6 @@
 ////////////////////////////
 namespace InfoCouchDB {
 	/////////////////////////////
-	[Windows::Foundation::Metadata::WebHostHiddenAttribute]
 	public ref class CouchDBManager sealed {
 	private:
 		String^ m_url;
