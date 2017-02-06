@@ -46,9 +46,7 @@ namespace UnitTestDBManager
 	public:
 		TEST_METHOD(TestDBManagerIsAlive)
 		{
-			bool bRet = create_task(m_pman->IsAliveAsync()).then([](bool b) {
-				return b;
-			}).get();
+			bool bRet = create_task(m_pman->IsAliveAsync()).get();
 			Assert::IsTrue(bRet);
 		}// TestDBManagerIsAlive
 		TEST_METHOD(TestDBManagerMaintains)
@@ -56,15 +54,12 @@ namespace UnitTestDBManager
 			IMap<String^, Object^>^ xMap = ref new Map<String^, Object^>();
 			xMap->Insert("type", "testtype");
 			//
-			int nc = create_task(m_pman->GetDocumentsCountAsync(xMap)).then([](int n) {return n; }).get();
+			int nc = create_task(m_pman->GetDocumentsCountAsync(xMap)).get();
 			if (nc < 1) {
-				bool bRet = create_task(m_pman->MaintainsDocumentAsync(m_map)).then([](bool b) {
-					return b;
-				}).get();
+				bool bRet = create_task(m_pman->MaintainsDocumentAsync(m_map)).get();
 				Assert::IsTrue(bRet);
 			}// nc
-			IVector<IMap<String^, Object^>^>^ vv = create_task(m_pman->GetDocumentsAsync(xMap,0,nc)).
-				then([](IVector<IMap<String^, Object^>^>^ r) { return r; }).get();
+			IVector<IMap<String^, Object^>^>^ vv = create_task(m_pman->GetDocumentsAsync(xMap,0,nc)).get();
 			Assert::IsTrue(vv != nullptr);
 			auto it = vv->First();
 			Assert::IsTrue(it->HasCurrent);
@@ -75,9 +70,7 @@ namespace UnitTestDBManager
 			Assert::IsTrue(pMap->HasKey("_rev"));
 			String^ res = pMap->Lookup("_rev")->ToString();
 			Assert::IsFalse(res->IsEmpty());
-			bool bRet = create_task(m_pman->MaintainsDocumentAsync(pMap)).then([](bool b) {
-				return b;
-			}).get();
+			bool bRet = create_task(m_pman->MaintainsDocumentAsync(pMap)).get();
 			Assert::IsTrue(bRet);
 		}//TestDBManagerMaintains
 	};
