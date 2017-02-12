@@ -681,6 +681,9 @@ IAsyncOperation<bool>^ DomainManager::MaintainsValuesAsync(IVector<InfoValue^>^ 
 IAsyncOperation<bool>^ DomainManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data) {
 	return m_pman->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data);
 }//MaintainsDocumentAttachmentAsync
+IAsyncOperation<bool>^ DomainManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, IStorageFile^ file) {
+	return m_pman->MaintainsDocumentAttachmentAsync(docid, attachmentName, file);
+}//MaintainsDocumentAttachmentAsync
 IAsyncOperation<IMap<String^, String^> ^>^ DomainManager::GetDocumentAttachmentNamesAsync(String^ docid) {
 	return m_pman->GetDocumentAttachmentNamesAsync(docid);
 }//GetDocumentAttachmentNamesAsync

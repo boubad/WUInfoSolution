@@ -1,8 +1,6 @@
 #pragma once
 #include "couchdbproxy.h"
 /////////////////////////////
-#include <memory>
-////////////////////////////
 namespace InfoCouchDB {
 	/////////////////////////////
 	public ref class CouchDBManager sealed {
@@ -36,6 +34,7 @@ namespace InfoCouchDB {
 		IAsyncOperation<bool>^ RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch);
 		//
 		IAsyncOperation<bool>^ MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data);
+		IAsyncOperation<bool>^ MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, IStorageFile^ file);
 		IAsyncOperation<IMap<String^, String^> ^>^ GetDocumentAttachmentNamesAsync(String^ docid);
 		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);

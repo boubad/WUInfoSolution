@@ -76,6 +76,18 @@ CouchDBProxy *CouchDBManager::GetProxy(void) {
 	return p;
 }// GetProxt
 /////////////////////////////////////
+IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName,IStorageFile^ file) {
+	if ((docid == nullptr) || (attachmentName == nullptr) || (file == nullptr)) {
+		throw ref new InvalidArgumentException();
+	}
+	if (docid->IsEmpty() || attachmentName->IsEmpty()) {
+		throw ref new InvalidArgumentException();
+	}
+	CouchDBProxy *pProxy = GetProxy();
+	return create_async([pProxy, docid, attachmentName, file]()->bool {
+		return pProxy->MaintainsDocumentAttachmentAsync(docid, attachmentName, file).get();
+	});
+}//:MaintainsDocumentAttachmentAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data) {
 	if ((docid == nullptr) || (attachmentName == nullptr) || (mimetype == nullptr) || (data == nullptr)) {
 		throw ref new InvalidArgumentException();
@@ -88,7 +100,7 @@ IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ 
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, docid, attachmentName, mimetype, data]()->bool {
-		return pProxy->MaintainsDocumentAttachment(docid, attachmentName, mimetype, data);
+		return pProxy->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data).get();
 	});
 }//:MaintainsDocumentAttachmentAsync
 IAsyncOperation<IMap<String^, String^> ^>^ CouchDBManager::GetDocumentAttachmentNamesAsync(String^ docid) {
@@ -100,7 +112,7 @@ IAsyncOperation<IMap<String^, String^> ^>^ CouchDBManager::GetDocumentAttachment
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, docid]()->IMap<String^, String^>^ {
-		return pProxy->GetDocumentAttachmentNames(docid);
+		return pProxy->GetDocumentAttachmentNamesAsync(docid).get();
 	});
 }//CouchDBManager::
 IAsyncOperation<bool>^ CouchDBManager::RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName) {
@@ -112,7 +124,7 @@ IAsyncOperation<bool>^ CouchDBManager::RemoveDocumentAttachmentAsync(String^ doc
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, docid, attachmentName]()->bool {
-		return pProxy->RemoveDocumentAttachment(docid, attachmentName);
+		return pProxy->RemoveDocumentAttachmentAsync(docid, attachmentName).get();
 	});
 }//RemoveDocumentAttachmentAsync
 IAsyncOperation<IBuffer^>^ CouchDBManager::GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName) {
@@ -124,14 +136,14 @@ IAsyncOperation<IBuffer^>^ CouchDBManager::GetDocumentAttachmentDataAsync(String
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, docid, attachmentName]()->IBuffer^ {
-		return pProxy->GetDocumentAttachmentData(docid, attachmentName);
+		return pProxy->GetDocumentAttachmentDataAsync(docid, attachmentName).get();
 	});
 }//GetDocumentAttachmentDataAsync
 //////////////////////////////////
 IAsyncOperation<bool>^ CouchDBManager::IsAliveAsync(void) {
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy]()->bool {
-		return pProxy->IsAlive();
+		return pProxy->IsAliveAsync().get();
 	});
 }//IsAliveAsync
 IAsyncOperation<int>^ CouchDBManager::GetDocumentsCountAsync(IMap<String^, Object^>^ oFetch) {
@@ -143,7 +155,7 @@ IAsyncOperation<int>^ CouchDBManager::GetDocumentsCountAsync(IMap<String^, Objec
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, oFetch]()->int {
-		return pProxy->GetCountFilter(oFetch);
+		return pProxy->GetCountFilterAsync(oFetch).get();
 	});
 }//GetDocumentsCountAsync
 IAsyncOperation<IVector<IMap<String^, Object^>^>^>^ CouchDBManager::GetDocumentsAsync(IMap<String^, Object^>^ oFetch,
@@ -156,7 +168,7 @@ IAsyncOperation<IVector<IMap<String^, Object^>^>^>^ CouchDBManager::GetDocuments
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, oFetch, offset, count]()->IVector<IMap<String^, Object^>^>^ {
-		return pProxy->ReadDocuments(oFetch, offset, count);
+		return pProxy->ReadDocumentsAsync(oFetch, offset, count).get();
 	});
 }//GetDocumentsAsync
 IAsyncOperation<IMap<String^, Object^>^>^ CouchDBManager::FindDocumentAsync(IMap<String^, Object^>^ oFetch) {
@@ -165,7 +177,7 @@ IAsyncOperation<IMap<String^, Object^>^>^ CouchDBManager::FindDocumentAsync(IMap
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, oFetch]()->IMap<String^, Object^>^ {
-		return pProxy->FindDocument(oFetch);
+		return pProxy->FindDocumentAsync(oFetch).get();
 	});
 }//FindDocumentAsync
 IAsyncOperation<IMap<String^, Object^>^>^ CouchDBManager::ReadDocumentByIdAsync(String^ docid) {
@@ -177,7 +189,7 @@ IAsyncOperation<IMap<String^, Object^>^>^ CouchDBManager::ReadDocumentByIdAsync(
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, docid]()->IMap<String^, Object^>^ {
-		return pProxy->ReadDocumentById(docid);
+		return pProxy->ReadDocumentByIdAsync(docid).get();
 	});
 }//ReadDocumentByIdAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAsync(IMap<String^, Object^>^ oMap) {
@@ -186,7 +198,7 @@ IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAsync(IMap<String^, Obje
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, oMap]()->bool {
-		return pProxy->MaintainsDocument(oMap);
+		return pProxy->MaintainsDocumentAsync(oMap).get();
 	});
 }//:MaintainsDocumentAsync
 IAsyncOperation<bool>^ CouchDBManager::DeleteDocumentByIdAsync(String^ docid) {
@@ -198,7 +210,7 @@ IAsyncOperation<bool>^ CouchDBManager::DeleteDocumentByIdAsync(String^ docid) {
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, docid]()->bool {
-		return pProxy->DeleteDocumentById(docid);
+		return pProxy->DeleteDocumentByIdAsync(docid).get();
 	});
 }//DeleteDocumentByIdAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentsAsync(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete) {
@@ -207,7 +219,7 @@ IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentsAsync(IVector<IMap<Stri
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, oVec, bDelete]()->bool {
-		return pProxy->MaintainsDocuments(oVec, bDelete);
+		return pProxy->MaintainsDocumentsAsync(oVec, bDelete).get();
 	});
 }//MaintainsDocumentsAsync
 IAsyncOperation<bool>^ CouchDBManager::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
@@ -216,6 +228,6 @@ IAsyncOperation<bool>^ CouchDBManager::RemoveDocumentsAsync(IMap<String^, Object
 	}
 	CouchDBProxy *pProxy = GetProxy();
 	return create_async([pProxy, oFetch]()->bool {
-		return pProxy->RemoveDocuments(oFetch);
+		return pProxy->RemoveDocumentsAsync(oFetch).get();
 	});
 }//:RemoveDocumentsAsync
