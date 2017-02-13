@@ -41,6 +41,10 @@ namespace InfoCouchDB {
 		static String^ MapToJson(IMap<String^, Object^>^ oMap);
 		static String^ MapToJson(IVector<IMap<String^, Object^>^>^ oAr);
 		static Object^ ConvertJsonObject(IJsonValue^ jsonVal);
+		static IMap<String^, Object^>^ StReadObject(IJsonValue^ json);
+		static IMap<String^, String^>^ StReadNamesMimes(String^ jsonText);
+		static int StDocsCount(String^ jsonText);
+		static IVector<IMap<String^, Object^>^>^ StReadDocs(String^ jsonText);
 		//
 	public:
 		CouchDBProxy(String^ url, String^ database);

@@ -2,26 +2,67 @@
 namespace InfoDomain {
 	using namespace Platform;
 ////////////////////////////
-	class InfoStrings {
+	public ref class InfoStrings sealed {
 	public:
-		static String^ KEY_ID;
-		static String^ KEY_REV;
-		static String^ KEY_TYPE;
-		static String^ KEY_DESC;
-		static String^ KEY_STATUS;
-		static String^ KEY_SIGLE;
-		static String^ KEY_NAME;
-		static String^ KEY_DATASETSIGLE;
-		static String^ KEY_VARIABLESIGLE;
-		static String^ KEY_INDIVSIGLE;
-		static String^ KEY_DATATYPE;
-		static String^ KEY_VARIABLEKIND;
-		static String^ KEY_MODALITES;
-		static String^ KEY_VALUE;
-		static String^ TYPE_DATASET;
-		static String^ TYPE_VARIABLE;
-		static String^ TYPE_INDIV;
-		static String^ TYPE_VALUE;
+		static property String^ KEY_ID {
+			String^ get();
+		}
+		static property String^ KEY_REV {
+			String^ get();
+
+		}
+		static property String^ KEY_TYPE {
+			String^ get();
+
+		}
+		static property String^ KEY_DESC {
+			String^ get();
+
+		}
+		static property String^ KEY_STATUS {
+			String^ get();
+
+		}
+		static property String^ KEY_SIGLE {
+			String^ get();
+
+		}
+		static property String^ KEY_NAME {
+			String^ get();
+		}
+		static property String^ KEY_DATASETSIGLE {
+			String^ get();
+		}
+		static property String^ KEY_VARIABLESIGLE {
+			String^ get();
+		}
+		static property String^ KEY_INDIVSIGLE {
+			String^ get();
+		}
+		static property String^ KEY_DATATYPE {
+			String^ get();
+		}
+		static property String^ KEY_VARIABLEKIND {
+			String^ get();
+		}
+		static property String^ KEY_MODALITES {
+			String^ get();
+		}
+		static property String^ KEY_VALUE {
+			String^ get();
+		}
+		static property String^ TYPE_DATASET {
+			String^ get();
+		}
+		static  property String^ TYPE_VARIABLE{
+			String^ get();
+		}
+		static property String^ TYPE_INDIV {
+			String^ get();
+		}
+		static property String^ TYPE_VALUE {
+			String^ get();
+		}
 	};// class InfoStrings
 ////////////////////////////
 }// namespace InfoDoamin

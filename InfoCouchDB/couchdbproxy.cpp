@@ -44,7 +44,7 @@ task<IBuffer^> CouchDBProxy::GetDocumentAttachmentDataAsync(String^ docid, Strin
 			IBuffer^ oRet;
 			return task_from_result(oRet);
 		}
-		String^ sUri = this->m_url + m_database + SLASH + Uri::EscapeComponent(docid) + SLASH + Uri::EscapeComponent(attachmentName) + REV + rev;
+		String^ sUri = this->m_url + this->m_database + SLASH + Uri::EscapeComponent(docid) + SLASH + Uri::EscapeComponent(attachmentName) + REV + rev;
 		Uri^ uri = ref new Uri(sUri);
 		auto myop = this->m_client->GetAsync(uri);
 		auto operationTask = create_task(myop);
@@ -63,7 +63,7 @@ task<bool> CouchDBProxy::RemoveDocumentAttachmentAsync(String^ docid, String^ at
 		if ((rev == nullptr) || (rev->IsEmpty())) {
 			return task_from_result(false);
 		}
-		String^ sUri = this->m_url + m_database + SLASH + Uri::EscapeComponent(docid) + SLASH + Uri::EscapeComponent(attachmentName) + REV + rev;
+		String^ sUri = this->m_url + this->m_database + SLASH + Uri::EscapeComponent(docid) + SLASH + Uri::EscapeComponent(attachmentName) + REV + rev;
 		Uri^ uri = ref new Uri(sUri);
 		auto myop = this->m_client->DeleteAsync(uri);
 		auto operationTask = create_task(myop);
@@ -78,9 +78,9 @@ task<bool> CouchDBProxy::RemoveDocumentAttachmentAsync(String^ docid, String^ at
 	});
 }//RemoveDocumentAttachment
 task<IMap<String^, String^>^> CouchDBProxy::GetDocumentAttachmentNamesAsync(String^ docid) {
-	String^ sUri = this->m_url + m_database + SLASH + Uri::EscapeComponent(docid) + ARG_ATTACHMENTS;
+	String^ sUri = this->m_url + this->m_database + SLASH + Uri::EscapeComponent(docid) + ARG_ATTACHMENTS;
 	Uri^ uri = ref new Uri(sUri);
-	auto myop = m_client->GetAsync(uri);
+	auto myop = this->m_client->GetAsync(uri);
 	auto operationTask = create_task(myop);
 	return operationTask.then([](HttpResponseMessage^ response) {
 		auto status = response->StatusCode;
@@ -88,37 +88,11 @@ task<IMap<String^, String^>^> CouchDBProxy::GetDocumentAttachmentNamesAsync(Stri
 			String^ s;
 			return task_from_result(s);
 		}
-		return create_task(response->Content->ReadAsStringAsync());
+		else {
+			return create_task(response->Content->ReadAsStringAsync());
+		}
 	}).then([](String^ jsonText) {
-		IMap<String^, String^>^ oRet = ref new Map<String^, String^>();
-		if ((jsonText != nullptr) & (!jsonText->IsEmpty())) {
-			JsonObject^ obj = JsonObject::Parse(jsonText);
-			if (obj->HasKey(KEY_ATTACHMENTS)) {
-				IJsonValue^ vo = obj->Lookup(KEY_ATTACHMENTS);
-				if (vo->ValueType == JsonValueType::Object) {
-					JsonObject^ oo = vo->GetObject();
-					auto it = oo->First();
-					while (it->HasCurrent) {
-						auto p = it->Current;
-						String^ key = p->Key;
-						IJsonValue^ vx = p->Value;
-						if (vx->ValueType == JsonValueType::Object) {
-							JsonObject^ o = vx->GetObject();
-							if (o->HasKey(KEY_CONTENT_TYPE)) {
-								IJsonValue^ vz = o->Lookup(KEY_CONTENT_TYPE);
-								if (vz->ValueType == JsonValueType::String) {
-									String^ sval = vz->GetString();
-									if (!sval->IsEmpty()) {
-										oRet->Insert(key, sval);
-									}
-								}
-							}//
-						}//
-						it->MoveNext();
-					}// it
-				}//oo
-			}// attachments
-		}// not empty;
+		IMap<String^, String^>^ oRet = StReadNamesMimes(jsonText);
 		return task_from_result(oRet);
 	});
 }//GetDocumentAttachmentNames
@@ -127,19 +101,19 @@ task<bool> CouchDBProxy::MaintainsDocumentAttachmentAsync(String^ docid, String^
 	DataReader^ reader;
 	String^ mime;
 	return create_task(file->OpenReadAsync()).
-		then([&mime, &reader](IRandomAccessStreamWithContentType^ stream)-> DataReaderLoadOperation^ {
+		then([&mime, &reader](IRandomAccessStreamWithContentType^ stream) {
 		mime = stream->ContentType;
 		unsigned int  n = static_cast<unsigned int>(stream->Size);
 		IInputStream^ ss = stream->GetInputStreamAt(0);
 		reader = ref new DataReader(ss);
-		return reader->LoadAsync(n);
+		return create_task(reader->LoadAsync(n));
 	}).then([this, reader, mime, docid, attachmentName](auto nx) {
 		IBuffer^ pBuf = reader->DetachBuffer();
 		return this->MaintainsDocumentAttachmentAsync(docid, attachmentName, mime, pBuf);
 	});
 }//MaintainsDocumentAttachment
 task<bool> CouchDBProxy::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data) {
-	return this->GetDocumentVersionAsync(docid).then([this, docid, attachmentName, mimetype, data](String^ rev){
+	return this->GetDocumentVersionAsync(docid).then([this, docid, attachmentName, mimetype, data](String^ rev) {
 		if ((rev == nullptr) || rev->IsEmpty() || (data->Length < 1)) {
 			throw ref new InvalidArgumentException();
 		}
@@ -150,18 +124,17 @@ task<bool> CouchDBProxy::MaintainsDocumentAttachmentAsync(String^ docid, String^
 		auto myop = this->m_client->PutAsync(uri, sc);
 		return create_task(myop);
 	}).then([](HttpResponseMessage^ response) {
-			bool b = false;
-			auto status = response->StatusCode;
-			if ((status == HttpStatusCode::Accepted) || (status == HttpStatusCode::Ok)) {
-				b = true;
-			}
-			return task_from_result(b);
+		bool b = false;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Accepted) || (status == HttpStatusCode::Ok)) {
+			b = true;
+		}
+		return task_from_result(b);
 	});
 }// MaintainsDocumentAttachmentAsync
-//////////////////////////////////////////////
 task<bool> CouchDBProxy::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
 	return create_task([this, oFetch]() {
-		JsonArray^ oRetArray = ref new JsonArray();
+
 		String^ sUri = this->m_url + this->m_database + STRING_FIND;
 		Uri^ uri = ref new Uri(sUri);
 		int nCount = 128;
@@ -176,54 +149,68 @@ task<bool> CouchDBProxy::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
 			sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
 			auto myop = this->m_client->PostAsync(uri, sc);
 			auto operationTask = create_task(myop);
-			int nx = operationTask.then([oRetArray](HttpResponseMessage^ response) {
+			int nx = operationTask.then([this](HttpResponseMessage^ response) {
 				int nRet = 0;
 				auto status = response->StatusCode;
 				if (status == HttpStatusCode::Ok) {
-					try {
-						auto myopx = response->Content->ReadAsStringAsync();
-						create_task(myopx).then([&nRet, &oRetArray](String^ jsonText) {
-							JsonValue^ val = JsonValue::Parse(jsonText);
-							if (val->ValueType == JsonValueType::Object) {
-								JsonObject^ obj = val->GetObject();
-								if (obj->HasKey(KEY_DOCS)) {
-									IJsonValue^ vx = obj->Lookup(KEY_DOCS);
-									if (vx->ValueType == JsonValueType::Array) {
-										JsonArray^ oAr = vx->GetArray();
-										nRet = (int)oAr->Size;
-										if (nRet > 0) {
-											auto it = oAr->First();
-											while (it->HasCurrent) {
-												IJsonValue^ vx = it->Current;
-												if (vx->ValueType == JsonValueType::Object) {
-													JsonObject^ o = vx->GetObject();
-													String^ sid;
-													String^ srev;
-													if (o->HasKey(KEY_ID)) {
-														sid = o->Lookup(KEY_ID)->ToString();
-													}
-													if (o->HasKey(KEY_REV)) {
-														srev = o->Lookup(KEY_REV)->ToString();
-													}
-													if ((!sid->IsEmpty()) && (!srev->IsEmpty())) {
-														JsonObject^ oo = ref new JsonObject();
-														oo->Insert(KEY_ID, JsonValue::CreateStringValue(sid));
-														oo->Insert(KEY_REV, JsonValue::CreateStringValue(srev));
-														oo->Insert(KEY_DELETED, JsonValue::CreateBooleanValue(true));
-														oRetArray->Append(oo);
-													}
-												}// obj
-												it->MoveNext();
-											}// it
-										}// nRet
-									}// array
-								}// docs
-							}// obj
-						}).get();
-					}
-					catch (Exception^ e) {
-						(void)e;
-					}
+					auto myopx = response->Content->ReadAsStringAsync();
+					create_task(myopx).then([this,&nRet](String^ jsonText) {
+						JsonArray^ oRetArray = ref new JsonArray();
+						JsonValue^ val = JsonValue::Parse(jsonText);
+						if (val->ValueType == JsonValueType::Object) {
+							JsonObject^ obj = val->GetObject();
+							if (obj->HasKey(KEY_DOCS)) {
+								IJsonValue^ vx = obj->Lookup(KEY_DOCS);
+								if (vx->ValueType == JsonValueType::Array) {
+									JsonArray^ oAr = vx->GetArray();
+									nRet = (int)oAr->Size;
+									auto it = oAr->First();
+									while (it->HasCurrent) {
+										IJsonValue^ vx = it->Current;
+										if (vx->ValueType == JsonValueType::Object) {
+											JsonObject^ o = vx->GetObject();
+											String^ sid;
+											String^ srev;
+											if (o->HasKey(KEY_ID)) {
+												sid = o->Lookup(KEY_ID)->ToString();
+											}
+											if (o->HasKey(KEY_REV)) {
+												srev = o->Lookup(KEY_REV)->ToString();
+											}
+											if ((!sid->IsEmpty()) && (!srev->IsEmpty())) {
+												JsonObject^ oo = ref new JsonObject();
+												oo->Insert(KEY_ID, JsonValue::CreateStringValue(sid));
+												oo->Insert(KEY_REV, JsonValue::CreateStringValue(srev));
+												oo->Insert(KEY_DELETED, JsonValue::CreateBooleanValue(true));
+												oRetArray->Append(oo);
+											}
+										}// obj
+										it->MoveNext();
+									}// it
+								}// array
+							}// docs
+						}// obj
+						if (oRetArray->Size > 0) {
+							JsonObject^ queryObj = ref new JsonObject();
+							queryObj->Insert(KEY_DOCS, oRetArray);
+							String^ sp = queryObj->Stringify();
+							String^ sUri2 = m_url + m_database + STRING_BULKDOCS;
+							Uri^ uri2 = ref new Uri(sUri2);
+							HttpStringContent^ sc = ref new HttpStringContent(sp);
+							sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
+							auto myop = this->m_client->PostAsync(uri2, sc);
+							auto operationTask = create_task(myop);
+							bool bRet = operationTask.then([](HttpResponseMessage^ response) {
+								bool b = false;
+								auto status = response->StatusCode;
+								if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Ok)) {
+									b = true;
+								}
+								return (b);
+							}).get();
+						}// size
+						return task_from_result(nRet);
+					}).get();
 				}// status
 				return (nRet);
 			}).get();
@@ -235,111 +222,88 @@ task<bool> CouchDBProxy::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
 				break;
 			}
 		} while (!done);
-		if (oRetArray->Size < 1) {
-			return task_from_result(true);
-		}
-		JsonObject^ queryObj = ref new JsonObject();
-		queryObj->Insert(KEY_DOCS, oRetArray);
-		String^ sp = queryObj->Stringify();
-		sUri = m_url + m_database + STRING_BULKDOCS;
-		uri = ref new Uri(sUri);
-		HttpStringContent^ sc = ref new HttpStringContent(sp);
-		sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
-		auto myop = this->m_client->PostAsync(uri, sc);
-		auto operationTask = create_task(myop);
-		bool bRet = operationTask.then([](HttpResponseMessage^ response) {
-			bool b = false;
-			auto status = response->StatusCode;
-			if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Ok)) {
-				b = true;
-			}
-			return (b);
-		}).get();
-		return task_from_result(bRet);
+		return task_from_result(true);
 	});
 }//RemoveDocumentsAsync
 task<bool> CouchDBProxy::MaintainsDocumentsAsync(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete /*= false*/) {
-	return create_task([this, oVec, bDelete]() {
-		JsonArray^ oAr = ref new JsonArray();
-		auto it = oVec->First();
-		while (it->HasCurrent) {
-			IMap<String^, Object^>^ p = it->Current;
-			JsonObject^ doc = ref new JsonObject();
-			if (bDelete) {
-				if (p->HasKey(KEY_ID) && p->HasKey(KEY_REV)) {
-					doc->Insert(KEY_ID, ConvertObject(p->Lookup(KEY_ID)));
-					doc->Insert(KEY_REV, ConvertObject(p->Lookup(KEY_REV)));
-					doc->Insert(KEY_DELETED, JsonValue::CreateBooleanValue(true));
-				}
+	JsonArray^ oAr = ref new JsonArray();
+	auto it = oVec->First();
+	while (it->HasCurrent) {
+		IMap<String^, Object^>^ p = it->Current;
+		JsonObject^ doc = ref new JsonObject();
+		if (bDelete) {
+			if (p->HasKey(KEY_ID) && p->HasKey(KEY_REV)) {
+				doc->Insert(KEY_ID, ConvertObject(p->Lookup(KEY_ID)));
+				doc->Insert(KEY_REV, ConvertObject(p->Lookup(KEY_REV)));
+				doc->Insert(KEY_DELETED, JsonValue::CreateBooleanValue(true));
 			}
-			else {
-				if (p->HasKey(KEY_ID)) {
-					bool bFound = false;
-					String^ docid = p->Lookup(KEY_ID)->ToString();
-					if (!docid->IsEmpty()) {
-						String^ rev = this->GetDocumentVersionAsync(docid).get();
-						if ((rev != nullptr) && (!rev->IsEmpty())) {
-							bFound = true;
-							if (p->HasKey(KEY_REV)) {
-								p->Remove(KEY_REV);
-							}
-							p->Insert(KEY_REV, rev);
-						}// ok rev
-					}// id
-					if (!bFound) {
+		}
+		else {
+			if (p->HasKey(KEY_ID)) {
+				bool bFound = false;
+				String^ docid = p->Lookup(KEY_ID)->ToString();
+				if (!docid->IsEmpty()) {
+					String^ rev = this->GetDocumentVersionAsync(docid).get();
+					if ((rev != nullptr) && (!rev->IsEmpty())) {
+						bFound = true;
 						if (p->HasKey(KEY_REV)) {
 							p->Remove(KEY_REV);
 						}
+						p->Insert(KEY_REV, rev);
+					}// ok rev
+				}// id
+				if (!bFound) {
+					if (p->HasKey(KEY_REV)) {
+						p->Remove(KEY_REV);
 					}
 				}
-				auto jt = p->First();
-				while (jt->HasCurrent) {
-					auto px = jt->Current;
-					String^ key = px->Key;
-					IJsonValue^ v = ConvertObject(px->Value);
-					doc->Insert(key, v);
-					jt->MoveNext();
-				}// jt
 			}
-			if (doc->Size > 0) {
-				oAr->Append(doc);
-			}
-			it->MoveNext();
-		}// it
-		if (oAr->Size < 1) {
-			return task_from_result(false);
+			auto jt = p->First();
+			while (jt->HasCurrent) {
+				auto px = jt->Current;
+				String^ key = px->Key;
+				IJsonValue^ v = ConvertObject(px->Value);
+				doc->Insert(key, v);
+				jt->MoveNext();
+			}// jt
 		}
-		JsonObject^ queryObj = ref new JsonObject();
-		queryObj->Insert(KEY_DOCS, oAr);
-		String^ sp = queryObj->Stringify();
-		String^ sUri = m_url + m_database + STRING_BULKDOCS;
-		Uri^ uri = ref new Uri(sUri);
-		HttpStringContent^ sc = ref new HttpStringContent(sp);
-		sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
-		auto myop = this->m_client->PostAsync(uri, sc);
-		auto operationTask = create_task(myop);
-		bool bRet = operationTask.then([](HttpResponseMessage^ response) {
-			bool b = false;
-			auto status = response->StatusCode;
-			if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Ok)) {
-				b = true;
-			}
-			return (b);
-		}).get();
-		return task_from_result(bRet);
-	});
-}// MaintainsDocuments
-//////////////////////////////////////////////
-task<bool>  CouchDBProxy::DeleteDocumentByIdAsync(String^ docid) {
-	String^ rev = GetDocumentVersionAsync(docid).get();
-	if ((rev == nullptr) || (rev->IsEmpty())) {
+		if (doc->Size > 0) {
+			oAr->Append(doc);
+		}
+		it->MoveNext();
+	}// it
+	if (oAr->Size < 1) {
 		return task_from_result(false);
 	}
-	String^ sUri = this->m_url + m_database + SLASH + Uri::EscapeComponent(docid) + REV + rev;
+	JsonObject^ queryObj = ref new JsonObject();
+	queryObj->Insert(KEY_DOCS, oAr);
+	String^ sp = queryObj->Stringify();
+	String^ sUri = m_url + m_database + STRING_BULKDOCS;
 	Uri^ uri = ref new Uri(sUri);
-	auto myop = this->m_client->DeleteAsync(uri);
+	HttpStringContent^ sc = ref new HttpStringContent(sp);
+	sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
+	auto myop = this->m_client->PostAsync(uri, sc);
 	auto operationTask = create_task(myop);
 	return operationTask.then([](HttpResponseMessage^ response) {
+		bool b = false;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Ok)) {
+			b = true;
+		}
+		return task_from_result(b);
+	});
+}// MaiSntainsDocuments
+//////////////////////////////////////////////
+task<bool>  CouchDBProxy::DeleteDocumentByIdAsync(String^ docid) {
+	return this->GetDocumentVersionAsync(docid).then([this, docid](String^ rev) {
+		if ((rev == nullptr) || (rev->IsEmpty())) {
+			throw ref new InvalidArgumentException();
+		}
+		String^ sUri = this->m_url + m_database + SLASH + Uri::EscapeComponent(docid) + REV + rev;
+		Uri^ uri = ref new Uri(sUri);
+		auto myop = this->m_client->DeleteAsync(uri);
+		return create_task(myop);
+	}).then([](HttpResponseMessage^ response) {
 		bool b = false;
 		auto status = response->StatusCode;
 		if ((status == HttpStatusCode::Ok) || (status == HttpStatusCode::Accepted)) {
@@ -352,27 +316,19 @@ task<bool> CouchDBProxy::MaintainsDocumentAsync(IMap<String^, Object^>^ oMap) {
 	if (!oMap->HasKey(KEY_ID)) {
 		return this->InsertDocumentAsync(oMap);
 	}
-	return create_task([this, oMap]() {
-		if (oMap->HasKey(KEY_REV)) {
-			oMap->Remove(KEY_REV);
-		}
-		String^ docid = oMap->Lookup(KEY_ID)->ToString();
-		String^ rev = GetDocumentVersionAsync(docid).get();
-		if ((rev == nullptr) || (rev->IsEmpty())) {
-			return this->InsertDocumentAsync(oMap);
-		}
-		return this->UpdateDocumentAsync(oMap);
-	});
+	if (oMap->HasKey(KEY_REV)) {
+		oMap->Remove(KEY_REV);
+	}
+	return this->UpdateDocumentAsync(oMap);
 }//MaintainsDocumentAsync
 task<bool> CouchDBProxy::UpdateDocumentAsync(IMap<String^, Object^>^ oMap) {
-	return create_task([this, oMap]() {
-		if (!oMap->HasKey(KEY_ID)) {
-			return task_from_result(false);
-		}
-		String^ docid = oMap->Lookup(KEY_ID)->ToString();
-		String^ rev = this->GetDocumentVersionAsync(docid).get();
+	if (!oMap->HasKey(KEY_ID)) {
+		return task_from_result(false);
+	}
+	String^ docid = oMap->Lookup(KEY_ID)->ToString();
+	return this->GetDocumentVersionAsync(docid).then([this, docid, oMap](String^ rev) {
 		if ((rev == nullptr) || (rev->IsEmpty())) {
-			return task_from_result(false);
+			throw ref new InvalidArgumentException();
 		}
 		String^ sUri = this->m_url + this->m_database + SLASH + Uri::EscapeComponent(docid) + REV + rev;
 		Uri^ uri = ref new Uri(sUri);
@@ -380,39 +336,34 @@ task<bool> CouchDBProxy::UpdateDocumentAsync(IMap<String^, Object^>^ oMap) {
 		HttpStringContent^ sc = ref new HttpStringContent(sp);
 		sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
 		auto myop = this->m_client->PutAsync(uri, sc);
-		auto operationTask = create_task(myop);
-		bool bRet = operationTask.then([](HttpResponseMessage^ response) {
-			bool b = false;
-			auto status = response->StatusCode;
-			if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Accepted)) {
-				b = true;
-			}
-			return (b);
-		}).get();
+		return create_task(myop);
+	}).then([](HttpResponseMessage^ response) {
+		bool bRet = false;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Accepted)) {
+			bRet = true;
+		}
 		return task_from_result(bRet);
 	});
 }//UpdateDocumentAsync
 task<bool> CouchDBProxy::InsertDocumentAsync(IMap<String^, Object^>^ oMap) {
-	return create_task([this, oMap]()->bool {
-		if (oMap->HasKey(KEY_REV)) {
-			oMap->Remove(KEY_REV);
+	if (oMap->HasKey(KEY_REV)) {
+		oMap->Remove(KEY_REV);
+	}
+	String^ sUri = this->m_url + this->m_database;
+	Uri^ uri = ref new Uri(sUri);
+	String^ sp = MapToJson(oMap);
+	HttpStringContent^ sc = ref new HttpStringContent(sp);
+	sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
+	auto myop = this->m_client->PostAsync(uri, sc);
+	auto operationTask = create_task(myop);
+	return operationTask.then([](HttpResponseMessage^ response) {
+		bool b = false;
+		auto status = response->StatusCode;
+		if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Accepted)) {
+			b = true;
 		}
-		String^ sUri = this->m_url + this->m_database;
-		Uri^ uri = ref new Uri(sUri);
-		String^ sp = MapToJson(oMap);
-		HttpStringContent^ sc = ref new HttpStringContent(sp);
-		sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
-		auto myop = this->m_client->PostAsync(uri, sc);
-		auto operationTask = create_task(myop);
-		bool bRet = operationTask.then([](HttpResponseMessage^ response) {
-			bool b = false;
-			auto status = response->StatusCode;
-			if ((status == HttpStatusCode::Created) || (status == HttpStatusCode::Accepted)) {
-				b = true;
-			}
-			return (b);
-		}).get();
-		return bRet;
+		return task_from_result(b);
 	});
 }//InsertDocumentAsync
 task<IMap<String^, Object^>^> CouchDBProxy::ReadDocumentByIdAsync(String^ docid) {
@@ -421,34 +372,39 @@ task<IMap<String^, Object^>^> CouchDBProxy::ReadDocumentByIdAsync(String^ docid)
 	auto myop = m_client->GetAsync(uri);
 	auto operationTask = create_task(myop);
 	return operationTask.then([](HttpResponseMessage^ response) {
-		IMap<String^, Object^>^ oRet;
 		auto status = response->StatusCode;
-		if ((status == HttpStatusCode::Ok) || (status == HttpStatusCode::NotModified)) {
-			auto myopx = response->Content->ReadAsStringAsync();
-			create_task(myopx).then([&oRet](String^ jsonText) {
-				oRet = ref new Map<String^, Object^>();
-				JsonObject^ obj = JsonObject::Parse(jsonText);
-				auto it = obj->First();
-				while (it->HasCurrent) {
-					auto p = it->Current;
-					String^ key = p->Key;
-					Object^ o = ConvertJsonObject(p->Value);
-					oRet->Insert(key, o);
-					it->MoveNext();
-				}// it
-			}).wait();
+		if ((status != HttpStatusCode::NotModified) && (status != HttpStatusCode::Ok)) {
+			String^ s;
+			return task_from_result(s);
+		}
+		else {
+			return create_task(response->Content->ReadAsStringAsync());
+		}
+	}).then([](String^ jsonText) {
+		IMap<String^, Object^>^ oRet;
+		if ((jsonText != nullptr) && (!jsonText->IsEmpty())) {
+			oRet = ref new Map<String^, Object^>();
+			JsonObject^ obj = JsonObject::Parse(jsonText);
+			auto it = obj->First();
+			while (it->HasCurrent) {
+				auto p = it->Current;
+				String^ key = p->Key;
+				Object^ o = ConvertJsonObject(p->Value);
+				oRet->Insert(key, o);
+				it->MoveNext();
+			}// it
 		}
 		return task_from_result(oRet);
 	});
 }//ReadDocumentByIdAsync
 /////////////////////////////////////////////
 task<String^>  CouchDBProxy::GetDocumentVersionAsync(String^ docid) {
-	String^ sUri = this->m_url + m_database + SLASH + Uri::EscapeComponent(docid);
+	String^ sUri = this->m_url + this->m_database + SLASH + Uri::EscapeComponent(docid);
 	Uri^ uri = ref new Uri(sUri);
 	HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
 	auto myop = this->m_client->SendRequestAsync(req);
 	auto operationTask = create_task(myop);
-	return operationTask.then([](HttpResponseMessage^ response)->String^ {
+	return operationTask.then([](HttpResponseMessage^ response) {
 		String^ srev;
 		auto status = response->StatusCode;
 		if (status == HttpStatusCode::Ok) {
@@ -465,39 +421,24 @@ task<String^>  CouchDBProxy::GetDocumentVersionAsync(String^ docid) {
 				}// lenftg
 			}// header ETag
 		}// found
-		return srev;
+		return task_from_result(srev);
 	});
 }//GetDocumentVersionAsync
 ///////////////////////////////////////////
 task<bool> CouchDBProxy::IsAliveAsync(void) {
-	return create_task([this]()->bool {
-		bool bRet = false;
-		try {
-			String^ sUri = this->m_url + m_database;
-			Uri^ uri = ref new Uri(sUri);
-			HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
-			auto myop = this->m_client->SendRequestAsync(req);
-			auto operationTask = create_task(myop);
-			bRet = operationTask.then([this](HttpResponseMessage^ response) {
-				auto status = response->StatusCode;
-				return (status == HttpStatusCode::Ok);
-			}).get();
-		}
-		catch (Exception ^e) {
-			(void)e;
-		}
-		return (bRet);
+	String^ sUri = this->m_url + this->m_database;
+	Uri^ uri = ref new Uri(sUri);
+	HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
+	auto myop = this->m_client->SendRequestAsync(req);
+	auto operationTask = create_task(myop);
+	return operationTask.then([this](HttpResponseMessage^ response) {
+		auto status = response->StatusCode;
+		return task_from_result(status == HttpStatusCode::Ok);
 	});
 }// IsAliveAsync
 ////////////////////////////////////////
 task<int> CouchDBProxy::GetCountFilterAsync(IMap<String^, Object^>^ oFetch) {
-	return create_task([this, oFetch]()->int {
-		if (oFetch == nullptr) {
-			return (-1);
-		}
-		if (oFetch->Size < 1) {
-			return (-1);
-		}
+	return create_task([this, oFetch]() {
 		String^ sUri = this->m_url + this->m_database + STRING_FIND;
 		Uri^ uri = ref new Uri(sUri);
 		int nTotal{ 0 };
@@ -510,27 +451,14 @@ task<int> CouchDBProxy::GetCountFilterAsync(IMap<String^, Object^>^ oFetch) {
 			String^ sp = ConvertFindFilter(oFetch, pFields, nOffset, nCount);
 			HttpStringContent^ sc = ref new HttpStringContent(sp);
 			sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
-			auto myop = this->m_client->PostAsync(uri, sc);
-			auto operationTask = create_task(myop);
+			auto operationTask = create_task(this->m_client->PostAsync(uri, sc));
 			int nx = operationTask.then([](HttpResponseMessage^ response)->int {
-				int nRet{ -1 };
+				int nRet{ 0 };
 				auto status = response->StatusCode;
 				if (status == HttpStatusCode::Ok) {
 					auto myopx = response->Content->ReadAsStringAsync();
 					nRet = create_task(myopx).then([](String^ jsonText)->int {
-						int nz = -1;
-						JsonValue^ val = JsonValue::Parse(jsonText);
-						if (val->ValueType == JsonValueType::Object) {
-							JsonObject^ obj = val->GetObject();
-							if (obj->HasKey(KEY_DOCS)) {
-								IJsonValue^ vx = obj->Lookup(KEY_DOCS);
-								if (vx->ValueType == JsonValueType::Array) {
-									JsonArray^ oAr = vx->GetArray();
-									 nz = static_cast<int>(oAr->Size);
-								}
-							}// docs
-						}// obj
-						return nz;
+						return StDocsCount(jsonText);
 					}).get();
 				}// status
 				return (nRet);
@@ -544,7 +472,7 @@ task<int> CouchDBProxy::GetCountFilterAsync(IMap<String^, Object^>^ oFetch) {
 				break;
 			}
 		} while (!done);
-		return nTotal;
+		return task_from_result(nTotal);
 	});
 }//GetCountFilterAsync
 task<IMap<String^, Object^>^> CouchDBProxy::FindDocumentAsync(IMap<String^, Object^>^ oFetch) {
@@ -562,13 +490,6 @@ task<IMap<String^, Object^>^> CouchDBProxy::FindDocumentAsync(IMap<String^, Obje
 	});
 }//FindDocumentAsync
 task<IVector<IMap<String^, Object^>^>^> CouchDBProxy::ReadDocumentsAsync(IMap<String^, Object^>^ oFetch, int offset, int count) {
-	IVector<IMap<String^, Object^>^>^ xRet = ref new Vector<IMap<String^, Object^>^>();
-	if (oFetch == nullptr) {
-		return task_from_result(xRet);
-	}
-	if (oFetch->Size < 1) {
-		return task_from_result(xRet);
-	}
 	String^ sUri = this->m_url + this->m_database + STRING_FIND;
 	Uri^ uri = ref new Uri(sUri);
 	IVector<String^>^ pFields = ref new Vector<String^>();
@@ -577,43 +498,18 @@ task<IVector<IMap<String^, Object^>^>^> CouchDBProxy::ReadDocumentsAsync(IMap<St
 	sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
 	auto myop = this->m_client->PostAsync(uri, sc);
 	auto operationTask = create_task(myop);
-	return operationTask.then([xRet](HttpResponseMessage^ response) {
+	return operationTask.then([](HttpResponseMessage^ response) {
 		auto status = response->StatusCode;
 		if (status != HttpStatusCode::Ok) {
-			throw ref new OperationCanceledException();
+			String^ s;
+			return task_from_result(s);
 		}
-		auto myopx = response->Content->ReadAsStringAsync();
-		return create_task(myopx).then([xRet](String^ jsonText)->task<IVector<IMap<String^, Object^>^>^> {
-			JsonValue^ val = JsonValue::Parse(jsonText);
-			if (val->ValueType == JsonValueType::Object) {
-				JsonObject^ obj = val->GetObject();
-				if (obj->HasKey(KEY_DOCS)) {
-					IJsonValue^ vx = obj->Lookup(KEY_DOCS);
-					if (vx->ValueType == JsonValueType::Array) {
-						JsonArray^ oAr = vx->GetArray();
-						auto it = oAr->First();
-						while (it->HasCurrent) {
-							IJsonValue^ v = it->Current;
-							if (v->ValueType == JsonValueType::Object) {
-								IMap<String^, Object^>^ cur = ref new Map<String^, Object^>();
-								JsonObject^ obj = v->GetObject();
-								auto jt = obj->First();
-								while (jt->HasCurrent) {
-									auto p = jt->Current;
-									String^ key = p->Key;
-									Object^ o = ConvertJsonObject(p->Value);
-									cur->Insert(key, o);
-									jt->MoveNext();
-								}// jt
-								xRet->Append(cur);
-							}// obj
-							it->MoveNext();
-						}// it
-					}// array
-				}// docs
-			}// obj
-			return task_from_result(xRet);
-		});
+		else {
+			return create_task(response->Content->ReadAsStringAsync());
+		}
+	}).then([](String^ jsonText) {
+		IVector<IMap<String^, Object^>^>^ xRet = StReadDocs(jsonText);
+		return task_from_result(xRet);
 	});
 }//ReadDocumentsAsync
 /////////////////////////////////////
@@ -793,3 +689,89 @@ Object^CouchDBProxy::ConvertJsonObject(IJsonValue^ jsonVal) {
 		return o;
 	}
 }//ConvertJsonObject
+IMap<String^, String^>^ CouchDBProxy::StReadNamesMimes(String^ jsonText) {
+	IMap<String^, String^>^ oRet = ref new Map<String^, String^>();
+	if ((jsonText != nullptr) & (!jsonText->IsEmpty())) {
+		JsonObject^ obj = JsonObject::Parse(jsonText);
+		if (obj->HasKey(KEY_ATTACHMENTS)) {
+			IJsonValue^ vo = obj->Lookup(KEY_ATTACHMENTS);
+			if (vo->ValueType == JsonValueType::Object) {
+				JsonObject^ oo = vo->GetObject();
+				auto it = oo->First();
+				while (it->HasCurrent) {
+					auto p = it->Current;
+					String^ key = p->Key;
+					IJsonValue^ vx = p->Value;
+					if (vx->ValueType == JsonValueType::Object) {
+						JsonObject^ o = vx->GetObject();
+						if (o->HasKey(KEY_CONTENT_TYPE)) {
+							IJsonValue^ vz = o->Lookup(KEY_CONTENT_TYPE);
+							if (vz->ValueType == JsonValueType::String) {
+								String^ sval = vz->GetString();
+								if (!sval->IsEmpty()) {
+									oRet->Insert(key, sval);
+								}
+							}
+						}//
+					}//
+					it->MoveNext();
+				}// it
+			}//oo
+		}// attachments
+	}// not empty
+	return oRet;
+}//StReadNamesMimes
+int CouchDBProxy::StDocsCount(String^ jsonText) {
+	int nRet = 0;
+	if ((jsonText == nullptr) || (jsonText->IsEmpty())) {
+		return nRet;
+	}
+	JsonValue^ val = JsonValue::Parse(jsonText);
+	if (val->ValueType == JsonValueType::Object) {
+		JsonObject^ obj = val->GetObject();
+		if (obj->HasKey(KEY_DOCS)) {
+			IJsonValue^ vx = obj->Lookup(KEY_DOCS);
+			if (vx->ValueType == JsonValueType::Array) {
+				JsonArray^ oAr = vx->GetArray();
+				nRet = (int)oAr->Size;
+			}// array
+		}// docs
+	}// obj
+	return nRet;
+}//StDocsCount
+IVector<IMap<String^, Object^>^>^ CouchDBProxy::StReadDocs(String^ jsonText) {
+	IVector<IMap<String^, Object^>^>^ xRet = ref new Vector<IMap<String^, Object^>^>();
+	if ((jsonText == nullptr) || (jsonText->IsEmpty())) {
+		return (xRet);
+	}
+	JsonValue^ val = JsonValue::Parse(jsonText);
+	if (val->ValueType == JsonValueType::Object) {
+		JsonObject^ obj = val->GetObject();
+		if (obj->HasKey(KEY_DOCS)) {
+			IJsonValue^ vx = obj->Lookup(KEY_DOCS);
+			if (vx->ValueType == JsonValueType::Array) {
+				JsonArray^ oAr = vx->GetArray();
+				auto it = oAr->First();
+				while (it->HasCurrent) {
+					IJsonValue^ v = it->Current;
+					if (v->ValueType == JsonValueType::Object) {
+						IMap<String^, Object^>^ cur = ref new Map<String^, Object^>();
+						JsonObject^ obj = v->GetObject();
+						auto jt = obj->First();
+						while (jt->HasCurrent) {
+							auto p = jt->Current;
+							String^ key = p->Key;
+							Object^ o = ConvertJsonObject(p->Value);
+							cur->Insert(key, o);
+							jt->MoveNext();
+						}// jt
+						xRet->Append(cur);
+					}// obj
+					it->MoveNext();
+				}// it
+			}// array
+		}// docs
+	}// obj
+	return (xRet);
+}//StReadDocs
+
