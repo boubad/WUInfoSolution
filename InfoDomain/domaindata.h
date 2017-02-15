@@ -45,6 +45,7 @@ namespace InfoDomain {
 			Object^ get();
 		}// Value
 		void Clear(void);
+		Platform::String^ ToString(void) override;
 	};// class InfoDataValue
 	  ///////////////////////////////
 	public ref class Dataset sealed {
@@ -88,6 +89,7 @@ namespace InfoDomain {
 			void set(Platform::String^ value);
 		}// name
 		IMap<Platform::String^, Object^>^ GetMap(void);
+		Platform::String^ ToString(void) override;
 	};// class Dataset
 	  //////////////////////////////////
 	public ref class Indiv sealed {
@@ -132,6 +134,7 @@ namespace InfoDomain {
 			void set(Platform::String^ value);
 		}// name
 		IMap<Platform::String^, Object^>^ GetMap(void);
+		Platform::String^ ToString(void) override;
 	};// Indiv
 	  ///////////////////////////////////////
 	public ref class Variable sealed {
@@ -188,6 +191,7 @@ namespace InfoDomain {
 			void set(IVector<Platform::String^>^ value);
 		}// Modalites
 		IMap<Platform::String^, Object^>^ GetMap(void);
+		Platform::String^ ToString(void) override;
 	};// Variable
 	  ////////////////////////////////////
 	public ref class InfoValue sealed {
@@ -243,6 +247,7 @@ namespace InfoDomain {
 			bool get();
 		}// IsStoreable
 		IMap<Platform::String^, Object^>^ GetMap(void);
+		Platform::String^ ToString(void) override;
 	};// InfoValue
 	  /////////////////////////////////////
 }// Namespace InfoDomain

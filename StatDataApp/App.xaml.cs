@@ -15,10 +15,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.EntityFrameworkCore;
-/// <summary>
-/// /////
-/// </summary>
-namespace StatInfoApp
+//
+using StatDataApp.Data;
+//
+namespace StatDataApp
 {
     /// <summary>
     /// Fournit un comportement spécifique à l'application afin de compléter la classe Application par défaut.
@@ -33,10 +33,12 @@ namespace StatInfoApp
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
-            using (var db = new StatInfoAppContext())
+            //
+            using (var db = new StatDataAppContext())
             {
                 db.Database.Migrate();
             }
+
         }
 
         /// <summary>
