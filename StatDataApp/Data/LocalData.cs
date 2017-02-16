@@ -112,6 +112,10 @@ namespace StatDataApp.Data
      //
     public class StatDataAppContext : DbContext
     {
+        public StatDataAppContext() { }
+        public StatDataAppContext(DbContextOptions<StatDataAppContext> options):
+            base(options)
+        { }
         public DbSet<DBDataset> DBDatasets { get; set; }
         public DbSet<DBVariable> DBVariables { get; set; }
         public DbSet<DBIndiv> DBIndivs { get; set; }
