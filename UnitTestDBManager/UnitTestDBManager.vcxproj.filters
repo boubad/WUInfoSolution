@@ -14,8 +14,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UnitTestApp.xaml.cpp" />
-    <ClCompile Include="UnitTest.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="UnitTest_CouchDBManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

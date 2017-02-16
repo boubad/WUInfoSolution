@@ -13,6 +13,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTestDBManager", "UnitTe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoTestData", "InfoTestData\InfoTestData.vcxproj", "{864E7E6D-BED1-4FD2-9D4D-A381091CA9B6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{B403EFFB-9676-4A2C-B12F-A4BFF18B0270}"
+	ProjectSection(SolutionItems) = preProject
+		resources\boubadiarra.jpg = resources\boubadiarra.jpg
+		resources\brigitte.jpg = resources\brigitte.jpg
+		resources\claude.jpg = resources\claude.jpg
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM

@@ -5,12 +5,33 @@ using namespace Platform;
 using namespace Platform::Collections;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::Storage::Streams;
+using namespace Windows::Storage::FileProperties;
+using namespace Windows::Graphics::Imaging;
+using namespace Windows::Storage;
+using namespace Microsoft::WRL;
 using namespace InfoCouchDB;
 using namespace concurrency;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
+//////////////////////////
+using byte = uint8;
+byte * St_GetPointerToData(IBuffer^ pixelBuffer, unsigned int *length) {
+	if (length != nullptr)
+	{
+		*length = pixelBuffer->Length;
+	}
+	// Query the IBufferByteAccess interface.
+	ComPtr<IBufferByteAccess> bufferByteAccess;
+	reinterpret_cast<IInspectable*>(pixelBuffer)->QueryInterface(IID_PPV_ARGS(&bufferByteAccess));
+	// Retrieve the buffer data.
+	byte* pixels = nullptr;
+	bufferByteAccess->Buffer(&pixels);
+	return pixels;
+}//GetPointerToData
+/////////////////////////////
 namespace UnitTestDBManager
 {
+	//
 	TEST_CLASS(UnitTestDBManager)
 	{
 	public:
@@ -72,6 +93,27 @@ namespace UnitTestDBManager
 			Assert::IsFalse(res->IsEmpty());
 			bool bRet = create_task(m_pman->MaintainsDocumentAsync(pMap)).get();
 			Assert::IsTrue(bRet);
+			IBuffer^ pBuf;
+			//Windows::Graphics::Imaging::
+			String^ sFilePath = "..\\..\\resources\\boubadiarra.jpg";
+			StorageFile^ file = create_task(StorageFile::GetFileFromPathAsync(sFilePath)).get();
+			if (file != nullptr) {
+				ImageProperties^ props = create_task(file->Properties->GetImagePropertiesAsync()).get();
+			}// file
+			unsigned int nLen = 128;
+			Array<byte>^ pAr = ref new Array<byte>(nLen);
+			for (auto i = 0; i < nLen; ++i) {
+				pAr[i] = (byte)i;
+			}// i
+			InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
+			DataWriter^ dataWriter = ref new DataWriter(stream);
+			dataWriter->WriteBytes(pAr);
+			create_task(dataWriter->StoreAsync()).wait();
+			IBuffer^ pBuf = dataWriter->DetachBuffer();
+			String^ attName = "testatt";
+			String^ mimetype = "application/octet-stream";
+			bool bb = create_task(m_pman->MaintainsDocumentAttachmentAsync(id, attName, mimetype, pBuf)).get();
+			Assert::IsTrue(bb);
 		}//TestDBManagerMaintains
 	};
 }

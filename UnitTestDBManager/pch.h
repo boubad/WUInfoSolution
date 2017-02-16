@@ -9,3 +9,4 @@
 #include <ppltasks.h>
 
 #include "UnitTestApp.xaml.h"
+#include <robuffer.h>
