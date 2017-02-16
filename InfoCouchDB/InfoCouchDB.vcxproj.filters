@@ -8,18 +8,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="couchdb.cpp" />
-    <ClCompile Include="couchdbclient.cpp" />
-    <ClCompile Include="jsonutils.cpp" />
     <ClCompile Include="couchdbproxy.cpp" />
     <ClCompile Include="couchdbmanager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="couchdb.h" />
-    <ClInclude Include="couchdbclient.h" />
-    <ClInclude Include="docutils.h" />
-    <ClInclude Include="jsonutils.h" />
     <ClInclude Include="couchdbproxy.h" />
     <ClInclude Include="couchdbmanager.h" />
   </ItemGroup>

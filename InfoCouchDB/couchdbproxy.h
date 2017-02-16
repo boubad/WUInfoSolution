@@ -4,18 +4,20 @@ using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Data::Json;
 using namespace Windows::Web::Http;
+using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
+using namespace concurrency;
 //////////////////////////////
 namespace InfoCouchDB {
-	///////////////////////
-	using byte = uint8;
 ///////////////////////////
-	class CouchDBProxy {
+	class CouchDBProxy  {
 	private:
 		String^ m_url;
 		String^ m_database;
 		HttpClient^ m_client;
 		//
+		static String^ SLASH;
+		static String^ REV;
 		static String^ JSON_MIME_TYPE;
 		static String^ KEY_ID;
 		static String^ KEY_REV;
@@ -26,6 +28,12 @@ namespace InfoCouchDB {
 		static String^ KEY_ETAG;
 		static String^ KEY_ATTACHMENTS;
 		static String^ KEY_CONTENT_TYPE;
+		static String^ ARG_ATTACHMENTS;
+		//
+		static String^ KEY_SELECTOR;
+		static String^ KEY_FIELDS;
+		static String^ KEY_LIMIT;
+		static String^ KEY_SKIP;
 		//
 		static IJsonValue^ ConvertObject(Object^ obj);
 		static String^ ConvertFindFilter(IMap<String^, Object^>^ oFetch,
@@ -33,34 +41,40 @@ namespace InfoCouchDB {
 		static String^ MapToJson(IMap<String^, Object^>^ oMap);
 		static String^ MapToJson(IVector<IMap<String^, Object^>^>^ oAr);
 		static Object^ ConvertJsonObject(IJsonValue^ jsonVal);
-		static byte *GetPointerToData(IBuffer^ pixelData, unsigned int *length);
+		static IMap<String^, Object^>^ StReadObject(IJsonValue^ json);
+		static IMap<String^, String^>^ StReadNamesMimes(String^ jsonText);
+		static int StDocsCount(String^ jsonText);
+		static IVector<IMap<String^, Object^>^>^ StReadDocs(String^ jsonText);
 		//
 	public:
 		CouchDBProxy(String^ url, String^ database);
 		~CouchDBProxy();
 	public:
 		//
-		bool IsAlive(void);
+		task<IMap<String^, Object^>^> ReadDocumentByIdAsync(String^ docid);
+		task<bool> DeleteDocumentByIdAsync(String^ docid);
+		
+		task<String^> GetDocumentVersionAsync(String^ docid);
+		task<IMap<String^, Object^>^> FindDocumentAsync(IMap<String^, Object^>^ oFetch);
+		task<IVector<IMap<String^, Object^>^>^> ReadDocumentsAsync(IMap<String^, Object^>^ oFetch, int offset = 0, int count = 0);
 		//
-		int GetCountFilter(IMap<String^, Object^>^ oFetch);
-		IVector<IMap<String^, Object^>^>^ ReadDocuments(IMap<String^, Object^>^ oFetch, int offset = 0, int count = 0);
-		IMap<String^, Object^>^ FindDocument(IMap<String^, Object^>^ oFetch);
+		task<bool> MaintainsDocumentAsync(IMap<String^, Object^>^ oMap);
+		task<bool> UpdateDocumentAsync(IMap<String^, Object^>^ oMap);
+		task<bool> InsertDocumentAsync(IMap<String^, Object^>^ oMap);
+		task<bool> IsAliveAsync(void);
+		task<int> GetCountFilterAsync(IMap<String^, Object^>^ oFetch);
 		//
-		String^ GetDocumentVersion(String^ docid);
-		IMap<String^, Object^>^ ReadDocumentById(String^ docid);
-		bool InsertDocument(IMap<String^, Object^>^ oMap);
-		bool UpdateDocument(IMap<String^, Object^>^ oMap);
-		bool MaintainsDocument(IMap<String^, Object^>^ oMap);
-		bool DeleteDocumentById(String^ docid);
+		task<bool> MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName,
+			String^ mimetype, IBuffer^ data);
+		task<bool> MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName,
+			IStorageFile^ file);
+		task<IMap<String^, String^> ^> GetDocumentAttachmentNamesAsync(String^ docid);
+		task<IBuffer^> GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
+		task<bool> RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		//
-		bool MaintainsDocuments(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete = false);
-		bool RemoveDocuments(IMap<String^, Object^>^ oFetch);
+		task<bool> MaintainsDocumentsAsync(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete = false);
+		task<bool> RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch);
 		//
-		bool MaintainsDocumentAttachment(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data);
-		IMap<String^, String^> ^ GetDocumentAttachmentNames(String^ docid);
-		bool RemoveDocumentAttachment(String^ docid, String^ attachmentName);
-		IBuffer^ GetDocumentAttachmentData(String^ docid, String^ attachmentName);
-
 	};// class CouchDBProxy
 //////////////////////////////
 }// namespace InfoCouchDB

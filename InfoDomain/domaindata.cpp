@@ -56,6 +56,9 @@ namespace InfoDomain {
 	void InfoDataValue::Clear(void) {
 		m_impl.Clear();
 	}
+	String^ InfoDataValue::ToString(void) {
+		return m_impl.ToString();
+	}
 	///////////////////////////////
 	Dataset::Dataset() :m_pimpl(new DatasetImpl{}) {}
 	Dataset::Dataset(IMap<Platform::String^, Object^>^ pMap) : m_pimpl(new DatasetImpl{ pMap }) {}
@@ -106,6 +109,9 @@ namespace InfoDomain {
 		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
 		m_pimpl->GetMap(oMap);
 		return oMap;
+	}
+	Platform::String^ Dataset::ToString(void) {
+		return m_pimpl->ToString();
 	}
 	//////////////////////////////////
 	Indiv::Indiv() :m_pimpl(new IndivImpl{}) {}
@@ -160,6 +166,9 @@ namespace InfoDomain {
 		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
 		m_pimpl->GetMap(oMap);
 		return oMap;
+	}
+	Platform::String^ Indiv::ToString(void) {
+		return m_pimpl->ToString();
 	}
 	///////////////////////////////////////
 	Variable::Variable() :m_pimpl(new VariableImpl{}) {}
@@ -231,6 +240,9 @@ namespace InfoDomain {
 		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
 		m_pimpl->GetMap(oMap);
 		return oMap;
+	}
+	Platform::String^ Variable::ToString(void) {
+		return m_pimpl->ToString();
 	}
 	////////////////////////////////////
 	InfoValue::InfoValue() :m_status(InfoStatus::Unknown) {}
@@ -370,6 +382,9 @@ namespace InfoDomain {
 	}
 	InfoDataValue^ InfoValue::Value::get() {
 		return m_value;
+	}
+	Platform::String^ InfoValue::ToString(void) {
+		return (m_value != nullptr) ? m_value->ToString(): "";
 	}
 	void InfoValue::Value::set(InfoDataValue^ value) {
 		m_value = value;

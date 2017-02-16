@@ -3,11 +3,15 @@ using namespace Platform;
 ///////////////////////////////
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Windows::Storage;
+using namespace Windows::Storage::Streams;
 ///////////////////////////
 namespace InfoTestData
 {
     public ref class TestData sealed
     {
+	private:
+		static String^ TESTFILE_NAME;
     public:
         TestData();
 		//
@@ -49,5 +53,11 @@ namespace InfoTestData
 			IVector<int>^ get();
 		}
 		//
+		property IStorageFile^ TestImageFile {
+			IStorageFile^ get();
+		}
+		property IBuffer^ TestImageBuffer {
+			IBuffer^ get();
+		}
     }; // Class TestData
 }

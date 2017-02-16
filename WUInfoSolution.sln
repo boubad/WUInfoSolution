@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26127.3
+VisualStudioVersion = 15.0.26206.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoCouchDB", "InfoCouchDB\InfoCouchDB.vcxproj", "{CBFF9B0E-1D43-486E-AB27-1F4C6E487EB6}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTestInfoCouchDB", "UnitTestInfoCouchDB\UnitTestInfoCouchDB.vcxproj", "{1239C123-98AB-4366-996B-FF564E14ACE3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoDomain", "InfoDomain\InfoDomain.vcxproj", "{FA0E15C0-C31C-495C-9FB4-5FE315A4572B}"
 EndProject
@@ -13,12 +11,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTestDBManager", "UnitTe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InfoTestData", "InfoTestData\InfoTestData.vcxproj", "{864E7E6D-BED1-4FD2-9D4D-A381091CA9B6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{B403EFFB-9676-4A2C-B12F-A4BFF18B0270}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "resources", "resources", "{E87FBA6E-3FF3-40DA-A5C5-A1ADF183DC3F}"
 	ProjectSection(SolutionItems) = preProject
-		resources\boubadiarra.jpg = resources\boubadiarra.jpg
-		resources\brigitte.jpg = resources\brigitte.jpg
-		resources\claude.jpg = resources\claude.jpg
+		resources\testimage.jpg = resources\testimage.jpg
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatDataApp", "StatDataApp\StatDataApp.csproj", "{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,24 +40,6 @@ Global
 		{CBFF9B0E-1D43-486E-AB27-1F4C6E487EB6}.Release|x64.Build.0 = Release|x64
 		{CBFF9B0E-1D43-486E-AB27-1F4C6E487EB6}.Release|x86.ActiveCfg = Release|Win32
 		{CBFF9B0E-1D43-486E-AB27-1F4C6E487EB6}.Release|x86.Build.0 = Release|Win32
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|ARM.ActiveCfg = Debug|ARM
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|ARM.Build.0 = Debug|ARM
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|ARM.Deploy.0 = Debug|ARM
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|x64.ActiveCfg = Debug|x64
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|x64.Build.0 = Debug|x64
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|x64.Deploy.0 = Debug|x64
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|x86.ActiveCfg = Debug|Win32
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|x86.Build.0 = Debug|Win32
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Debug|x86.Deploy.0 = Debug|Win32
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|ARM.ActiveCfg = Release|ARM
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|ARM.Build.0 = Release|ARM
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|ARM.Deploy.0 = Release|ARM
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|x64.ActiveCfg = Release|x64
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|x64.Build.0 = Release|x64
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|x64.Deploy.0 = Release|x64
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|x86.ActiveCfg = Release|Win32
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|x86.Build.0 = Release|Win32
-		{1239C123-98AB-4366-996B-FF564E14ACE3}.Release|x86.Deploy.0 = Release|Win32
 		{FA0E15C0-C31C-495C-9FB4-5FE315A4572B}.Debug|ARM.ActiveCfg = Debug|ARM
 		{FA0E15C0-C31C-495C-9FB4-5FE315A4572B}.Debug|ARM.Build.0 = Debug|ARM
 		{FA0E15C0-C31C-495C-9FB4-5FE315A4572B}.Debug|x64.ActiveCfg = Debug|x64
@@ -102,6 +82,24 @@ Global
 		{864E7E6D-BED1-4FD2-9D4D-A381091CA9B6}.Release|x64.Build.0 = Release|x64
 		{864E7E6D-BED1-4FD2-9D4D-A381091CA9B6}.Release|x86.ActiveCfg = Release|Win32
 		{864E7E6D-BED1-4FD2-9D4D-A381091CA9B6}.Release|x86.Build.0 = Release|Win32
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|ARM.ActiveCfg = Debug|ARM
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|ARM.Build.0 = Debug|ARM
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|ARM.Deploy.0 = Debug|ARM
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|x64.ActiveCfg = Debug|x64
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|x64.Build.0 = Debug|x64
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|x64.Deploy.0 = Debug|x64
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|x86.ActiveCfg = Debug|x86
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|x86.Build.0 = Debug|x86
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Debug|x86.Deploy.0 = Debug|x86
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|ARM.ActiveCfg = Release|ARM
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|ARM.Build.0 = Release|ARM
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|ARM.Deploy.0 = Release|ARM
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|x64.ActiveCfg = Release|x64
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|x64.Build.0 = Release|x64
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|x64.Deploy.0 = Release|x64
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|x86.ActiveCfg = Release|x86
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|x86.Build.0 = Release|x86
+		{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -206,20 +206,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="couchdb.h" />
-    <ClInclude Include="couchdbclient.h" />
     <ClInclude Include="couchdbmanager.h" />
     <ClInclude Include="couchdbproxy.h" />
-    <ClInclude Include="docutils.h" />
-    <ClInclude Include="jsonutils.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="couchdb.cpp" />
-    <ClCompile Include="couchdbclient.cpp" />
     <ClCompile Include="couchdbmanager.cpp" />
     <ClCompile Include="couchdbproxy.cpp" />
-    <ClCompile Include="jsonutils.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

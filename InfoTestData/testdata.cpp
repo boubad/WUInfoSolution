@@ -3,8 +3,10 @@
 
 using namespace Platform;
 using namespace Platform::Collections;
+using namespace concurrency;
 ////////////////////////////
 namespace InfoTestData {
+	String^ TestData::TESTFILE_NAME = "..\\..\\resources\\testimage.jpg";
 	///////////////////////////////
 	TestData::TestData()
 	{
@@ -90,4 +92,27 @@ namespace InfoTestData {
 		return oRet;
 	}
 	//
+	IStorageFile^ TestData::TestImageFile::get() {
+		String^ filepath = TESTFILE_NAME;
+		auto op = StorageFile::GetFileFromPathAsync(filepath);
+		return create_task(op).get();
+	}
+	IBuffer^ TestData::TestImageBuffer::get() {
+		DataReader^ reader;
+		String^ filepath = TESTFILE_NAME;
+		return create_task(StorageFile::GetFileFromPathAsync(filepath)).then([](IStorageFile^ file) {
+			if (file == nullptr) {
+				throw ref new InvalidArgumentException();
+			}
+			return create_task(file->OpenReadAsync());
+		}).then([&reader](IRandomAccessStreamWithContentType^ stream)-> DataReaderLoadOperation^ {
+			unsigned int  n = static_cast<unsigned int>(stream->Size);
+			IInputStream^ ss = stream->GetInputStreamAt(0);
+			reader = ref new DataReader(ss);
+			return reader->LoadAsync(n);
+		}).then([reader](auto nx) {
+			IBuffer^ pBuf = reader->DetachBuffer();
+			return pBuf;
+		}).get();
+	}
 }// namespace InfoTestData

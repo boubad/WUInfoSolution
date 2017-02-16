@@ -6,9 +6,13 @@ using namespace Windows::Foundation::Collections;
 namespace InfoDomain
 {
 	//
-	public enum class InfoStatus { Unknown, Normal, Tail, Disabled, Info, Inactive, Inserted, Updated, Deleted };
-	public enum class InfoKind { Unknown, Normal, Modal, Ordinal };
-	public enum class InfoDataType { Unknown, Logical, Integer, Real, Text, Other };
+	public enum class InfoStatus :int { Unknown=0, Normal=1, 
+		Tail=2, Disabled=4, Info=8, Inactive=16, 
+		Inserted=32, Updated=64, Deleted=128 };
+	public enum class InfoKind :int{ 
+		Unknown = 0, Normal=1, Modal=2, Ordinal = 4 };
+	public enum class InfoDataType :int {
+		Unknown = 0, Logical=1, Integer=2, Real=4, Text=8, Other=16 };
 	//
 	class InfoDataValueImpl {
 	private:
@@ -17,10 +21,13 @@ namespace InfoDomain
 			bool m_bval;
 			int  m_ival;
 			double m_dval;
-			std::wstring m_sval;
 		};
+		  std::wstring m_sval;
 	public:
 		InfoDataValueImpl() :m_type(InfoDataType::Unknown) {
+			m_bval = false;
+			m_ival = 0;
+			m_dval = 0;
 		}
 		InfoDataValueImpl(bool b) :m_type(InfoDataType::Logical) {
 			m_bval = b;
@@ -63,15 +70,32 @@ namespace InfoDomain
 			m_type = InfoDataType::Real;
 		}
 		String^ get_StringValue(void) const {
-			String^ r = ref new String(m_sval.c_str());
-			return r;
+			return ref new String(m_sval.c_str());
 		}
 		void set_StringValue(String^ v) {
 			m_sval = std::wstring{ v->Data() };
 			m_type = InfoDataType::Text;
 		}
+		String^ ToString(void) const {
+			Object^ oRet = nullptr;
+			switch (m_type) {
+			case InfoDataType::Logical:
+				oRet = m_bval;
+				break;
+			case InfoDataType::Integer:
+				oRet = m_ival;
+				break;
+			case InfoDataType::Real:
+				oRet = m_dval;
+				break;
+			case InfoDataType::Text:
+				oRet = this->get_StringValue();
+				break;
+			}// type
+			return (oRet != nullptr)? oRet->ToString(): "";
+		}
 		Object^ get_Value(void) const {
-			Object^ oRet;
+			Object^ oRet = nullptr;
 			switch (m_type) {
 			case InfoDataType::Logical:
 				oRet = m_bval;
@@ -90,6 +114,7 @@ namespace InfoDomain
 		}
 		void Clear(void) {
 			m_type = InfoDataType::Unknown;
+			m_sval.clear();
 		}
 	};// class IInfoDataValueImpl
 	//
@@ -145,6 +170,9 @@ namespace InfoDomain
 		virtual ~SigleNamedItemImpl();
 		String^ get_Sigle(void) const {
 			return m_sigle;
+		}
+		String^ ToString(void) const {
+			return (m_sigle == nullptr) ? "" : m_sigle;
 		}
 		void set_Sigle(String^ s) {
 			m_sigle = s; 
@@ -222,10 +250,4 @@ namespace InfoDomain
 		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
 	};// class VariableImpl
 	//
-	class InfoValueImpl : public InfoItemImpl {
-	private:
-		String^ m_datasetsigle;
-		String^ m_indivsigle;
-		String^ m_variablesigle;
-	};// class InfoValueImpl
-}// namespace InfoDommain
+	}// namespace InfoDommain
