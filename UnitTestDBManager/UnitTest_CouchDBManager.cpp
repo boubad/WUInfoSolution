@@ -93,27 +93,6 @@ namespace UnitTestDBManager
 			Assert::IsFalse(res->IsEmpty());
 			bool bRet = create_task(m_pman->MaintainsDocumentAsync(pMap)).get();
 			Assert::IsTrue(bRet);
-			IBuffer^ pBuf;
-			//Windows::Graphics::Imaging::
-			String^ sFilePath = "..\\..\\resources\\boubadiarra.jpg";
-			StorageFile^ file = create_task(StorageFile::GetFileFromPathAsync(sFilePath)).get();
-			if (file != nullptr) {
-				ImageProperties^ props = create_task(file->Properties->GetImagePropertiesAsync()).get();
-			}// file
-			unsigned int nLen = 128;
-			Array<byte>^ pAr = ref new Array<byte>(nLen);
-			for (auto i = 0; i < nLen; ++i) {
-				pAr[i] = (byte)i;
-			}// i
-			InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
-			DataWriter^ dataWriter = ref new DataWriter(stream);
-			dataWriter->WriteBytes(pAr);
-			create_task(dataWriter->StoreAsync()).wait();
-			IBuffer^ pBuf = dataWriter->DetachBuffer();
-			String^ attName = "testatt";
-			String^ mimetype = "application/octet-stream";
-			bool bb = create_task(m_pman->MaintainsDocumentAttachmentAsync(id, attName, mimetype, pBuf)).get();
-			Assert::IsTrue(bb);
 		}//TestDBManagerMaintains
 	};
 }
