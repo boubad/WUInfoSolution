@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Navigation;
 using Microsoft.EntityFrameworkCore;
 //
 using StatDataApp.Data;
+using InfoLocalDB;
 //
 namespace StatDataApp
 {
@@ -34,7 +35,7 @@ namespace StatDataApp
             this.InitializeComponent();
             this.Suspending += OnSuspending;
             //
-            using (var db = new StatDataAppContext())
+            using (var db = new LocalDBContext())
             {
                 db.Database.Migrate();
             }

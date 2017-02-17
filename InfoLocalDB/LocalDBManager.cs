@@ -3,22 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-
-namespace StatDataApp.Data
+//
+namespace InfoLocalDB
 {
-    class LocalDataManager : IDisposable
+    public class LocalDBManager : IDisposable
     {
         private readonly int MAX_COUNT = 20;
-        private StatDataAppContext m_ctx;
-        //
-        public LocalDataManager()
-        {
-            m_ctx = new StatDataAppContext();
-        }
-        public LocalDataManager(StatDataAppContext ctx)
-        {
-            m_ctx = ctx;
-        }
+        private LocalDBContext m_ctx;
+
         public void Dispose()
         {
             if (m_ctx != null)
@@ -27,12 +19,20 @@ namespace StatDataApp.Data
                 m_ctx = null;
             }
         }
+        public LocalDBManager()
+        {
+            m_ctx = new LocalDBContext();
+        }
+        public void Migrate()
+        {
+            m_ctx.Database.Migrate();
+        }
         public async Task<int> GetDatasetsCountAsync()
         {
-            var pp = await m_ctx.DBDatasets.ToListAsync();
+            var pp = await m_ctx.LocalDatasets.ToListAsync();
             return pp.Count();
         }//GetDatasetsCountAsync
-        public async Task<IList<DBDataset>> GetDatasetsAsync(int offset = 0, int count = 0)
+        public async Task<IList<LocalDataset>> GetDatasetsAsync(int offset = 0, int count = 0)
         {
             if (offset < 0)
             {
@@ -42,22 +42,22 @@ namespace StatDataApp.Data
             {
                 count = MAX_COUNT;
             }
-            IList<DBDataset> oRet = await m_ctx.
-                DBDatasets.Skip(0).Take(count).
+            IList<LocalDataset> oRet = await m_ctx.
+                LocalDatasets.Skip(0).Take(count).
                 OrderBy(x => x.Sigle).ToListAsync();
             return oRet;
         }//GetDatasetsAsync
-        public async Task<DBDataset> FindDatasetAsync(DBDataset p)
+        public async Task<LocalDataset> FindDatasetAsync(LocalDataset p)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pRet = null;
-            int nId = p.DBDatasetId;
+            LocalDataset pRet = null;
+            int nId = p.LocalDatasetId;
             if (nId != 0)
             {
-                pRet = await m_ctx.DBDatasets.FindAsync(nId);
+                pRet = await m_ctx.LocalDatasets.FindAsync(nId);
                 if (pRet != null)
                 {
                     return pRet;
@@ -69,12 +69,12 @@ namespace StatDataApp.Data
                 string sigle = s.Trim().ToUpper();
                 if (!string.IsNullOrEmpty(sigle))
                 {
-                    pRet = await m_ctx.DBDatasets.Where(x => x.Sigle == sigle).SingleAsync();
+                    pRet = await m_ctx.LocalDatasets.Where(x => x.Sigle == sigle).SingleAsync();
                 }// sigle
             }// s
             return pRet;
         }//FindDatasetAsync
-        public async Task MaintainsDatasetAsync(DBDataset p,bool bCommit = true)
+        public async Task MaintainsDatasetAsync(LocalDataset p, bool bCommit = true)
         {
             if (p == null)
             {
@@ -92,23 +92,23 @@ namespace StatDataApp.Data
             {
                 throw new InvalidOperationException();
             }
-            DBDataset pOldId = null;
-            if (p.DBDatasetId != 0)
+            LocalDataset pOldId = null;
+            if (p.LocalDatasetId != 0)
             {
-                pOldId = await m_ctx.DBDatasets.FindAsync(p.DBDatasetId);
+                pOldId = await m_ctx.LocalDatasets.FindAsync(p.LocalDatasetId);
             }
-            DBDataset pOldSigle = null;
-            var l1 = await m_ctx.DBDatasets.Where(x => x.Sigle == sigle).ToListAsync();
+            LocalDataset pOldSigle = null;
+            var l1 = await m_ctx.LocalDatasets.Where(x => x.Sigle == sigle).ToListAsync();
             if (l1.Count() > 0)
             {
                 pOldSigle = l1.First();
             }
             if ((pOldId != null) && (pOldSigle != null) &&
-                (pOldSigle.DBDatasetId != pOldId.DBDatasetId))
+                (pOldSigle.LocalDatasetId != pOldId.LocalDatasetId))
             {
                 throw new InvalidOperationException();
             }
-            DBDataset pp = null;
+            LocalDataset pp = null;
             if (pOldId != null)
             {
                 pp = pOldId;
@@ -119,8 +119,8 @@ namespace StatDataApp.Data
             }
             if (pp == null)
             {
-                pp = new DBDataset();
-                m_ctx.DBDatasets.Add(pp);
+                pp = new LocalDataset();
+                m_ctx.LocalDatasets.Add(pp);
             }
             pp.Sigle = sigle;
             pp.Name = name;
@@ -133,17 +133,17 @@ namespace StatDataApp.Data
                 await m_ctx.SaveChangesAsync();
             }
         }//MaintainsDatasetAsync
-        public async Task RemoveDatasetAsync(DBDataset p,bool bCommit = false)
+        public async Task RemoveDatasetAsync(LocalDataset p, bool bCommit = false)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pRet = null;
-            int nId = p.DBDatasetId;
+            LocalDataset pRet = null;
+            int nId = p.LocalDatasetId;
             if (nId != 0)
             {
-                pRet = await m_ctx.DBDatasets.FindAsync(nId);
+                pRet = await m_ctx.LocalDatasets.FindAsync(nId);
             }
             if (pRet == null)
             {
@@ -153,28 +153,28 @@ namespace StatDataApp.Data
                     string sigle = s.Trim().ToUpper();
                     if (!string.IsNullOrEmpty(sigle))
                     {
-                        pRet = await m_ctx.DBDatasets.Where(x => x.Sigle == sigle).SingleAsync();
+                        pRet = await m_ctx.LocalDatasets.Where(x => x.Sigle == sigle).SingleAsync();
                     }// sigle
                 }// s
             }
             if (pRet != null)
             {
-                m_ctx.DBDatasets.Remove(pRet);
+                m_ctx.LocalDatasets.Remove(pRet);
                 if (bCommit)
                 {
                     await m_ctx.SaveChangesAsync();
                 }
             }
         }//RemoveDatasetAsync
-        public async Task<DBDataset> FindDatasetBySigleAsync(string sigle)
+        public async Task<LocalDataset> FindDatasetBySigleAsync(string sigle)
         {
-            DBDataset pRet = null;
+            LocalDataset pRet = null;
             if (!string.IsNullOrEmpty(sigle))
             {
                 string ss = sigle.Trim().ToUpper();
                 if (!string.IsNullOrEmpty(ss))
                 {
-                    var l = await m_ctx.DBDatasets.Where(x => x.Sigle == ss).ToListAsync();
+                    var l = await m_ctx.LocalDatasets.Where(x => x.Sigle == ss).ToListAsync();
                     if (l.Count() > 0)
                     {
                         pRet = l.First();
@@ -184,27 +184,27 @@ namespace StatDataApp.Data
             return pRet;
         }//FindDatasetBySigleAsync
         //
-        public async Task<int> GetDatasetVariablesCountAsync(DBDataset pSet)
+        public async Task<int> GetDatasetVariablesCountAsync(LocalDataset pSet)
         {
             if (pSet == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
             }
-            var l = await m_ctx.DBVariables.Where(x => x.DBDatasetId == pp.DBDatasetId).ToListAsync();
+            var l = await m_ctx.LocalVariables.Where(x => x.LocalDatasetId == pp.LocalDatasetId).ToListAsync();
             return l.Count();
         }//GetDatasetVariablesCountAsync
-        public async Task<IList<DBVariable>> GetDatasetVariablesAsync(DBDataset pSet, int offset = 0, int count = 0)
+        public async Task<IList<LocalVariable>> GetDatasetVariablesAsync(LocalDataset pSet, int offset = 0, int count = 0)
         {
             if (pSet == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -217,49 +217,49 @@ namespace StatDataApp.Data
             {
                 count = MAX_COUNT;
             }
-            IList<DBVariable> oRet = await m_ctx.DBVariables.Where(x => x.DBDatasetId == pSet.DBDatasetId).Skip(offset).Take(count).
+            IList<LocalVariable> oRet = await m_ctx.LocalVariables.Where(x => x.LocalDatasetId == pSet.LocalDatasetId).Skip(offset).Take(count).
           OrderBy(y => y.Sigle).ToListAsync();
             return oRet;
         }//GetDatasetVariablesAsync
-        public async Task<DBVariable> FindVariableAsync(DBVariable p)
+        public async Task<LocalVariable> FindVariableAsync(LocalVariable p)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBVariable pRet = null;
-            int nId = p.DBVariableId;
+            LocalVariable pRet = null;
+            int nId = p.LocalVariableId;
             if (nId != 0)
             {
-                pRet = await m_ctx.DBVariables.FindAsync(nId);
+                pRet = await m_ctx.LocalVariables.FindAsync(nId);
                 if (pRet != null)
                 {
                     return pRet;
                 }
             }
             string s = p.Sigle;
-            int nSetId = p.DBDatasetId;
+            int nSetId = p.LocalDatasetId;
             if ((nSetId != 0) && (!string.IsNullOrEmpty(s)))
             {
                 string sigle = s.Trim().ToUpper();
                 if (!string.IsNullOrEmpty(sigle))
                 {
-                    pRet = await m_ctx.DBVariables.Where(x =>(x.DBDatasetId == nSetId) && (x.Sigle == sigle)).SingleAsync();
+                    pRet = await m_ctx.LocalVariables.Where(x => (x.LocalDatasetId == nSetId) && (x.Sigle == sigle)).SingleAsync();
                 }// sigle
             }// s
             return pRet;
         }// FindVariableAsync
-        public async Task<DBVariable> FindVariableBySiglesAsync(string setsigle, string sigle)
+        public async Task<LocalVariable> FindVariableBySiglesAsync(string setsigle, string sigle)
         {
-            DBVariable pRet = null;
+            LocalVariable pRet = null;
             if ((!string.IsNullOrEmpty(setsigle)) && (!string.IsNullOrEmpty(sigle)))
             {
                 string s1 = setsigle.Trim().ToUpper();
                 string s2 = sigle.Trim().ToUpper();
                 if ((!string.IsNullOrEmpty(s1)) && (!string.IsNullOrEmpty(s2)))
                 {
-                    var l = await m_ctx.DBVariables.
-                        Where(x => (x.Sigle == s2) && (x.DBDataset.Sigle == s1)).ToListAsync();
+                    var l = await m_ctx.LocalVariables.
+                        Where(x => (x.Sigle == s2) && (x.LocalDataset.Sigle == s1)).ToListAsync();
                     if (l.Count() > 0)
                     {
                         pRet = l.First();
@@ -268,7 +268,7 @@ namespace StatDataApp.Data
             }// sigles
             return pRet;
         }//FindVariableBySiglesAsync
-        public async Task MaintainsVariableAsync(DBVariable p,bool bCommit = true)
+        public async Task MaintainsVariableAsync(LocalVariable p, bool bCommit = true)
         {
             if (p == null)
             {
@@ -286,23 +286,23 @@ namespace StatDataApp.Data
             {
                 throw new InvalidOperationException();
             }
-            DBVariable pOldId = null;
-            if (p.DBVariableId != 0)
+            LocalVariable pOldId = null;
+            if (p.LocalVariableId != 0)
             {
-                pOldId = await m_ctx.DBVariables.FindAsync(p.DBVariableId);
+                pOldId = await m_ctx.LocalVariables.FindAsync(p.LocalVariableId);
             }
-            DBVariable pOldSigle = null;
-            var l1 = await m_ctx.DBVariables.Where(x =>(x.DBDatasetId == p.DBDatasetId) && (x.Sigle == sigle)).ToListAsync();
+            LocalVariable pOldSigle = null;
+            var l1 = await m_ctx.LocalVariables.Where(x => (x.LocalDatasetId == p.LocalDatasetId) && (x.Sigle == sigle)).ToListAsync();
             if (l1.Count() > 0)
             {
                 pOldSigle = l1.First();
             }
             if ((pOldId != null) && (pOldSigle != null) &&
-                (pOldSigle.DBVariableId != pOldId.DBVariableId))
+                (pOldSigle.LocalVariableId != pOldId.LocalVariableId))
             {
                 throw new InvalidOperationException();
             }
-            DBVariable pp = null;
+            LocalVariable pp = null;
             if (pOldId != null)
             {
                 pp = pOldId;
@@ -313,14 +313,14 @@ namespace StatDataApp.Data
             }
             if (pp == null)
             {
-                DBDataset xSet = await m_ctx.DBDatasets.FindAsync(p.DBDatasetId);
+                LocalDataset xSet = await m_ctx.LocalDatasets.FindAsync(p.LocalDatasetId);
                 if (xSet == null)
                 {
                     throw new InvalidOperationException();
                 }
-                pp = new DBVariable();
-                pp.DBDataset = xSet;
-                m_ctx.DBVariables.Add(pp);
+                pp = new LocalVariable();
+                pp.LocalDataset = xSet;
+                m_ctx.LocalVariables.Add(pp);
             }
             pp.Sigle = sigle;
             pp.Name = name;
@@ -335,23 +335,23 @@ namespace StatDataApp.Data
                 await m_ctx.SaveChangesAsync();
             }
         }//MaintainsVariableAsync
-        public async Task RemoveVariableAsync(DBVariable p,bool bCommit = true)
+        public async Task RemoveVariableAsync(LocalVariable p, bool bCommit = true)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBVariable pRet = await FindVariableAsync(p);
+            LocalVariable pRet = await FindVariableAsync(p);
             if (pRet != null)
             {
-                m_ctx.DBVariables.Remove(pRet);
+                m_ctx.LocalVariables.Remove(pRet);
                 if (bCommit)
                 {
                     await m_ctx.SaveChangesAsync();
                 }
             }
         }//RemoveVariableAsync
-        public async Task MaintainsVariablesAsync(IList<DBVariable> oVec, bool bDelete = false, bool bCommit = true)
+        public async Task MaintainsVariablesAsync(IList<LocalVariable> oVec, bool bDelete = false, bool bCommit = true)
         {
             if (oVec == null)
             {
@@ -366,7 +366,8 @@ namespace StatDataApp.Data
                     {
                         await this.RemoveVariableAsync(p, false);
                         done = true;
-                    } else
+                    }
+                    else
                     {
                         await this.MaintainsVariableAsync(p, false);
                         done = true;
@@ -379,27 +380,27 @@ namespace StatDataApp.Data
             }
         }//MaintainsVariablesAsync
         //
-        public async Task<int> GetDatasetIndivsCountAsync(DBDataset pSet)
+        public async Task<int> GetDatasetIndivsCountAsync(LocalDataset pSet)
         {
             if (pSet == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
             }
-            var l = await m_ctx.DBIndivs.Where(x => x.DBDatasetId == pp.DBDatasetId).ToListAsync();
+            var l = await m_ctx.LocalIndivs.Where(x => x.LocalDatasetId == pp.LocalDatasetId).ToListAsync();
             return l.Count();
         }//GetDatasetIndivsCountAsync
-        public async Task<IList<DBIndiv>> GetDatasetIndivsAsync(DBDataset pSet, int offset = 0, int count = 0)
+        public async Task<IList<LocalIndiv>> GetDatasetIndivsAsync(LocalDataset pSet, int offset = 0, int count = 0)
         {
             if (pSet == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -412,49 +413,49 @@ namespace StatDataApp.Data
             {
                 count = MAX_COUNT;
             }
-            IList<DBIndiv> oRet = await m_ctx.DBIndivs.Where(x => x.DBDatasetId == pSet.DBDatasetId).Skip(offset).Take(count).
+            IList<LocalIndiv> oRet = await m_ctx.LocalIndivs.Where(x => x.LocalDatasetId == pSet.LocalDatasetId).Skip(offset).Take(count).
           OrderBy(y => y.Sigle).ToListAsync();
             return oRet;
         }//GetDatasetIndivsAsync
-        public async Task<DBIndiv> FindIndivAsync(DBIndiv p)
+        public async Task<LocalIndiv> FindIndivAsync(LocalIndiv p)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBIndiv pRet = null;
-            int nId = p.DBIndivId;
+            LocalIndiv pRet = null;
+            int nId = p.LocalIndivId;
             if (nId != 0)
             {
-                pRet = await m_ctx.DBIndivs.FindAsync(nId);
+                pRet = await m_ctx.LocalIndivs.FindAsync(nId);
                 if (pRet != null)
                 {
                     return pRet;
                 }
             }
             string s = p.Sigle;
-            int nSetId = p.DBDatasetId;
+            int nSetId = p.LocalDatasetId;
             if ((nSetId != 0) && (!string.IsNullOrEmpty(s)))
             {
                 string sigle = s.Trim().ToUpper();
                 if (!string.IsNullOrEmpty(sigle))
                 {
-                    pRet = await m_ctx.DBIndivs.Where(x => (x.DBDatasetId == nSetId) && (x.Sigle == sigle)).SingleAsync();
+                    pRet = await m_ctx.LocalIndivs.Where(x => (x.LocalDatasetId == nSetId) && (x.Sigle == sigle)).SingleAsync();
                 }// sigle
             }// s
             return pRet;
         }// FindIndivAsync
-        public async Task<DBIndiv> FindIndivBySiglesAsync(string setsigle, string sigle)
+        public async Task<LocalIndiv> FindIndivBySiglesAsync(string setsigle, string sigle)
         {
-            DBIndiv pRet = null;
+            LocalIndiv pRet = null;
             if ((!string.IsNullOrEmpty(setsigle)) && (!string.IsNullOrEmpty(sigle)))
             {
                 string s1 = setsigle.Trim().ToUpper();
                 string s2 = sigle.Trim().ToUpper();
                 if ((!string.IsNullOrEmpty(s1)) && (!string.IsNullOrEmpty(s2)))
                 {
-                    var l = await m_ctx.DBIndivs.
-                        Where(x => (x.Sigle == s2) && (x.DBDataset.Sigle == s1)).ToListAsync();
+                    var l = await m_ctx.LocalIndivs.
+                        Where(x => (x.Sigle == s2) && (x.LocalDataset.Sigle == s1)).ToListAsync();
                     if (l.Count() > 0)
                     {
                         pRet = l.First();
@@ -463,7 +464,7 @@ namespace StatDataApp.Data
             }// sigles
             return pRet;
         }//FindIndivBySiglesAsync
-        public async Task MaintainsIndivAsync(DBIndiv p, bool bCommit = true)
+        public async Task MaintainsIndivAsync(LocalIndiv p, bool bCommit = true)
         {
             if (p == null)
             {
@@ -481,23 +482,23 @@ namespace StatDataApp.Data
             {
                 throw new InvalidOperationException();
             }
-            DBIndiv pOldId = null;
-            if (p.DBIndivId != 0)
+            LocalIndiv pOldId = null;
+            if (p.LocalIndivId != 0)
             {
-                pOldId = await m_ctx.DBIndivs.FindAsync(p.DBIndivId);
+                pOldId = await m_ctx.LocalIndivs.FindAsync(p.LocalIndivId);
             }
-            DBIndiv pOldSigle = null;
-            var l1 = await m_ctx.DBIndivs.Where(x => (x.DBDatasetId == p.DBDatasetId) && (x.Sigle == sigle)).ToListAsync();
+            LocalIndiv pOldSigle = null;
+            var l1 = await m_ctx.LocalIndivs.Where(x => (x.LocalDatasetId == p.LocalDatasetId) && (x.Sigle == sigle)).ToListAsync();
             if (l1.Count() > 0)
             {
                 pOldSigle = l1.First();
             }
             if ((pOldId != null) && (pOldSigle != null) &&
-                (pOldSigle.DBIndivId != pOldId.DBIndivId))
+                (pOldSigle.LocalIndivId != pOldId.LocalIndivId))
             {
                 throw new InvalidOperationException();
             }
-            DBIndiv pp = null;
+            LocalIndiv pp = null;
             if (pOldId != null)
             {
                 pp = pOldId;
@@ -508,14 +509,14 @@ namespace StatDataApp.Data
             }
             if (pp == null)
             {
-                DBDataset xSet = await m_ctx.DBDatasets.FindAsync(p.DBDatasetId);
+                LocalDataset xSet = await m_ctx.LocalDatasets.FindAsync(p.LocalDatasetId);
                 if (xSet == null)
                 {
                     throw new InvalidOperationException();
                 }
-                pp = new DBIndiv();
-                pp.DBDataset = xSet;
-                m_ctx.DBIndivs.Add(pp);
+                pp = new LocalIndiv();
+                pp.LocalDataset = xSet;
+                m_ctx.LocalIndivs.Add(pp);
             }
             pp.Sigle = sigle;
             pp.Name = name;
@@ -528,23 +529,23 @@ namespace StatDataApp.Data
                 await m_ctx.SaveChangesAsync();
             }
         }//MaintainsIndiveAsync
-        public async Task RemoveIndivAsync(DBIndiv p, bool bCommit = true)
+        public async Task RemoveIndivAsync(LocalIndiv p, bool bCommit = true)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBIndiv pRet = await FindIndivAsync(p);
+            LocalIndiv pRet = await FindIndivAsync(p);
             if (pRet != null)
             {
-                m_ctx.DBIndivs.Remove(pRet);
+                m_ctx.LocalIndivs.Remove(pRet);
                 if (bCommit)
                 {
                     await m_ctx.SaveChangesAsync();
                 }
             }
         }//RemoveIndivAsync
-        public async Task MaintainsIndivsAsync(IList<DBIndiv> oVec, bool bDelete = false, bool bCommit = true)
+        public async Task MaintainsIndivsAsync(IList<LocalIndiv> oVec, bool bDelete = false, bool bCommit = true)
         {
             if (oVec == null)
             {
@@ -573,29 +574,29 @@ namespace StatDataApp.Data
             }
         }//MaintainsIndivsAsync
         //
-        public async Task<int> GetDatasetValuesCountAsync(DBDataset pSet)
+        public async Task<int> GetDatasetValuesCountAsync(LocalDataset pSet)
         {
             if (pSet == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
             }
-            int nId = pp.DBDatasetId;
-            var l = await m_ctx.DBValues.Where(x =>
-            (x.DBVariable.DBDatasetId == nId)).ToListAsync();
+            int nId = pp.LocalDatasetId;
+            var l = await m_ctx.LocalValues.Where(x =>
+            (x.LocalVariable.LocalDatasetId == nId)).ToListAsync();
             return l.Count();
         }//GetDatasetValuesCountAsync
-        public async Task<IList<DBValue>> GetDatasetValuesAsync(DBDataset pSet,int offset = 0, int count = 0)
+        public async Task<IList<LocalValue>> GetDatasetValuesAsync(LocalDataset pSet, int offset = 0, int count = 0)
         {
             if (pSet == null)
             {
                 throw new ArgumentNullException();
             }
-            DBDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -608,35 +609,35 @@ namespace StatDataApp.Data
             {
                 count = MAX_COUNT;
             }
-            IList<DBValue> oRet = await m_ctx.DBValues.Where(x =>
-            x.DBVariable.DBDatasetId == pp.DBDatasetId).Skip(offset).Take(count).
-            OrderBy(y => y.DBIndiv.Sigle).
-            OrderBy(z => z.DBVariable.Sigle).ToListAsync();
+            IList<LocalValue> oRet = await m_ctx.LocalValues.Where(x =>
+            x.LocalVariable.LocalDatasetId == pp.LocalDatasetId).Skip(offset).Take(count).
+            OrderBy(y => y.LocalIndiv.Sigle).
+            OrderBy(z => z.LocalVariable.Sigle).ToListAsync();
             return oRet;
         }//GetDatasetValuesAsync
-        public async Task<int> GetVariableValuesCountAsync(DBVariable pVar)
+        public async Task<int> GetVariableValuesCountAsync(LocalVariable pVar)
         {
             if (pVar == null)
             {
                 throw new ArgumentNullException();
             }
-            DBVariable pp = await this.FindVariableAsync(pVar);
+            LocalVariable pp = await this.FindVariableAsync(pVar);
             if (pp == null)
             {
                 throw new ArgumentException();
             }
-            int nId = pp.DBVariableId;
-            var l = await m_ctx.DBValues.Where(x =>
-            (x.DBVariable.DBVariableId == nId)).ToListAsync();
+            int nId = pp.LocalVariableId;
+            var l = await m_ctx.LocalValues.Where(x =>
+            (x.LocalVariable.LocalVariableId == nId)).ToListAsync();
             return l.Count();
         }//GetVariableValuesCountAsync
-        public async Task<IList<DBValue>> GetVariableValuesAsync(DBVariable pVar, int offset = 0, int count = 0)
+        public async Task<IList<LocalValue>> GetVariableValuesAsync(LocalVariable pVar, int offset = 0, int count = 0)
         {
             if (pVar == null)
             {
                 throw new ArgumentNullException();
             }
-            DBVariable pp = await this.FindVariableAsync(pVar);
+            LocalVariable pp = await this.FindVariableAsync(pVar);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -649,34 +650,34 @@ namespace StatDataApp.Data
             {
                 count = MAX_COUNT;
             }
-            IList<DBValue> oRet = await m_ctx.DBValues.Where(x =>
-            x.DBVariable.DBVariableId == pp.DBVariableId).Skip(offset).Take(count).
-            OrderBy(y => y.DBIndiv.Sigle).ToListAsync();
+            IList<LocalValue> oRet = await m_ctx.LocalValues.Where(x =>
+            x.LocalVariable.LocalVariableId == pp.LocalVariableId).Skip(offset).Take(count).
+            OrderBy(y => y.LocalIndiv.Sigle).ToListAsync();
             return oRet;
         }//GetVaribleValuesAsync
-        public async Task<int> GetIndivValuesCountAsync(DBIndiv pInd)
+        public async Task<int> GetIndivValuesCountAsync(LocalIndiv pInd)
         {
             if (pInd == null)
             {
                 throw new ArgumentNullException();
             }
-            DBIndiv pp = await this.FindIndivAsync(pInd);
+            LocalIndiv pp = await this.FindIndivAsync(pInd);
             if (pp == null)
             {
                 throw new ArgumentException();
             }
-            int nId = pp.DBIndivId;
-            var l = await m_ctx.DBValues.Where(x =>
-            (x.DBIndiv.DBIndivId == nId)).ToListAsync();
+            int nId = pp.LocalIndivId;
+            var l = await m_ctx.LocalValues.Where(x =>
+            (x.LocalIndiv.LocalIndivId == nId)).ToListAsync();
             return l.Count();
         }//GetIndivValuesCountAsync
-        public async Task<IList<DBValue>> GetIndivValuesAsync(DBIndiv pInd, int offset = 0, int count = 0)
+        public async Task<IList<LocalValue>> GetIndivValuesAsync(LocalIndiv pInd, int offset = 0, int count = 0)
         {
             if (pInd == null)
             {
                 throw new ArgumentNullException();
             }
-            DBIndiv pp = await this.FindIndivAsync(pInd);
+            LocalIndiv pp = await this.FindIndivAsync(pInd);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -689,33 +690,33 @@ namespace StatDataApp.Data
             {
                 count = MAX_COUNT;
             }
-            IList<DBValue> oRet = await m_ctx.DBValues.Where(x =>
-            x.DBIndiv.DBIndivId == pp.DBIndivId).Skip(offset).Take(count).
-            OrderBy(y => y.DBVariable.Sigle).ToListAsync();
+            IList<LocalValue> oRet = await m_ctx.LocalValues.Where(x =>
+            x.LocalIndiv.LocalIndivId == pp.LocalIndivId).Skip(offset).Take(count).
+            OrderBy(y => y.LocalVariable.Sigle).ToListAsync();
             return oRet;
         }//GetIndivValuesAsync
-        public async Task<DBValue> FindValueAsync(DBValue p)
+        public async Task<LocalValue> FindValueAsync(LocalValue p)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBValue pRet = null;
-            int nId = p.DBValueId;
+            LocalValue pRet = null;
+            int nId = p.LocalValueId;
             if (nId != 0)
             {
-                pRet = await m_ctx.DBValues.FindAsync(nId);
+                pRet = await m_ctx.LocalValues.FindAsync(nId);
                 if (pRet != null)
                 {
                     return pRet;
                 }
             }
-            int nVarId = p.DBVariableId;
-            int nIndId = p.DBIndivId;
+            int nVarId = p.LocalVariableId;
+            int nIndId = p.LocalIndivId;
             if ((nVarId != 0) && (nIndId != 0))
             {
-                var l = await m_ctx.DBValues.Where(x =>
-                (x.DBVariableId == nVarId) && (x.DBIndivId == nIndId)).ToListAsync();
+                var l = await m_ctx.LocalValues.Where(x =>
+                (x.LocalVariableId == nVarId) && (x.LocalIndivId == nIndId)).ToListAsync();
                 if (l.Count() > 0)
                 {
                     pRet = l.First();
@@ -723,9 +724,9 @@ namespace StatDataApp.Data
             }// s
             return pRet;
         }// FindValueAsync
-        public async Task<DBValue> FindValueBySiglesAsync(string setsigle, string indsigle, string varsigle)
+        public async Task<LocalValue> FindValueBySiglesAsync(string setsigle, string indsigle, string varsigle)
         {
-            DBValue pRet = null;
+            LocalValue pRet = null;
             if ((!string.IsNullOrEmpty(setsigle)) && (!string.IsNullOrEmpty(varsigle)) &&
                 (!string.IsNullOrEmpty(indsigle)))
             {
@@ -735,10 +736,10 @@ namespace StatDataApp.Data
                 if ((!string.IsNullOrEmpty(s1)) && (!string.IsNullOrEmpty(s2)) &&
                     (!string.IsNullOrEmpty(s3)))
                 {
-                    var l = await m_ctx.DBValues.
-                        Where(x => (x.DBIndiv.Sigle == s2) && 
-                        (x.DBVariable.Sigle == s3) &&
-                        (x.DBVariable.DBDataset.Sigle == s1)).ToListAsync();
+                    var l = await m_ctx.LocalValues.
+                        Where(x => (x.LocalIndiv.Sigle == s2) &&
+                        (x.LocalVariable.Sigle == s3) &&
+                        (x.LocalVariable.LocalDataset.Sigle == s1)).ToListAsync();
                     if (l.Count() > 0)
                     {
                         pRet = l.First();
@@ -747,31 +748,31 @@ namespace StatDataApp.Data
             }// sigles
             return pRet;
         }//FindValuesBySiglesAsync
-        public async Task MaintainsValueAsync(DBValue p, bool bCommit = true)
+        public async Task MaintainsValueAsync(LocalValue p, bool bCommit = true)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBValue pp = await this.FindValueAsync(p);
+            LocalValue pp = await this.FindValueAsync(p);
             if (pp == null)
             {
-                int nVarId = p.DBVariableId;
-                int nIndId = p.DBIndivId;
+                int nVarId = p.LocalVariableId;
+                int nIndId = p.LocalIndivId;
                 if ((nVarId == 0) || (nIndId == 0))
                 {
                     throw new InvalidOperationException();
                 }
-                DBVariable pVar = await m_ctx.DBVariables.FindAsync(nVarId);
-                DBIndiv pInd = await m_ctx.DBIndivs.FindAsync(nIndId);
+                LocalVariable pVar = await m_ctx.LocalVariables.FindAsync(nVarId);
+                LocalIndiv pInd = await m_ctx.LocalIndivs.FindAsync(nIndId);
                 if ((pVar == null) || (pInd == null))
                 {
                     throw new InvalidOperationException();
                 }
-                pp = new DBValue();
-                pp.DBIndiv = pInd;
-                pp.DBVariable = pVar;
-                m_ctx.DBValues.Add(pp);
+                pp = new LocalValue();
+                pp.LocalIndiv = pInd;
+                pp.LocalVariable = pVar;
+                m_ctx.LocalValues.Add(pp);
             }
             pp.VariableType = p.VariableType;
             pp.StringValue = p.StringValue;
@@ -784,23 +785,23 @@ namespace StatDataApp.Data
                 await m_ctx.SaveChangesAsync();
             }
         }//MaintainsValueAsync
-        public async Task RemoveValueAsync(DBValue p, bool bCommit = true)
+        public async Task RemoveValueAsync(LocalValue p, bool bCommit = true)
         {
             if (p == null)
             {
                 throw new ArgumentNullException();
             }
-            DBValue pRet = await FindValueAsync(p);
+            LocalValue pRet = await FindValueAsync(p);
             if (pRet != null)
             {
-                m_ctx.DBValues.Remove(pRet);
+                m_ctx.LocalValues.Remove(pRet);
                 if (bCommit)
                 {
                     await m_ctx.SaveChangesAsync();
                 }
             }
         }//RemoveValueAsync
-        public async Task MaintainsValuesAsync(IList<DBValue> oVec, bool bDelete = false, bool bCommit = true)
+        public async Task MaintainsValuesAsync(IList<LocalValue> oVec, bool bDelete = false, bool bCommit = true)
         {
             if (oVec == null)
             {
@@ -828,5 +829,5 @@ namespace StatDataApp.Data
                 await m_ctx.SaveChangesAsync();
             }
         }//MaintainsValuesAsync
-    }// class LocalDataManager
+    }
 }
