@@ -19,6 +19,7 @@ namespace InfoDomain {
 		IAsyncOperation<int>^ GetDatasetsCountAsync(void);
 		IAsyncOperation<IVector<Dataset^>^>^ GetDatasetsAsync(int offset, int count);
 		IAsyncOperation<Dataset^>^ FindDatasetAsync(Dataset^ model);
+		IAsyncOperation<Dataset^>^ FindDatasetBySigleAsync(String^ sigle);
 		IAsyncOperation<bool>^ MaintainsDatasetAsync(Dataset^ model);
 		IAsyncOperation<bool>^ RemoveDatasetAsync(Dataset^ model);
 		IAsyncOperation<bool>^ MaintainsDatasetsAsync(IVector<Dataset^>^ oVec, bool bDelete);
@@ -26,6 +27,7 @@ namespace InfoDomain {
 		IAsyncOperation<int>^ GetDatasetVariablesCountAsync(Dataset^ pSet);
 		IAsyncOperation<IVector<Variable^>^>^ GetDatasetVariables(Dataset^ pSet, int offset, int count);
 		IAsyncOperation<Variable^>^ FindVariable(Variable^ model);
+		IAsyncOperation<Variable^>^ FindVariableBySiglesAsync(String^ setsigle, String^ sigle);
 		IAsyncOperation<bool>^ MaintainsVariableAsync(Variable^ model);
 		IAsyncOperation<bool>^ RemoveVariableAsync(Variable^ model);
 		IAsyncOperation<bool>^ MaintainsVariablesAsync(IVector<Variable^>^ oVec, bool bDelete);
@@ -33,6 +35,7 @@ namespace InfoDomain {
 		IAsyncOperation<int>^ GetDatasetIndivsCountAsync(Dataset^ pSet);
 		IAsyncOperation<IVector<Indiv^>^>^ GetDatasetIndivs(Dataset^ pSet, int offset, int count);
 		IAsyncOperation<Indiv^>^ FindIndiv(Indiv^ model);
+		IAsyncOperation<Indiv^>^ FindIndivBySiglesAsync(String^ setsigle, String^ sigle);
 		IAsyncOperation<bool>^ MaintainsIndivAsync(Indiv^ model);
 		IAsyncOperation<bool>^ RemoveIndivAsync(Indiv^ model);
 		IAsyncOperation<bool>^ MaintainsIndivsAsync(IVector<Indiv^>^ oVec, bool bDelete);
@@ -44,6 +47,7 @@ namespace InfoDomain {
 		IAsyncOperation<int>^ GetIndivValuesCountAsync(Indiv^ model);
 		IAsyncOperation<IVector<InfoValue^>^>^ GetIndivValuesAsync(Indiv ^model, int offset, int count);
 		IAsyncOperation<InfoValue^>^ FindValue(InfoValue^ model);
+		IAsyncOperation<InfoValue^>^ FindValueBySiglesAsync(String^ setsigle, String^ indsigle, String^ varsigle);
 		IAsyncOperation<bool>^ MaintainsValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ RemoveValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ MaintainsValuesAsync(IVector<InfoValue^>^ oVec, bool bDelete);

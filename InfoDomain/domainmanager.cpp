@@ -66,7 +66,26 @@ IAsyncOperation<Dataset^>^ DomainManager::FindDatasetAsync(Dataset^ model) {
 		}// oMap
 		return (oRet);
 	});
-}//FindDatasetAsy
+}//FindDatasetAsync
+IAsyncOperation<Dataset^>^ DomainManager::FindDatasetBySigleAsync(String^ sigle) {
+	if (sigle == nullptr) {
+		throw ref new InvalidArgumentException();
+	}
+	CouchDBManager^ pMan = this->m_pman;
+	return create_async([pMan, sigle]()->Dataset^ {
+		Dataset^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_SIGLE, sigle);
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_DATASET);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new Dataset(oMap);
+			}
+		}// oMap
+		return (oRet);
+	});
+}//FindDatasetBySigleAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsDatasetAsync(Dataset^ model) {
 	if (model == nullptr) {
 		throw ref new InvalidArgumentException("Null Argument");
@@ -215,6 +234,26 @@ IAsyncOperation<Variable^>^ DomainManager::FindVariable(Variable^ model) {
 		return (oRet);
 	});
 }//FindVariable
+IAsyncOperation<Variable^>^ DomainManager::FindVariableBySiglesAsync(String^ setsigle, String^ sigle) {
+	if ((setsigle == nullptr) || (sigle == nullptr)) {
+		throw ref new InvalidArgumentException();
+	}
+	CouchDBManager^ pMan = this->m_pman;
+	return create_async([pMan, setsigle,sigle]()->Variable^ {
+		Variable^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_SIGLE,sigle);
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, setsigle);
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VARIABLE);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new Variable(oMap);
+			}
+		}// oMap
+		return (oRet);
+	});
+}//FindVariableBySiglesAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsVariableAsync(Variable^ model) {
 	if (model == nullptr) {
 		throw ref new InvalidArgumentException("Null Argument");
@@ -364,6 +403,26 @@ IAsyncOperation<Indiv^>^ DomainManager::FindIndiv(Indiv^ model) {
 		return (oRet);
 	});
 }//FindIndiv
+IAsyncOperation<Indiv^>^ DomainManager::FindIndivBySiglesAsync(String^ setsigle, String^ sigle) {
+	if ((setsigle == nullptr) || (sigle == nullptr)) {
+		throw ref new InvalidArgumentException();
+	}
+	CouchDBManager^ pMan = this->m_pman;
+	return create_async([pMan, setsigle, sigle]()->Indiv^ {
+		Indiv^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_SIGLE, sigle);
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, setsigle);
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_INDIV);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new Indiv(oMap);
+			}
+		}// oMap
+		return (oRet);
+	});
+}//FindIndivBySiglesAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsIndivAsync(Indiv^ model) {
 	if (model == nullptr) {
 		throw ref new InvalidArgumentException("Null Argument");
@@ -604,6 +663,27 @@ IAsyncOperation<InfoValue^>^ DomainManager::FindValue(InfoValue^ model) {
 		return (oRet);
 	});
 }//FindVal
+IAsyncOperation<InfoValue^>^ DomainManager::FindValueBySiglesAsync(String^ setsigle, String^ indsigle,String^ varsigle) {
+	if ((setsigle == nullptr) || (indsigle == nullptr) || (varsigle == nullptr)) {
+		throw ref new InvalidArgumentException();
+	}
+	CouchDBManager^ pMan = this->m_pman;
+	return create_async([pMan, setsigle, indsigle,varsigle]()->InfoValue^ {
+		InfoValue^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_INDIVSIGLE, indsigle);
+		oFetch->Insert(InfoStrings::KEY_VARIABLESIGLE, varsigle);
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, setsigle);
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new InfoValue(oMap);
+			}
+		}// oMap
+		return (oRet);
+	});
+}//FindValueBySiglesAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsValueAsync(InfoValue^ model) {
 	if (model == nullptr) {
 		throw ref new InvalidArgumentException("Null Argument");

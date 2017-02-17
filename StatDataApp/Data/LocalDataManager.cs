@@ -166,6 +166,23 @@ namespace StatDataApp.Data
                 }
             }
         }//RemoveDatasetAsync
+        public async Task<DBDataset> FindDatasetBySigleAsync(string sigle)
+        {
+            DBDataset pRet = null;
+            if (!string.IsNullOrEmpty(sigle))
+            {
+                string ss = sigle.Trim().ToUpper();
+                if (!string.IsNullOrEmpty(ss))
+                {
+                    var l = await m_ctx.DBDatasets.Where(x => x.Sigle == ss).ToListAsync();
+                    if (l.Count() > 0)
+                    {
+                        pRet = l.First();
+                    }
+                }// ss
+            }// sigle
+            return pRet;
+        }//FindDatasetBySigleAsync
         //
         public async Task<int> GetDatasetVariablesCountAsync(DBDataset pSet)
         {
@@ -232,6 +249,25 @@ namespace StatDataApp.Data
             }// s
             return pRet;
         }// FindVariableAsync
+        public async Task<DBVariable> FindVariableBySiglesAsync(string setsigle, string sigle)
+        {
+            DBVariable pRet = null;
+            if ((!string.IsNullOrEmpty(setsigle)) && (!string.IsNullOrEmpty(sigle)))
+            {
+                string s1 = setsigle.Trim().ToUpper();
+                string s2 = sigle.Trim().ToUpper();
+                if ((!string.IsNullOrEmpty(s1)) && (!string.IsNullOrEmpty(s2)))
+                {
+                    var l = await m_ctx.DBVariables.
+                        Where(x => (x.Sigle == s2) && (x.DBDataset.Sigle == s1)).ToListAsync();
+                    if (l.Count() > 0)
+                    {
+                        pRet = l.First();
+                    }
+                }// s1, s2
+            }// sigles
+            return pRet;
+        }//FindVariableBySiglesAsync
         public async Task MaintainsVariableAsync(DBVariable p,bool bCommit = true)
         {
             if (p == null)
@@ -408,6 +444,25 @@ namespace StatDataApp.Data
             }// s
             return pRet;
         }// FindIndivAsync
+        public async Task<DBIndiv> FindIndivBySiglesAsync(string setsigle, string sigle)
+        {
+            DBIndiv pRet = null;
+            if ((!string.IsNullOrEmpty(setsigle)) && (!string.IsNullOrEmpty(sigle)))
+            {
+                string s1 = setsigle.Trim().ToUpper();
+                string s2 = sigle.Trim().ToUpper();
+                if ((!string.IsNullOrEmpty(s1)) && (!string.IsNullOrEmpty(s2)))
+                {
+                    var l = await m_ctx.DBIndivs.
+                        Where(x => (x.Sigle == s2) && (x.DBDataset.Sigle == s1)).ToListAsync();
+                    if (l.Count() > 0)
+                    {
+                        pRet = l.First();
+                    }
+                }// s1, s2
+            }// sigles
+            return pRet;
+        }//FindIndivBySiglesAsync
         public async Task MaintainsIndivAsync(DBIndiv p, bool bCommit = true)
         {
             if (p == null)
@@ -668,6 +723,30 @@ namespace StatDataApp.Data
             }// s
             return pRet;
         }// FindValueAsync
+        public async Task<DBValue> FindValueBySiglesAsync(string setsigle, string indsigle, string varsigle)
+        {
+            DBValue pRet = null;
+            if ((!string.IsNullOrEmpty(setsigle)) && (!string.IsNullOrEmpty(varsigle)) &&
+                (!string.IsNullOrEmpty(indsigle)))
+            {
+                string s1 = setsigle.Trim().ToUpper();
+                string s2 = indsigle.Trim().ToUpper();
+                string s3 = varsigle.Trim().ToUpper();
+                if ((!string.IsNullOrEmpty(s1)) && (!string.IsNullOrEmpty(s2)) &&
+                    (!string.IsNullOrEmpty(s3)))
+                {
+                    var l = await m_ctx.DBValues.
+                        Where(x => (x.DBIndiv.Sigle == s2) && 
+                        (x.DBVariable.Sigle == s3) &&
+                        (x.DBVariable.DBDataset.Sigle == s1)).ToListAsync();
+                    if (l.Count() > 0)
+                    {
+                        pRet = l.First();
+                    }
+                }// s1, s2
+            }// sigles
+            return pRet;
+        }//FindValuesBySiglesAsync
         public async Task MaintainsValueAsync(DBValue p, bool bCommit = true)
         {
             if (p == null)
