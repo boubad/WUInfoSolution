@@ -49,49 +49,30 @@ namespace InfoLocalDB
         }//GetDatasetsAsync
         public async Task<LocalDataset> FindDatasetAsync(LocalDataset p)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalDataset pRet = null;
             int nId = p.LocalDatasetId;
             if (nId != 0)
             {
-                pRet = await m_ctx.LocalDatasets.FindAsync(nId);
-                if (pRet != null)
+                if ((pRet = await m_ctx.LocalDatasets.FindAsync(nId)) != null)
                 {
                     return pRet;
                 }
             }
-            string s = p.Sigle;
-            if (!string.IsNullOrEmpty(s))
+            string sigle = p.Sigle;
+            if (!string.IsNullOrEmpty(sigle))
             {
-                string sigle = s.Trim().ToUpper();
-                if (!string.IsNullOrEmpty(sigle))
-                {
                     pRet = await m_ctx.LocalDatasets.Where(x => x.Sigle == sigle).SingleAsync();
-                }// sigle
             }// s
             return pRet;
         }//FindDatasetAsync
         public async Task MaintainsDatasetAsync(LocalDataset p, bool bCommit = true)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
-            string s1 = p.Sigle;
-            string s2 = p.Name;
-            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+            if (!p.IsStoreable)
             {
                 throw new InvalidOperationException();
             }
-            string sigle = s1.Trim().ToUpper();
-            string name = s2.Trim();
-            if (string.IsNullOrEmpty(sigle) || string.IsNullOrEmpty(name))
-            {
-                throw new InvalidOperationException();
-            }
+            string sigle = p.Sigle;
+            string name = p.Name;
             LocalDataset pOldId = null;
             if (p.LocalDatasetId != 0)
             {
@@ -135,28 +116,7 @@ namespace InfoLocalDB
         }//MaintainsDatasetAsync
         public async Task RemoveDatasetAsync(LocalDataset p, bool bCommit = false)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
-            LocalDataset pRet = null;
-            int nId = p.LocalDatasetId;
-            if (nId != 0)
-            {
-                pRet = await m_ctx.LocalDatasets.FindAsync(nId);
-            }
-            if (pRet == null)
-            {
-                string s = p.Sigle;
-                if (!string.IsNullOrEmpty(s))
-                {
-                    string sigle = s.Trim().ToUpper();
-                    if (!string.IsNullOrEmpty(sigle))
-                    {
-                        pRet = await m_ctx.LocalDatasets.Where(x => x.Sigle == sigle).SingleAsync();
-                    }// sigle
-                }// s
-            }
+            LocalDataset pRet = await FindDatasetAsync(p);
             if (pRet != null)
             {
                 m_ctx.LocalDatasets.Remove(pRet);
@@ -186,10 +146,6 @@ namespace InfoLocalDB
         //
         public async Task<int> GetDatasetVariablesCountAsync(LocalDataset pSet)
         {
-            if (pSet == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
@@ -200,10 +156,6 @@ namespace InfoLocalDB
         }//GetDatasetVariablesCountAsync
         public async Task<IList<LocalVariable>> GetDatasetVariablesAsync(LocalDataset pSet, int offset = 0, int count = 0)
         {
-            if (pSet == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
@@ -223,10 +175,6 @@ namespace InfoLocalDB
         }//GetDatasetVariablesAsync
         public async Task<LocalVariable> FindVariableAsync(LocalVariable p)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalVariable pRet = null;
             int nId = p.LocalVariableId;
             if (nId != 0)
@@ -270,22 +218,12 @@ namespace InfoLocalDB
         }//FindVariableBySiglesAsync
         public async Task MaintainsVariableAsync(LocalVariable p, bool bCommit = true)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
-            string s1 = p.Sigle;
-            string s2 = p.Name;
-            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
+            if (!p.IsStoreable)
             {
                 throw new InvalidOperationException();
             }
-            string sigle = s1.Trim().ToUpper();
-            string name = s2.Trim();
-            if (string.IsNullOrEmpty(sigle) || string.IsNullOrEmpty(name))
-            {
-                throw new InvalidOperationException();
-            }
+            string sigle = p.Sigle;
+            string name = p.Name;
             LocalVariable pOldId = null;
             if (p.LocalVariableId != 0)
             {
@@ -337,10 +275,6 @@ namespace InfoLocalDB
         }//MaintainsVariableAsync
         public async Task RemoveVariableAsync(LocalVariable p, bool bCommit = true)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalVariable pRet = await FindVariableAsync(p);
             if (pRet != null)
             {
@@ -353,10 +287,6 @@ namespace InfoLocalDB
         }//RemoveVariableAsync
         public async Task MaintainsVariablesAsync(IList<LocalVariable> oVec, bool bDelete = false, bool bCommit = true)
         {
-            if (oVec == null)
-            {
-                throw new ArgumentNullException();
-            }
             bool done = false;
             foreach (var p in oVec)
             {
@@ -364,12 +294,12 @@ namespace InfoLocalDB
                 {
                     if (bDelete)
                     {
-                        await this.RemoveVariableAsync(p, false);
+                        await RemoveVariableAsync(p, false);
                         done = true;
                     }
                     else
                     {
-                        await this.MaintainsVariableAsync(p, false);
+                        await MaintainsVariableAsync(p, false);
                         done = true;
                     }
                 }// p
@@ -382,10 +312,6 @@ namespace InfoLocalDB
         //
         public async Task<int> GetDatasetIndivsCountAsync(LocalDataset pSet)
         {
-            if (pSet == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
@@ -396,11 +322,7 @@ namespace InfoLocalDB
         }//GetDatasetIndivsCountAsync
         public async Task<IList<LocalIndiv>> GetDatasetIndivsAsync(LocalDataset pSet, int offset = 0, int count = 0)
         {
-            if (pSet == null)
-            {
-                throw new ArgumentNullException();
-            }
-            LocalDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -419,10 +341,6 @@ namespace InfoLocalDB
         }//GetDatasetIndivsAsync
         public async Task<LocalIndiv> FindIndivAsync(LocalIndiv p)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalIndiv pRet = null;
             int nId = p.LocalIndivId;
             if (nId != 0)
@@ -433,15 +351,11 @@ namespace InfoLocalDB
                     return pRet;
                 }
             }
-            string s = p.Sigle;
+            string sigle = p.Sigle;
             int nSetId = p.LocalDatasetId;
-            if ((nSetId != 0) && (!string.IsNullOrEmpty(s)))
+            if ((nSetId != 0) && (!string.IsNullOrEmpty(sigle)))
             {
-                string sigle = s.Trim().ToUpper();
-                if (!string.IsNullOrEmpty(sigle))
-                {
-                    pRet = await m_ctx.LocalIndivs.Where(x => (x.LocalDatasetId == nSetId) && (x.Sigle == sigle)).SingleAsync();
-                }// sigle
+                pRet = await m_ctx.LocalIndivs.Where(x => (x.LocalDatasetId == nSetId) && (x.Sigle == sigle)).SingleAsync();
             }// s
             return pRet;
         }// FindIndivAsync
@@ -466,22 +380,12 @@ namespace InfoLocalDB
         }//FindIndivBySiglesAsync
         public async Task MaintainsIndivAsync(LocalIndiv p, bool bCommit = true)
         {
-            if (p == null)
+            if(!p.IsStoreable)
             {
                 throw new ArgumentNullException();
             }
-            string s1 = p.Sigle;
-            string s2 = p.Name;
-            if (string.IsNullOrEmpty(s1) || string.IsNullOrEmpty(s2))
-            {
-                throw new InvalidOperationException();
-            }
-            string sigle = s1.Trim().ToUpper();
-            string name = s2.Trim();
-            if (string.IsNullOrEmpty(sigle) || string.IsNullOrEmpty(name))
-            {
-                throw new InvalidOperationException();
-            }
+            string sigle = p.Sigle;
+            string name= p.Name;
             LocalIndiv pOldId = null;
             if (p.LocalIndivId != 0)
             {
@@ -531,10 +435,6 @@ namespace InfoLocalDB
         }//MaintainsIndiveAsync
         public async Task RemoveIndivAsync(LocalIndiv p, bool bCommit = true)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalIndiv pRet = await FindIndivAsync(p);
             if (pRet != null)
             {
@@ -547,10 +447,6 @@ namespace InfoLocalDB
         }//RemoveIndivAsync
         public async Task MaintainsIndivsAsync(IList<LocalIndiv> oVec, bool bDelete = false, bool bCommit = true)
         {
-            if (oVec == null)
-            {
-                throw new ArgumentNullException();
-            }
             bool done = false;
             foreach (var p in oVec)
             {
@@ -576,10 +472,6 @@ namespace InfoLocalDB
         //
         public async Task<int> GetDatasetValuesCountAsync(LocalDataset pSet)
         {
-            if (pSet == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalDataset pp = await this.FindDatasetAsync(pSet);
             if (pp == null)
             {
@@ -592,11 +484,7 @@ namespace InfoLocalDB
         }//GetDatasetValuesCountAsync
         public async Task<IList<LocalValue>> GetDatasetValuesAsync(LocalDataset pSet, int offset = 0, int count = 0)
         {
-            if (pSet == null)
-            {
-                throw new ArgumentNullException();
-            }
-            LocalDataset pp = await this.FindDatasetAsync(pSet);
+            LocalDataset pp = await FindDatasetAsync(pSet);
             if (pp == null)
             {
                 throw new ArgumentException();
@@ -617,10 +505,6 @@ namespace InfoLocalDB
         }//GetDatasetValuesAsync
         public async Task<int> GetVariableValuesCountAsync(LocalVariable pVar)
         {
-            if (pVar == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalVariable pp = await this.FindVariableAsync(pVar);
             if (pp == null)
             {
@@ -633,10 +517,6 @@ namespace InfoLocalDB
         }//GetVariableValuesCountAsync
         public async Task<IList<LocalValue>> GetVariableValuesAsync(LocalVariable pVar, int offset = 0, int count = 0)
         {
-            if (pVar == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalVariable pp = await this.FindVariableAsync(pVar);
             if (pp == null)
             {
@@ -657,10 +537,6 @@ namespace InfoLocalDB
         }//GetVaribleValuesAsync
         public async Task<int> GetIndivValuesCountAsync(LocalIndiv pInd)
         {
-            if (pInd == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalIndiv pp = await this.FindIndivAsync(pInd);
             if (pp == null)
             {
@@ -673,10 +549,6 @@ namespace InfoLocalDB
         }//GetIndivValuesCountAsync
         public async Task<IList<LocalValue>> GetIndivValuesAsync(LocalIndiv pInd, int offset = 0, int count = 0)
         {
-            if (pInd == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalIndiv pp = await this.FindIndivAsync(pInd);
             if (pp == null)
             {
@@ -697,10 +569,6 @@ namespace InfoLocalDB
         }//GetIndivValuesAsync
         public async Task<LocalValue> FindValueAsync(LocalValue p)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalValue pRet = null;
             int nId = p.LocalValueId;
             if (nId != 0)
@@ -750,19 +618,19 @@ namespace InfoLocalDB
         }//FindValuesBySiglesAsync
         public async Task MaintainsValueAsync(LocalValue p, bool bCommit = true)
         {
-            if (p == null)
+            if (!p.IsStoreable)
             {
                 throw new ArgumentNullException();
             }
             LocalValue pp = await this.FindValueAsync(p);
             if (pp == null)
             {
+                if (string.IsNullOrEmpty(p.StringValue))
+                {
+                    return;
+                }
                 int nVarId = p.LocalVariableId;
                 int nIndId = p.LocalIndivId;
-                if ((nVarId == 0) || (nIndId == 0))
-                {
-                    throw new InvalidOperationException();
-                }
                 LocalVariable pVar = await m_ctx.LocalVariables.FindAsync(nVarId);
                 LocalIndiv pInd = await m_ctx.LocalIndivs.FindAsync(nIndId);
                 if ((pVar == null) || (pInd == null))
@@ -773,6 +641,17 @@ namespace InfoLocalDB
                 pp.LocalIndiv = pInd;
                 pp.LocalVariable = pVar;
                 m_ctx.LocalValues.Add(pp);
+            } else
+            {
+                if (string.IsNullOrEmpty(p.StringValue))
+                {
+                    m_ctx.LocalValues.Remove(pp);
+                    if (bCommit)
+                    {
+                        await m_ctx.SaveChangesAsync();
+                    }
+                    return;
+                }
             }
             pp.VariableType = p.VariableType;
             pp.StringValue = p.StringValue;
@@ -787,10 +666,6 @@ namespace InfoLocalDB
         }//MaintainsValueAsync
         public async Task RemoveValueAsync(LocalValue p, bool bCommit = true)
         {
-            if (p == null)
-            {
-                throw new ArgumentNullException();
-            }
             LocalValue pRet = await FindValueAsync(p);
             if (pRet != null)
             {
@@ -803,10 +678,6 @@ namespace InfoLocalDB
         }//RemoveValueAsync
         public async Task MaintainsValuesAsync(IList<LocalValue> oVec, bool bDelete = false, bool bCommit = true)
         {
-            if (oVec == null)
-            {
-                throw new ArgumentNullException();
-            }
             bool done = false;
             foreach (var p in oVec)
             {

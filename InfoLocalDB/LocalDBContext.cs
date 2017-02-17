@@ -11,6 +11,7 @@ namespace InfoLocalDB
     {
         public LocalDBContext()
         {
+            Database.EnsureCreated();
         }
         public LocalDBContext(DbContextOptions<LocalDBContext> options):
             base(options)
@@ -25,6 +26,7 @@ namespace InfoLocalDB
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Filename=StatInfo.db");
+            base.OnConfiguring(optionsBuilder);
         }//OnConfiguring
 
     }// class LocalDBContext

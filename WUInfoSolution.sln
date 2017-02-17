@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatDataApp", "StatDataApp\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfoLocalDB", "InfoLocalDB\InfoLocalDB.csproj", "{1FCE4CBD-7B73-4E01-BDEA-E566B931EE14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestCS", "UnitTestCS\UnitTestCS.csproj", "{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,26 @@ Global
 		{1FCE4CBD-7B73-4E01-BDEA-E566B931EE14}.Release|x64.Build.0 = Release|x64
 		{1FCE4CBD-7B73-4E01-BDEA-E566B931EE14}.Release|x86.ActiveCfg = Release|x86
 		{1FCE4CBD-7B73-4E01-BDEA-E566B931EE14}.Release|x86.Build.0 = Release|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|ARM.ActiveCfg = Debug|ARM
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|ARM.Build.0 = Debug|ARM
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|ARM.Deploy.0 = Debug|ARM
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|x64.ActiveCfg = Debug|x64
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|x64.Build.0 = Debug|x64
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|x64.Deploy.0 = Debug|x64
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|x86.ActiveCfg = Debug|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|x86.Build.0 = Debug|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Debug|x86.Deploy.0 = Debug|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|Any CPU.ActiveCfg = Release|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|ARM.ActiveCfg = Release|ARM
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|ARM.Build.0 = Release|ARM
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|ARM.Deploy.0 = Release|ARM
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|x64.ActiveCfg = Release|x64
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|x64.Build.0 = Release|x64
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|x64.Deploy.0 = Release|x64
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|x86.ActiveCfg = Release|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|x86.Build.0 = Release|x86
+		{C37A20F1-8E1C-4FA8-9F77-047E5CB3F911}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

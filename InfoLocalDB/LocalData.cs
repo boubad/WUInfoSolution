@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InfoLocalDB
 {
+    [Table("LocalDatasets")]
     public sealed class LocalDataset
     {
         //
@@ -86,7 +85,27 @@ namespace InfoLocalDB
         //
         public IList<LocalIndiv> localIndivs { get; set; }
         public IList<LocalVariable> LocalVariables { get; set; }
+        //
+        [NotMapped]
+        public bool IsStoreable
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.Sigle)) &&
+                    (!string.IsNullOrEmpty(this.Name));
+            }
+        }
+        [NotMapped]
+        public bool HasRemote
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.RemoteId)) &&
+                    (!string.IsNullOrEmpty(this.RemoteVersion));
+            }
+        }
     }// DBDataset
+    [Table("LocalIndivs")]
     public sealed class LocalIndiv
     {
         //
@@ -174,8 +193,28 @@ namespace InfoLocalDB
         public LocalDataset LocalDataset { get; set; }
         //
         public IList<LocalValue> LocalValues { get; set; }
+        //
+        [NotMapped]
+        public bool IsStoreable
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.Sigle)) &&
+                    (!string.IsNullOrEmpty(this.Name)) && (this.LocalDatasetId != 0);
+            }
+        }
+        [NotMapped]
+        public bool HasRemote
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.RemoteId)) &&
+                    (!string.IsNullOrEmpty(this.RemoteVersion));
+            }
+        }
     }// LocalIndiv
      //
+    [Table("LocalVariables")]
     public sealed class LocalVariable
     {
         //
@@ -192,6 +231,8 @@ namespace InfoLocalDB
             }
             this.LocalDataset = pSet;
             this.LocalDatasetId = pSet.LocalDatasetId;
+            this.Sigle = sigle;
+            this.Name = sigle;
         }
         //
         [Key]
@@ -255,7 +296,6 @@ namespace InfoLocalDB
                 _desc = s;
             }
         }
-
         public int VariableType { get; set; }
         public int VariableKind { get; set; }
         public string ModalitesString { get; set; }
@@ -268,8 +308,28 @@ namespace InfoLocalDB
         public int LocalDatasetId { get; set; }
         public LocalDataset LocalDataset { get; set; }
         public IList<LocalValue> LocalValues { get; set; }
+        [NotMapped]
+        public bool IsStoreable
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.Sigle)) &&
+                    (!string.IsNullOrEmpty(this.Name)) && (this.LocalDatasetId != 0) &&
+                    (this.VariableType != 0) && (this.VariableKind != 0);
+            }
+        }
+        [NotMapped]
+        public bool HasRemote
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.RemoteId)) &&
+                    (!string.IsNullOrEmpty(this.RemoteVersion));
+            }
+        }
     }// LocalVariable
     //
+    [Table("LocalValues")]
     public sealed class LocalValue
     {
         //
@@ -340,5 +400,24 @@ namespace InfoLocalDB
         public string RemoteId { get; set; }
         [MaxLength(127)]
         public string RemoteVersion { get; set; }
-    }// DBValue
+        //
+        [NotMapped]
+        public bool IsStoreable
+        {
+            get
+            {
+                return  (this.LocalIndivId != 0) && (this.LocalVariableId != 0) &&
+                    (this.VariableType != 0);
+            }
+        }
+        [NotMapped]
+        public bool HasRemote
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(this.RemoteId)) &&
+                    (!string.IsNullOrEmpty(this.RemoteVersion));
+            }
+        }
+    }// LocalValue
 }
