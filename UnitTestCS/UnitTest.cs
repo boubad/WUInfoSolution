@@ -60,7 +60,193 @@ namespace UnitTestCS
                 //
             }// man
         }// class Init
-
+        [TestMethod]
+        public void Test_Local_Conso()
+        {
+            TestData src = new TestData();
+            using (var man = new LocalDBManager())
+            {
+                string setsigle = src.ConsoName;
+                LocalDataset pSet = man.FindDatasetBySigleAsync(setsigle).Result;
+                if (pSet == null)
+                {
+                    LocalDataset xSet = new LocalDataset()
+                    {
+                        Sigle = setsigle,
+                        Name = "Conso Data Name",
+                        Description = "Conso Data Description",
+                        Status = (int)InfoStatus.Normal
+                    };
+                    man.MaintainsDatasetAsync(xSet).Wait();
+                    pSet = man.FindDatasetBySigleAsync(setsigle).Result;
+                    Assert.IsNotNull(pSet);
+                }// pSet
+                Assert.IsTrue(pSet.LocalDatasetId != 0);
+                List<LocalVariable> vars = new List<LocalVariable>();
+                var cols = src.ConsoColsNames;
+                foreach (var varsigle in cols)
+                {
+                    LocalVariable v = man.FindVariableBySiglesAsync(setsigle, varsigle).Result;
+                    if (v == null)
+                    {
+                        LocalVariable xVar = new LocalVariable(pSet, varsigle);
+                        xVar.Name = varsigle + " name";
+                        xVar.Description = varsigle + " description";
+                        xVar.VariableKind = (int)InfoKind.Normal;
+                        xVar.VariableType = (int)InfoDataType.Integer;
+                        vars.Add(xVar);
+                    }// v
+                }// s
+                if (vars.Count > 0)
+                {
+                    man.MaintainsVariablesAsync(vars).Wait();
+                }// vars
+                List<LocalIndiv> inds = new List<LocalIndiv>();
+                var rows = src.ConsoRowsNames;
+                foreach (var indsigle in rows)
+                {
+                    LocalIndiv v = man.FindIndivBySiglesAsync(setsigle, indsigle).Result;
+                    if (v == null)
+                    {
+                        LocalIndiv xInd = new LocalIndiv(pSet, indsigle);
+                        xInd.Name = indsigle + " name";
+                        xInd.Description = indsigle + " description";
+                        xInd.Status = (int)InfoStatus.Normal;
+                        inds.Add(xInd);
+                    }// v
+                }// indsigle
+                if (inds.Count > 0)
+                {
+                    man.MaintainsIndivsAsync(inds).Wait();
+                }
+                List<LocalValue> vals = new List<LocalValue>();
+                var data = src.ConsoData;
+                int[] oAr = (new List<int>(data)).ToArray();
+                int nCols = src.MortalColsCount;
+                foreach (var indsigle in rows)
+                {
+                    LocalIndiv pInd = man.FindIndivBySiglesAsync(setsigle, indsigle).Result;
+                    Assert.IsNotNull(pInd);
+                    Assert.IsTrue(pInd.LocalIndivId != 0);
+                    int irow = rows.IndexOf(indsigle);
+                    foreach (var varsigle in cols)
+                    {
+                        LocalVariable pVar = man.FindVariableBySiglesAsync(setsigle, varsigle).Result;
+                        Assert.IsNotNull(pVar);
+                        Assert.IsTrue(pVar.LocalVariableId != 0);
+                        int icol = cols.IndexOf(varsigle);
+                        LocalValue v = man.FindValueBySiglesAsync(setsigle, indsigle, varsigle).Result;
+                        if (v == null)
+                        {
+                            LocalValue xVal = new LocalValue(pInd, pVar);
+                            int pos = irow * nCols + icol;
+                            Assert.IsTrue(pos < oAr.Length);
+                            int ival = oAr[pos];
+                            string sval = String.Format("{0}", ival);
+                            xVal.StringValue = sval;
+                            vals.Add(xVal);
+                        }// v
+                    }// varsigle
+                }// indsigle
+                if (vals.Count > 0)
+                {
+                    man.MaintainsValuesAsync(vals).Wait();
+                }
+            }// man
+        }//Test_Local_Conso
+        [TestMethod]
+        public void Test_Local_Mortal()
+        {
+            TestData src = new TestData();
+            using (var man = new LocalDBManager())
+            {
+                string setsigle = src.MortalName;
+                LocalDataset pSet = man.FindDatasetBySigleAsync(setsigle).Result;
+                if (pSet == null)
+                {
+                    LocalDataset xSet = new LocalDataset() {
+                        Sigle = setsigle,
+                        Name = "Mortal Data Name",
+                        Description = "Mortal Data Description",
+                        Status = (int)InfoStatus.Normal
+                    };
+                    man.MaintainsDatasetAsync(xSet).Wait();
+                    pSet = man.FindDatasetBySigleAsync(setsigle).Result;
+                    Assert.IsNotNull(pSet);
+                }// pSet
+                Assert.IsTrue(pSet.LocalDatasetId != 0);
+                List<LocalVariable> vars = new List<LocalVariable>();
+                var cols = src.MortalColsNames;
+                foreach (var varsigle in cols)
+                {
+                    LocalVariable v = man.FindVariableBySiglesAsync(setsigle, varsigle).Result;
+                    if (v == null)
+                    {
+                        LocalVariable xVar = new LocalVariable(pSet, varsigle);
+                        xVar.Name = varsigle + " name";
+                        xVar.Description = varsigle + " description";
+                        xVar.VariableKind = (int)InfoKind.Normal;
+                        xVar.VariableType = (int)InfoDataType.Integer;
+                        vars.Add(xVar);
+                    }// v
+                }// s
+                if (vars.Count > 0)
+                {
+                   man.MaintainsVariablesAsync(vars).Wait();
+                }// vars
+                List<LocalIndiv> inds = new List<LocalIndiv>();
+                var rows = src.MortalRowsNames;
+                foreach (var indsigle in rows)
+                {
+                    LocalIndiv v = man.FindIndivBySiglesAsync(setsigle, indsigle).Result;
+                    if (v == null)
+                    {
+                        LocalIndiv xInd = new LocalIndiv(pSet, indsigle);
+                        xInd.Name = indsigle + " name";
+                        xInd.Description = indsigle + " description";
+                        xInd.Status = (int)InfoStatus.Normal;
+                        inds.Add(xInd);
+                    }// v
+                }// indsigle
+                if (inds.Count > 0)
+                {
+                    man.MaintainsIndivsAsync(inds).Wait();
+                }
+                List<LocalValue> vals = new List<LocalValue>();
+                var data = src.MortalData;
+                int[] oAr = (new List<int>(data)).ToArray();
+                int nCols = src.MortalColsCount;
+                foreach (var indsigle in rows)
+                {
+                    LocalIndiv pInd = man.FindIndivBySiglesAsync(setsigle, indsigle).Result;
+                    Assert.IsNotNull(pInd);
+                    Assert.IsTrue(pInd.LocalIndivId != 0);
+                    int irow = rows.IndexOf(indsigle);
+                    foreach (var varsigle in cols)
+                    {
+                        LocalVariable pVar = man.FindVariableBySiglesAsync(setsigle, varsigle).Result;
+                        Assert.IsNotNull(pVar);
+                        Assert.IsTrue(pVar.LocalVariableId != 0);
+                        int icol = cols.IndexOf(varsigle);
+                        LocalValue v = man.FindValueBySiglesAsync(setsigle, indsigle, varsigle).Result;
+                        if (v == null)
+                        {
+                            LocalValue xVal = new LocalValue(pInd, pVar);
+                            int pos = irow * nCols + icol;
+                            Assert.IsTrue(pos < oAr.Length);
+                            int ival = oAr[pos];
+                            string sval = String.Format("{0}", ival);
+                            xVal.StringValue = sval;
+                            vals.Add(xVal);
+                        }// v
+                    }// varsigle
+                }// indsigle
+                if (vals.Count > 0)
+                {
+                    man.MaintainsValuesAsync(vals).Wait();
+                }
+            }// man
+        }//Test_Local_Mortal
         [TestMethod]
         public void Test_Local_DatasetsCount()
         {

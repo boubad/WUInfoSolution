@@ -406,8 +406,7 @@ namespace InfoLocalDB
         {
             get
             {
-                return  (this.LocalIndivId != 0) && (this.LocalVariableId != 0) &&
-                    (this.VariableType != 0);
+                return  (this.LocalIndivId != 0) && (this.LocalVariableId != 0);
             }
         }
         [NotMapped]

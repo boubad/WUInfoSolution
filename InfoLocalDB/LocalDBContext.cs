@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
 namespace InfoLocalDB
 {
     public class LocalDBContext : DbContext
     {
+        static private Object lockObj = new object();
         public LocalDBContext()
         {
-            Database.EnsureCreated();
+            lock (lockObj)
+            {
+                Database.EnsureCreated();
+            }// lock
         }
         public LocalDBContext(DbContextOptions<LocalDBContext> options):
             base(options)

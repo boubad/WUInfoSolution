@@ -27,6 +27,18 @@ namespace InfoLocalDB
         {
             m_ctx.Database.Migrate();
         }
+        public async Task BeginTransaction()
+        {
+            await m_ctx.Database.BeginTransactionAsync();
+        }// BeginTransaction
+        public async Task Commit()
+        {
+            await m_ctx.SaveChangesAsync();
+        }// commit
+        public void RollBack()
+        {
+            m_ctx.Database.RollbackTransaction();
+        }// RollBack
         public async Task<int> GetDatasetsCountAsync()
         {
             var pp = await m_ctx.LocalDatasets.ToListAsync();
@@ -637,9 +649,12 @@ namespace InfoLocalDB
                 {
                     throw new InvalidOperationException();
                 }
-                pp = new LocalValue();
-                pp.LocalIndiv = pInd;
-                pp.LocalVariable = pVar;
+                pp = new LocalValue()
+                {
+                    LocalIndiv = pInd,
+                    LocalVariable = pVar,
+                    VariableType = pVar.VariableType
+                };
                 m_ctx.LocalValues.Add(pp);
             } else
             {
@@ -653,7 +668,6 @@ namespace InfoLocalDB
                     return;
                 }
             }
-            pp.VariableType = p.VariableType;
             pp.StringValue = p.StringValue;
             pp.Status = p.Status;
             pp.Description = p.Description;
