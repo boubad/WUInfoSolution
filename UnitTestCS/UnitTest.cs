@@ -17,6 +17,12 @@ namespace UnitTestCS
         {
             using (var man = new LocalDBManager())
             {
+                string mime_type = "application/octet-stream";
+                byte[] blobData = new byte[128];
+                for (int i = 0; i < blobData.Length; ++i)
+                {
+                    blobData[i] = (byte)i;
+                }// i
                 string sigle = "testset";
                 LocalDataset xSet = new LocalDataset(sigle);
                 Assert.IsTrue(xSet.IsStoreable);
@@ -25,11 +31,15 @@ namespace UnitTestCS
                 Assert.IsNotNull(pSet);
                 int nId = pSet.LocalDatasetId;
                 Assert.IsTrue(nId != 0);
+                LocalBlob b1 = new LocalBlob() { Name = pSet.Sigle, MimeType = mime_type, Data = blobData};
+                man.MaintainsDatasetBlobAsync(pSet, b1).Wait();
                 //
                 string varsigle = "testvar";
-                LocalVariable xVar = new LocalVariable(pSet, varsigle);
-                xVar.VariableType = (int)InfoDataType.Real;
-                xVar.VariableKind = (int)InfoKind.Normal;
+                LocalVariable xVar = new LocalVariable(pSet, varsigle)
+                {
+                    VariableType = (int)InfoDataType.Real,
+                    VariableKind = (int)InfoKind.Normal
+                };
                 Assert.IsTrue(xVar.IsStoreable);
                 man.MaintainsVariableAsync(xVar).Wait();
                 LocalVariable pVar = man.FindVariableAsync(xVar).Result;
@@ -37,6 +47,8 @@ namespace UnitTestCS
                 LocalVariable pVar2 = man.FindVariableBySiglesAsync(pSet.Sigle, pVar.Sigle).Result;
                 Assert.IsNotNull(pVar2);
                 Assert.AreEqual(pVar.LocalVariableId, pVar2.LocalVariableId);
+                LocalBlob b2 = new LocalBlob() { Name = pVar.Sigle, MimeType = mime_type, Data = blobData };
+                man.MaintainsVariableBlobAsync(pVar, b2).Wait();
                 //
                 string indsigle = "testind";
                 LocalIndiv xInd = new LocalIndiv(pSet, indsigle);
@@ -47,11 +59,15 @@ namespace UnitTestCS
                 LocalIndiv pInd2 = man.FindIndivBySiglesAsync(pSet.Sigle, pInd.Sigle).Result;
                 Assert.IsNotNull(pInd2);
                 Assert.AreEqual(pInd.LocalIndivId, pInd2.LocalIndivId);
+                LocalBlob b3 = new LocalBlob() { Name = pInd.Sigle, MimeType = mime_type, Data = blobData };
+                man.MaintainsIndivBlobAsync(pInd, b3).Wait();
                 //
                 string sval = string.Format("{0}", 3.14159);
-                LocalValue xVal = new LocalValue(pInd, pVar);
-                xVal.VariableType = pVar.VariableType;
-                xVal.StringValue = sval;
+                LocalValue xVal = new LocalValue(pInd, pVar)
+                {
+                    VariableType = pVar.VariableType,
+                    StringValue = sval
+                };
                 Assert.IsTrue(xVal.IsStoreable);
                 man.MaintainsValueAsync(xVal).Wait();
                 LocalValue pVal = man.FindValueAsync(xVal).Result;
@@ -260,6 +276,8 @@ namespace UnitTestCS
                     Assert.AreEqual(nx, pp.Count);
                     foreach (var pSet in pp)
                     {
+                        IList<LocalBlob> b1 = man.GetDatasetBlobsAsync(pSet).Result;
+                        Assert.IsNotNull(b1);
                         int nxx = man.GetDatasetValuesCountAsync(pSet).Result;
                         if (nxx > 0)
                         {
@@ -273,6 +291,8 @@ namespace UnitTestCS
                             Assert.AreEqual(nv, pv.Count);
                             foreach (var pVar in pv)
                             {
+                                IList<LocalBlob> b2 = man.GetVariableBlobsAsync(pVar).Result;
+                                Assert.IsNotNull(b2);
                                 int nvx = man.GetVariableValuesCountAsync(pVar).Result;
                                 if (nvx > 0)
                                 {
@@ -288,6 +308,8 @@ namespace UnitTestCS
                             Assert.AreEqual(nr, pv.Count);
                             foreach (var pInd in pv)
                             {
+                                IList<LocalBlob> b3 = man.GetIndivBlobsAsync(pInd).Result;
+                                Assert.IsNotNull(b3);
                                 int nvx = man.GetIndivValuesCountAsync(pInd).Result;
                                 if (nvx > 0)
                                 {

@@ -773,3 +773,6 @@ IAsyncOperation<bool>^ DomainManager::RemoveDocumentAttachmentAsync(String^ doci
 IAsyncOperation<IBuffer^>^ DomainManager::GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName) {
 	return m_pman->GetDocumentAttachmentDataAsync(docid, attachmentName);
 }//GetDocumentAttachmentDataAsync
+IAsyncOperation<IVector<byte>^>^ DomainManager::GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName) {
+	return m_pman->GetDocumentAttachmentDataVectorAsync(docid, attachmentName);
+}//GetDocumentAttachmentDataVectorAsync

@@ -1,9 +1,25 @@
 #include "pch.h"
 ////////////////////
 #include "couchdbmanager.h"
+#include <robuffer.h>
 /////////////////////////////
 using namespace InfoCouchDB;
 using namespace concurrency;
+using namespace Microsoft::WRL;
+/////////////////////////////////
+CouchDBManager::byte *CouchDBManager::GetPointerToBufferData(IBuffer^ pBuffer, unsigned int *pLength) {
+	if (pLength != nullptr)
+	{
+		*pLength = pBuffer->Length;
+	}
+	// Query the IBufferByteAccess interface.
+	ComPtr<IBufferByteAccess> bufferByteAccess;
+	reinterpret_cast<IInspectable*>(pBuffer)->QueryInterface(IID_PPV_ARGS(&bufferByteAccess));
+	// Retrieve the buffer data.
+	byte* pixels = nullptr;
+	bufferByteAccess->Buffer(&pixels);
+	return pixels;
+}//GetPointerToBufferData
 /////////////////////////
 CouchDBManager::CouchDBManager() {
 
@@ -139,6 +155,27 @@ IAsyncOperation<IBuffer^>^ CouchDBManager::GetDocumentAttachmentDataAsync(String
 		return pProxy->GetDocumentAttachmentDataAsync(docid, attachmentName).get();
 	});
 }//GetDocumentAttachmentDataAsync
+IAsyncOperation<IVector< CouchDBManager::byte>^>^ CouchDBManager::GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName) {
+	if ((docid == nullptr) || (attachmentName == docid)) {
+		throw ref new InvalidArgumentException();
+	}
+	if (docid->IsEmpty() || attachmentName->IsEmpty()) {
+		throw ref new InvalidArgumentException();
+	}
+	CouchDBProxy *pProxy = GetProxy();
+	return create_async([pProxy, docid, attachmentName]()->IVector<byte>^ {
+		IVector<byte>^ pRet = nullptr;
+		IBuffer^ pBuf = pProxy->GetDocumentAttachmentDataAsync(docid, attachmentName).get();
+		if (pBuf != nullptr) {
+			unsigned int len{ 0 };
+			byte *pData = GetPointerToBufferData(pBuf, &len);
+			if ((pData != nullptr) && (len > 0)) {
+				pRet = ref new Platform::Collections::Vector<byte>(pData, len);
+			}
+		}// pBuf
+		return (pRet);
+	});
+}// GetDocumentAttachmentDataVectorAsync
 //////////////////////////////////
 IAsyncOperation<bool>^ CouchDBManager::IsAliveAsync(void) {
 	CouchDBProxy *pProxy = GetProxy();

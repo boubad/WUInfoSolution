@@ -4,11 +4,13 @@
 namespace InfoCouchDB {
 	/////////////////////////////
 	public ref class CouchDBManager sealed {
+		using byte = uint8;
 	private:
 		String^ m_url;
 		String^ m_dataBase;
 		std::unique_ptr<CouchDBProxy> m_proxy;
 		CouchDBProxy *GetProxy(void);
+		static byte *GetPointerToBufferData(IBuffer^ pBuffer, unsigned int *pLength);
 	public:
 		CouchDBManager();
 		CouchDBManager(String^ baseUrl, String^ databaseName);
@@ -38,6 +40,7 @@ namespace InfoCouchDB {
 		IAsyncOperation<IMap<String^, String^> ^>^ GetDocumentAttachmentNamesAsync(String^ docid);
 		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
+		IAsyncOperation<IVector<byte>^>^ GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName);
 	};// class CouchDBManager
 	/////////////////////////////////
 }// InfoCouchDN

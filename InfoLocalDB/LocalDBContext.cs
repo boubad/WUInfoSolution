@@ -22,6 +22,7 @@ namespace InfoLocalDB
         public DbSet<LocalVariable> LocalVariables { get; set; }
         public DbSet<LocalIndiv> LocalIndivs { get; set; }
         public DbSet<LocalValue> LocalValues { get; set; }
+        public DbSet<LocalBlob> LocalBlobs { get; set; }
         //
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

@@ -8,6 +8,29 @@ using namespace Platform::Metadata;
 //
 namespace InfoDomain {
 	//
+	public ref class InfoBlob sealed {
+	private:
+		Platform::String^ m_name;
+		Platform::String^ m_mime;
+		IVector<uint8>^ m_data;
+	public:
+		InfoBlob();
+		InfoBlob(Platform::String^ name, Platform::String^ mime, IVector<uint8>^ data);
+		//
+		property Platform::String^ Name {
+			Platform::String^ get();
+			void set(Platform::String^ value);
+		}// Name
+		property Platform::String^ MimeType {
+			Platform::String^ get();
+			void set(Platform::String^ value);
+		}// MimeType
+		property IVector<uint8>^ Data{
+			IVector<uint8>^ get();
+			void set(IVector<uint8>^ value);
+		}// Data
+	};// class InfoBlob
+	//
 	public ref class InfoDataValue sealed {
 	private:
 		InfoDataValueImpl m_impl;

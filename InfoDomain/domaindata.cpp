@@ -10,8 +10,32 @@ using namespace Platform;
 using namespace Platform::Collections;
 //
 namespace InfoDomain {
-	//
+	///////////////////////////////////////
+	InfoBlob::InfoBlob() {
 
+	}
+	InfoBlob::InfoBlob(Platform::String^ name, Platform::String^ mime, IVector<uint8>^ data) :
+		m_name(name), m_mime(mime), m_data(data) {
+	}
+	Platform::String^ InfoBlob::Name::get() {
+		return (m_name);
+	}
+	void InfoBlob::Name::set(Platform::String^ s) {
+		m_name = s;
+	}
+	Platform::String^ InfoBlob::MimeType::get() {
+		return (m_mime);
+	}
+	void InfoBlob::MimeType::set(Platform::String^ s) {
+		m_mime = s;
+	}
+	IVector<uint8>^ InfoBlob::Data::get() {
+		return (m_data);
+	}
+	void InfoBlob::Data::set(IVector<uint8>^ data) {
+		m_data = data;
+	}
+	///////////////////////////////////////
 	InfoDataValue::InfoDataValue() {
 	}
 	InfoDataValue::InfoDataValue(bool b) :m_impl(b) {

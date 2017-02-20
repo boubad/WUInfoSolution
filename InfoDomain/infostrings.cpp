@@ -56,4 +56,19 @@ namespace InfoDomain {
 	String^ InfoStrings::TYPE_VALUE::get() {
 		return  "val";
 	}
+	String^ InfoStrings::KEY_DATASETID::get() {
+		return "setid";
+	}
+	String^ InfoStrings::KEY_INDIVID::get() {
+		return "indid";
+	}
+	String^ InfoStrings::KEY_VARIABLEID::get() {
+		return "varid";
+	}
+	String^ InfoStrings::KEY_MIMETYPE::get() {
+		return "mimetype";
+	}
+	String^ InfoStrings::KEY_DATA::get() {
+		return "data";
+	}
 }// namespace InfoDomain

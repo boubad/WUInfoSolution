@@ -33,12 +33,29 @@ namespace InfoDomain {
 		static property String^ KEY_DATASETSIGLE {
 			String^ get();
 		}
+		static property String^ KEY_DATASETID {
+			String^ get();
+		}
+		static property String^ KEY_INDIVID {
+			String^ get();
+		}
+		static property String^ KEY_VARIABLEID {
+			String^ get();
+		}
+		static property String^ KEY_MIMETYPE {
+			String^ get();
+		}
+		static property String^ KEY_DATA {
+			String^ get();
+		}
 		static property String^ KEY_VARIABLESIGLE {
 			String^ get();
 		}
+		
 		static property String^ KEY_INDIVSIGLE {
 			String^ get();
 		}
+		
 		static property String^ KEY_DATATYPE {
 			String^ get();
 		}

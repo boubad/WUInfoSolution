@@ -8,6 +8,7 @@ using namespace Windows::Storage::Streams;
 namespace InfoDomain {
 /////////////////////////
 	public ref class DomainManager sealed {
+		using byte = uint8;
 	private:
 		CouchDBManager^ m_pman;
 	public:
@@ -57,6 +58,7 @@ namespace InfoDomain {
 		IAsyncOperation<IMap<String^, String^> ^>^ GetDocumentAttachmentNamesAsync(String^ docid);
 		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
+		IAsyncOperation<IVector<byte>^>^ GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName);
 	};// class DomainManager
 //////////////////////////
 }// namespace InfoDomain
