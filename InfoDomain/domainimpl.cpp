@@ -105,6 +105,12 @@ DatasetImpl::DatasetImpl(String^ sSigle) : SigleNamedItemImpl(sSigle) {
 DatasetImpl::~DatasetImpl() {
 
 }
+void DatasetImpl::GetMap(IMap<String^, Object^>^ oMap) const {
+	SigleNamedItemImpl::GetMap(oMap);
+	if (!m_annee->IsEmpty()) {
+		oMap->Insert(InfoStrings::KEY_ANNEE, m_annee);
+	}
+}
 /////////////////////////
 DatasetChildItemImpl::DatasetChildItemImpl() {
 

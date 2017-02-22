@@ -36,10 +36,10 @@ namespace InfoDomain {
 		return "dtype";
 	}
 	String^ InfoStrings::KEY_VARIABLEKIND::get() {
-		return "kind";
+		return "vkind";
 	}
 	String^ InfoStrings::KEY_MODALITES::get() {
-		return "modalites";
+		return "modals";
 	}
 	String^ InfoStrings::KEY_VALUE::get() {
 		return "val";
@@ -70,5 +70,8 @@ namespace InfoDomain {
 	}
 	String^ InfoStrings::KEY_DATA::get() {
 		return "data";
+	}
+	String^ InfoStrings::KEY_ANNEE::get() {
+		return "annee";
 	}
 }// namespace InfoDomain

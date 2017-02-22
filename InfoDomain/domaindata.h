@@ -4,9 +4,15 @@
 using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Platform::Collections;
 using namespace Platform::Metadata;
 //
 namespace InfoDomain {
+	//
+	ref class Dataset;
+	ref class Indiv;
+	ref class Variable;
+	ref class InfoValue;
 	//
 	public ref class InfoBlob sealed {
 	private:
@@ -74,6 +80,8 @@ namespace InfoDomain {
 	public ref class Dataset sealed {
 	private:
 		std::unique_ptr<DatasetImpl> m_pimpl;
+		IVector<Indiv^>^ m_inds;
+		IVector<Variable^>^ m_vars;
 	public:
 		Dataset();
 		Dataset(IMap<Platform::String^, Object^>^ pMap);
@@ -113,11 +121,27 @@ namespace InfoDomain {
 		}// name
 		IMap<Platform::String^, Object^>^ GetMap(void);
 		Platform::String^ ToString(void) override;
+		property IVector<Variable^>^ Variables {
+			IVector<Variable^>^ get();
+		void set(IVector<Variable^>^ value);
+		}
+		property IVector<Indiv^>^ Indivs {
+			IVector<Indiv^>^ get();
+			void set(IVector<Indiv^>^ value);
+		}
+		Variable^ FindVariable(String^ sigle);
+		Indiv^ FindIndiv(String^ sigle);
+		property Platform::String^ Annee {
+			Platform::String^ get();
+			void set(Platform::String^ value);
+		}// name
 	};// class Dataset
 	  //////////////////////////////////
 	public ref class Indiv sealed {
 	private:
 		std::unique_ptr<IndivImpl> m_pimpl;
+		Dataset^ m_set;
+		IVector<InfoValue^>^ m_vals;
 	public:
 		Indiv();
 		Indiv(Dataset^ pSet, Platform::String^ sigle);
@@ -158,11 +182,25 @@ namespace InfoDomain {
 		}// name
 		IMap<Platform::String^, Object^>^ GetMap(void);
 		Platform::String^ ToString(void) override;
+		property Dataset^ Set {
+			Dataset^ get() {
+				return m_set;
+			}
+			void set(Dataset^ value) {
+				m_set = value;
+			}
+		}
+		property IVector<InfoValue^>^ Values {
+			IVector<InfoValue^>^ get();
+			void set(IVector<InfoValue^>^ value);
+		}
 	};// Indiv
 	  ///////////////////////////////////////
 	public ref class Variable sealed {
 	private:
 		std::unique_ptr<VariableImpl> m_pimpl;
+		Dataset^ m_set;
+		IVector<InfoValue^>^ m_vals;
 	public:
 		Variable();
 		Variable(Dataset^ pSet, Platform::String^ sigle);
@@ -215,6 +253,18 @@ namespace InfoDomain {
 		}// Modalites
 		IMap<Platform::String^, Object^>^ GetMap(void);
 		Platform::String^ ToString(void) override;
+		property Dataset^ Set {
+			Dataset^ get() {
+				return m_set;
+			}
+			void set(Dataset^ value) {
+				m_set = value;
+			}
+		}
+		property IVector<InfoValue^>^ Values {
+			IVector<InfoValue^>^ get();
+			void set(IVector<InfoValue^>^ value);
+		}
 	};// Variable
 	  ////////////////////////////////////
 	public ref class InfoValue sealed {
@@ -227,6 +277,8 @@ namespace InfoDomain {
 		Platform::String^ m_indivsigle;
 		Platform::String^ m_variablesigle;
 		InfoDataValue^ m_value;
+		Variable^ m_var;
+		Indiv^ m_ind;
 	public:
 		InfoValue();
 		InfoValue(IMap<Platform::String^, Object^>^ oMap);
@@ -271,6 +323,22 @@ namespace InfoDomain {
 		}// IsStoreable
 		IMap<Platform::String^, Object^>^ GetMap(void);
 		Platform::String^ ToString(void) override;
+		property Variable^ Var {
+			Variable^ get() {
+				return m_var;
+			}
+			void set(Variable^ value) {
+				m_var = value;
+			}
+		}
+		property Indiv^ Ind {
+			Indiv^ get() {
+				return m_ind;
+			}
+			void set(Indiv^ value) {
+				m_ind = value;
+			}
+		}
 	};// InfoValue
 	  /////////////////////////////////////
 }// Namespace InfoDomain

@@ -137,9 +137,61 @@ namespace InfoDomain {
 	Platform::String^ Dataset::ToString(void) {
 		return m_pimpl->ToString();
 	}
+	Variable ^ Dataset::FindVariable(String ^ sigle)
+	{
+		Variable^ pRet = nullptr;
+		if ((sigle != nullptr) && (!sigle->IsEmpty())) {
+			auto it = this->Variables->First();
+			while ((pRet == nullptr) && it->HasCurrent) {
+				Variable^ p = it->Current;
+				if (p->Sigle == sigle) {
+					pRet = p;
+					break;
+				}
+				it->MoveNext();
+			}// while
+		}// sigle
+		return pRet;
+	}
+	Indiv ^ Dataset::FindIndiv(String ^ sigle)
+	{
+		Indiv^ pRet = nullptr;
+		if ((sigle != nullptr) && (!sigle->IsEmpty())) {
+			auto it = this->Indivs->First();
+			while ((pRet == nullptr) && it->HasCurrent) {
+				Indiv^ p = it->Current;
+				if (p->Sigle == sigle) {
+					pRet = p;
+					break;
+				}
+				it->MoveNext();
+			}// while
+		}// sigle
+		return pRet;
+	}
+	IVector<Variable^>^ Dataset::Variables::get() {
+		return m_vars;
+	}
+	void Dataset::Variables::set(IVector<Variable^>^ value) {
+		m_vars = value;
+	}
+	IVector<Indiv^>^ Dataset::Indivs::get() {
+		return m_inds;
+	}
+	void Dataset::Indivs::set(IVector<Indiv^>^ value) {
+		m_inds = value;
+	}
+	Platform::String^ Dataset::Annee::get() {
+		return m_pimpl->get_Annee();
+	}
+	void Dataset::Annee::set(Platform::String^ value) {
+		m_pimpl->set_Annee(value);
+	}
 	//////////////////////////////////
 	Indiv::Indiv() :m_pimpl(new IndivImpl{}) {}
-	Indiv::Indiv(Dataset^ pSet, Platform::String^ sigle) : m_pimpl(new IndivImpl{ pSet->Sigle, sigle }) {}
+	Indiv::Indiv(Dataset^ pSet, Platform::String^ sigle) : m_pimpl(new IndivImpl{ pSet->Sigle, sigle }) {
+		m_set = pSet;
+	}
 	Indiv::Indiv(IMap<Platform::String^, Object^>^ pMap) : m_pimpl(new IndivImpl{ pMap }) {}
 	Platform::String^ Indiv::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
@@ -194,9 +246,17 @@ namespace InfoDomain {
 	Platform::String^ Indiv::ToString(void) {
 		return m_pimpl->ToString();
 	}
+	IVector<InfoValue^>^ Indiv::Values::get() {
+		return m_vals;
+	}
+	void Indiv::Values::set(IVector<InfoValue^>^ value) {
+		m_vals = value;
+	}
 	///////////////////////////////////////
 	Variable::Variable() :m_pimpl(new VariableImpl{}) {}
-	Variable::Variable(Dataset^ pSet, Platform::String^ sigle) : m_pimpl(new VariableImpl{ pSet->Sigle, sigle }) {}
+	Variable::Variable(Dataset^ pSet, Platform::String^ sigle) : m_pimpl(new VariableImpl{ pSet->Sigle, sigle }) {
+		m_set = pSet;
+	}
 	Variable::Variable(IMap<Platform::String^, Object^>^ pMap) : m_pimpl(new VariableImpl{ pMap }) {}
 	Platform::String^ Variable::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
@@ -267,6 +327,12 @@ namespace InfoDomain {
 	}
 	Platform::String^ Variable::ToString(void) {
 		return m_pimpl->ToString();
+	}
+	IVector<InfoValue^>^ Variable::Values::get() {
+		return m_vals;
+	}
+	void Variable::Values::set(IVector<InfoValue^>^ value) {
+		m_vals = value;
 	}
 	////////////////////////////////////
 	InfoValue::InfoValue() :m_status(InfoStatus::Unknown) {}
@@ -349,8 +415,10 @@ namespace InfoDomain {
 		if (pInd != nullptr) {
 			m_datasetsigle = pInd->DatasetSigle;
 			m_indivsigle = pInd->Sigle;
+			m_ind = pInd;
 		}
 		if (pVar != nullptr) {
+			m_var = pVar;
 			m_variablesigle = pVar->Sigle;
 			if (m_datasetsigle->IsEmpty()) {
 				m_datasetsigle = pVar->DatasetSigle;

@@ -24,9 +24,11 @@ namespace InfoDomain {
 		IAsyncOperation<bool>^ MaintainsDatasetAsync(Dataset^ model);
 		IAsyncOperation<bool>^ RemoveDatasetAsync(Dataset^ model);
 		IAsyncOperation<bool>^ MaintainsDatasetsAsync(IVector<Dataset^>^ oVec, bool bDelete);
+		IAsyncOperation<Dataset^>^ LoadDatasetAsync(String^ sigle);
+		IAsyncOperation<IVector<String^>^>^ GetAllDatasetsSigles(void);
 		//
 		IAsyncOperation<int>^ GetDatasetVariablesCountAsync(Dataset^ pSet);
-		IAsyncOperation<IVector<Variable^>^>^ GetDatasetVariables(Dataset^ pSet, int offset, int count);
+		IAsyncOperation<IVector<Variable^>^>^ GetDatasetVariablesAsync(Dataset^ pSet, int offset, int count);
 		IAsyncOperation<Variable^>^ FindVariable(Variable^ model);
 		IAsyncOperation<Variable^>^ FindVariableBySiglesAsync(String^ setsigle, String^ sigle);
 		IAsyncOperation<bool>^ MaintainsVariableAsync(Variable^ model);
@@ -34,7 +36,7 @@ namespace InfoDomain {
 		IAsyncOperation<bool>^ MaintainsVariablesAsync(IVector<Variable^>^ oVec, bool bDelete);
 		//
 		IAsyncOperation<int>^ GetDatasetIndivsCountAsync(Dataset^ pSet);
-		IAsyncOperation<IVector<Indiv^>^>^ GetDatasetIndivs(Dataset^ pSet, int offset, int count);
+		IAsyncOperation<IVector<Indiv^>^>^ GetDatasetIndivsAsync(Dataset^ pSet, int offset, int count);
 		IAsyncOperation<Indiv^>^ FindIndiv(Indiv^ model);
 		IAsyncOperation<Indiv^>^ FindIndivBySiglesAsync(String^ setsigle, String^ sigle);
 		IAsyncOperation<bool>^ MaintainsIndivAsync(Indiv^ model);

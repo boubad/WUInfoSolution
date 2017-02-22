@@ -171,7 +171,84 @@ IAsyncOperation<bool>^  DomainManager::MaintainsDatasetsAsync(IVector<Dataset^>^
 		}
 		return (bRet);
 	});
-}// MaintainsDatasetsAsync
+}
+IAsyncOperation<Dataset^>^ DomainManager::LoadDatasetAsync(String ^ sigle)
+{
+	return create_async([this, sigle]()->Dataset^ {
+		Dataset^ pRet = create_task(this->FindDatasetBySigleAsync(sigle)).get();
+		if (pRet == nullptr) {
+			return pRet;
+		}
+		int nv = create_task(this->GetDatasetVariablesCountAsync(pRet)).get();
+		if (nv > 0) {
+			IVector<Variable^>^ vv = create_task(this->GetDatasetVariablesAsync(pRet, 0, nv)).get();
+			if (vv != nullptr) {
+				auto it = vv->First();
+				while (it->HasCurrent) {
+					Variable^ p = it->Current;
+					p->Set = pRet;
+					it->MoveNext();
+				}// it
+				pRet->Variables = vv;
+			}// vv
+		}// nv
+		int nr = create_task(this->GetDatasetIndivsCountAsync(pRet)).get();
+		if (nr > 0) {
+			IVector<Indiv^>^ vv = create_task(this->GetDatasetIndivsAsync(pRet, 0, nr)).get();
+			if (vv != nullptr) {
+				auto it = vv->First();
+				while (it->HasCurrent) {
+					Indiv^ p = it->Current;
+					p->Set = pRet;
+					it->MoveNext();
+				}// it
+				pRet->Indivs = vv;
+			}// vv
+		}// nv
+		int nx = create_task(this->GetDatasetValuesCountAsync(pRet)).get();
+		if (nx > 0) {
+			IVector<InfoValue^>^ vv = create_task(this->GetDatasetValuesAsync(pRet, 0, nx)).get();
+			if (vv != nullptr) {
+				auto it = vv->First();
+				while (it->HasCurrent) {
+					InfoValue^ p = it->Current;
+					Variable^ pVar = pRet->FindVariable(p->VariableSigle);
+					if (pVar != nullptr) {
+						p->Var = pVar;
+						pVar->Values->Append(p);
+					}// pVar
+					Indiv^ pInd = pRet->FindIndiv(p->IndivSigle);
+					if (pInd != nullptr) {
+						p->Ind = pInd;
+						pInd->Values->Append(p);
+					}
+					it->MoveNext();
+				}// it
+			}// vv
+		}// nx
+		return pRet;
+	});
+}
+IAsyncOperation<IVector<String^>^>^ DomainManager::GetAllDatasetsSigles(void)
+{
+	return create_async([this]()->IVector<String^>^ {
+		int n = create_task(this->GetDatasetsCountAsync()).get();
+		IVector<String^>^ pRet = ref new Vector<String^>();
+		if (n > 0) {
+			IVector<Dataset^>^ vv = create_task(this->GetDatasetsAsync(0, n)).get();
+			if (vv != nullptr) {
+				auto it = vv->First();
+				while (it->HasCurrent) {
+					Dataset^ p = it->Current;
+					pRet->Append(p->Sigle);
+					it->MoveNext();
+				}// it
+			}// vv
+		}// n
+		return pRet;
+	});
+}
+// MaintainsDatasetsAsync
 //
 IAsyncOperation<int>^ DomainManager::GetDatasetVariablesCountAsync(Dataset^ pSet) {
 	if (pSet == nullptr) {
@@ -189,7 +266,7 @@ IAsyncOperation<int>^ DomainManager::GetDatasetVariablesCountAsync(Dataset^ pSet
 		return (nRet);
 	});
 }//GetDatasetVariablesCountAsyn
-IAsyncOperation<IVector<Variable^>^>^ DomainManager::GetDatasetVariables(Dataset^ pSet, int offset, int count) {
+IAsyncOperation<IVector<Variable^>^>^ DomainManager::GetDatasetVariablesAsync(Dataset^ pSet, int offset, int count) {
 	if (pSet == nullptr) {
 		throw ref new InvalidArgumentException("Null Dataset");
 	}
@@ -358,7 +435,7 @@ IAsyncOperation<int>^ DomainManager::GetDatasetIndivsCountAsync(Dataset^ pSet) {
 		return (nRet);
 	});
 }//GetDatasetVariablesCountAsync
-IAsyncOperation<IVector<Indiv^>^>^ DomainManager::GetDatasetIndivs(Dataset^ pSet, int offset, int count) {
+IAsyncOperation<IVector<Indiv^>^>^ DomainManager::GetDatasetIndivsAsync(Dataset^ pSet, int offset, int count) {
 	if (pSet == nullptr) {
 		throw ref new InvalidArgumentException("Null Dataset");
 	}

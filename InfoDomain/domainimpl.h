@@ -187,11 +187,20 @@ namespace InfoDomain
 		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
 	};// class SigleNamedItemImpl
 	class DatasetImpl : public SigleNamedItemImpl {
+	private:
+		String^ m_annee;
 	public:
 		DatasetImpl();
 		DatasetImpl(IMap<String^, Object^>^ pMap);
 		DatasetImpl(String^ sSigle);
 		virtual ~DatasetImpl();
+		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
+		String^ get_Annee(void) const {
+			return m_annee;
+		}
+		void set_Annee(String^ s) {
+			m_annee = s;
+		}
 	};// class DatasetImpl
 	//
 	class DatasetChildItemImpl : public SigleNamedItemImpl {
