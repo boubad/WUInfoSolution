@@ -41,7 +41,7 @@ namespace InfoDomain {
 				m_pimpl->set_Observations(value);
 			}
 		}// Observations
-		property String^ Type {
+		property String^ InfoType {
 			String^ get() {
 				return m_pimpl->get_Type();
 			}

@@ -1,5 +1,6 @@
 #pragma once
 #include "domainimpl.h"
+#include "infostrings.h"
 
 using namespace Platform;
 using namespace Windows::Foundation;
@@ -35,6 +36,11 @@ namespace InfoDomain {
 			IVector<uint8>^ get();
 			void set(IVector<uint8>^ value);
 		}// Data
+		property String^ InfoType {
+			String^ get() {
+				return  InfoStrings::TYPE_BLOB;
+			}
+		}
 	};// class InfoBlob
 	//
 	public ref class InfoDataValue sealed {
@@ -105,8 +111,10 @@ namespace InfoDomain {
 			Platform::String^ get();
 			void set(Platform::String^ value);
 		}// Observations
-		property Platform::String^ Type {
-			Platform::String^ get();
+		property Platform::String^ InfoType {
+			String^ get() {
+				return m_pimpl->get_Type();
+			}
 		}// Type
 		property bool IsStoreable {
 			bool get();
@@ -166,8 +174,10 @@ namespace InfoDomain {
 			Platform::String^ get();
 			void set(Platform::String^ value);
 		}// Observations
-		property Platform::String^ Type {
-			Platform::String^ get();
+		property Platform::String^ InfoType {
+			String^ get() {
+				return m_pimpl->get_Type();
+			}
 		}// Type
 		property bool IsStoreable {
 			bool get();
@@ -225,8 +235,10 @@ namespace InfoDomain {
 			Platform::String^ get();
 			void set(Platform::String^ value);
 		}// Observations
-		property Platform::String^ Type {
-			Platform::String^ get();
+		property Platform::String^ InfoType {
+			String^ get() {
+				return m_pimpl->get_Type();
+			}
 		}// Type
 		property bool IsStoreable {
 			bool get();
@@ -311,8 +323,10 @@ namespace InfoDomain {
 		property Platform::String^ VariableSigle {
 			Platform::String^ get();
 		}// VariableSigle
-		property Platform::String^ Type {
-			Platform::String^ get();
+		property Platform::String^ InfoType {
+			String^ get() {
+				return InfoStrings::TYPE_VALUE;
+			}
 		}// Type
 		property InfoDataValue^ Value {
 			InfoDataValue^ get();

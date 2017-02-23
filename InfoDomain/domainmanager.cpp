@@ -70,10 +70,10 @@ IAsyncOperation<Etudiant^>^ DomainManager::FindEtudiantByDossierAsync(String^ do
 	}
 	CouchDBManager^ pMan = this->m_pman;
 	return create_async([pMan, dossier]()->Etudiant^ {
+		Etudiant^ oArg = ref new Etudiant();
+		oArg->Dossier = dossier;
 		Etudiant^ oRet;
-		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
-		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_ETUDIANT);
-		oFetch->Insert(InfoStrings::KEY_DOSSIER, dossier);
+		IMap<String^, Object^>^ oFetch = oArg->GetMap();
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
 		if ((oMap != nullptr) && (oMap->Size > 0)) {
 			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
@@ -240,14 +240,14 @@ IAsyncOperation<Dataset^>^ DomainManager::FindDatasetBySigleAsync(String^ sigle)
 	}
 	CouchDBManager^ pMan = this->m_pman;
 	return create_async([pMan, sigle]()->Dataset^ {
+		Dataset^ oArg = ref new Dataset{};
+		oArg->Sigle = sigle;
 		Dataset^ oRet = nullptr;
-		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
-		oFetch->Insert(InfoStrings::KEY_SIGLE, sigle);
-		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_DATASET);
+		IMap<String^, Object^>^ oFetch = oArg->GetMap();
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
 		if (oMap != nullptr) {
 			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
-				oRet = ref new Dataset(oMap);
+				oRet = ref new Dataset{ oMap };
 			}
 		}// oMap
 		return (oRet);
@@ -486,8 +486,8 @@ IAsyncOperation<Variable^>^ DomainManager::FindVariableBySiglesAsync(String^ set
 	return create_async([pMan, setsigle, sigle]()->Variable^ {
 		Variable^ oRet = nullptr;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
-		oFetch->Insert(InfoStrings::KEY_SIGLE, sigle);
-		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, setsigle);
+		oFetch->Insert(InfoStrings::KEY_SIGLE, StringUtils::ToUpperFormat(sigle));
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, StringUtils::ToUpperFormat(setsigle));
 		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VARIABLE);
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
 		if (oMap != nullptr) {
@@ -655,8 +655,8 @@ IAsyncOperation<Indiv^>^ DomainManager::FindIndivBySiglesAsync(String^ setsigle,
 	return create_async([pMan, setsigle, sigle]()->Indiv^ {
 		Indiv^ oRet = nullptr;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
-		oFetch->Insert(InfoStrings::KEY_SIGLE, sigle);
-		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, setsigle);
+		oFetch->Insert(InfoStrings::KEY_SIGLE, StringUtils::ToUpperFormat(sigle));
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, StringUtils::ToUpperFormat(setsigle));
 		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_INDIV);
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
 		if (oMap != nullptr) {
@@ -915,9 +915,9 @@ IAsyncOperation<InfoValue^>^ DomainManager::FindValueBySiglesAsync(String^ setsi
 	return create_async([pMan, setsigle, indsigle, varsigle]()->InfoValue^ {
 		InfoValue^ oRet = nullptr;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
-		oFetch->Insert(InfoStrings::KEY_INDIVSIGLE, indsigle);
-		oFetch->Insert(InfoStrings::KEY_VARIABLESIGLE, varsigle);
-		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, setsigle);
+		oFetch->Insert(InfoStrings::KEY_INDIVSIGLE, StringUtils::ToUpperFormat(indsigle));
+		oFetch->Insert(InfoStrings::KEY_VARIABLESIGLE, StringUtils::ToUpperFormat(varsigle));
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, StringUtils::ToUpperFormat(setsigle));
 		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
 		if (oMap != nullptr) {

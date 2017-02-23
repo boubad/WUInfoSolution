@@ -105,11 +105,13 @@ namespace UnitTestCS
                     LocalVariable v = man.FindVariableBySiglesAsync(setsigle, varsigle).Result;
                     if (v == null)
                     {
-                        LocalVariable xVar = new LocalVariable(pSet, varsigle);
-                        xVar.Name = varsigle + " name";
-                        xVar.Description = varsigle + " description";
-                        xVar.VariableKind = (int)InfoKind.Normal;
-                        xVar.VariableType = (int)InfoDataType.Integer;
+                        LocalVariable xVar = new LocalVariable(pSet, varsigle)
+                        {
+                            Name = varsigle + " name",
+                            Description = varsigle + " description",
+                            VariableKind = (int)InfoKind.Normal,
+                            VariableType = (int)InfoDataType.Integer
+                        };
                         vars.Add(xVar);
                     }// v
                 }// s
@@ -124,10 +126,12 @@ namespace UnitTestCS
                     LocalIndiv v = man.FindIndivBySiglesAsync(setsigle, indsigle).Result;
                     if (v == null)
                     {
-                        LocalIndiv xInd = new LocalIndiv(pSet, indsigle);
-                        xInd.Name = indsigle + " name";
-                        xInd.Description = indsigle + " description";
-                        xInd.Status = (int)InfoStatus.Normal;
+                        LocalIndiv xInd = new LocalIndiv(pSet, indsigle)
+                        {
+                            Name = indsigle + " name",
+                            Description = indsigle + " description",
+                            Status = (int)InfoStatus.Normal
+                        };
                         inds.Add(xInd);
                     }// v
                 }// indsigle
@@ -198,11 +202,13 @@ namespace UnitTestCS
                     LocalVariable v = man.FindVariableBySiglesAsync(setsigle, varsigle).Result;
                     if (v == null)
                     {
-                        LocalVariable xVar = new LocalVariable(pSet, varsigle);
-                        xVar.Name = varsigle + " name";
-                        xVar.Description = varsigle + " description";
-                        xVar.VariableKind = (int)InfoKind.Normal;
-                        xVar.VariableType = (int)InfoDataType.Integer;
+                        LocalVariable xVar = new LocalVariable(pSet, varsigle)
+                        {
+                            Name = varsigle + " name",
+                            Description = varsigle + " description",
+                            VariableKind = (int)InfoKind.Normal,
+                            VariableType = (int)InfoDataType.Integer
+                        };
                         vars.Add(xVar);
                     }// v
                 }// s
@@ -217,10 +223,12 @@ namespace UnitTestCS
                     LocalIndiv v = man.FindIndivBySiglesAsync(setsigle, indsigle).Result;
                     if (v == null)
                     {
-                        LocalIndiv xInd = new LocalIndiv(pSet, indsigle);
-                        xInd.Name = indsigle + " name";
-                        xInd.Description = indsigle + " description";
-                        xInd.Status = (int)InfoStatus.Normal;
+                        LocalIndiv xInd = new LocalIndiv(pSet, indsigle)
+                        {
+                            Name = indsigle + " name",
+                            Description = indsigle + " description",
+                            Status = (int)InfoStatus.Normal
+                        };
                         inds.Add(xInd);
                     }// v
                 }// indsigle

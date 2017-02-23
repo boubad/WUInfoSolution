@@ -109,9 +109,6 @@ namespace InfoDomain {
 	void Dataset::Observations::set(Platform::String^ value) {
 		m_pimpl->set_Observations(value);
 	}
-	Platform::String^ Dataset::Type::get() {
-		return InfoStrings::TYPE_DATASET;
-	}// Type
 	bool Dataset::IsStoreable::get() {
 		return m_pimpl->get_IsStoreable();
 	}// IsStoreable
@@ -215,9 +212,7 @@ namespace InfoDomain {
 	void Indiv::Observations::set(Platform::String^ value) {
 		m_pimpl->set_Observations(value);
 	}
-	Platform::String^ Indiv::Type::get() {
-		return InfoStrings::TYPE_INDIV;
-	}// Type
+	
 	bool Indiv::IsStoreable::get() {
 		return m_pimpl->get_IsStoreable();
 	}
@@ -277,9 +272,6 @@ namespace InfoDomain {
 	void Variable::Observations::set(Platform::String^ value) {
 		m_pimpl->set_Observations(value);
 	}
-	Platform::String^ Variable::Type::get() {
-		return InfoStrings::TYPE_VARIABLE;
-	}// Type
 	bool Variable::IsStoreable::get() {
 		return m_pimpl->get_IsStoreable();
 	}
@@ -359,9 +351,10 @@ namespace InfoDomain {
 		if (oMap->HasKey(InfoStrings::KEY_VARIABLESIGLE)) {
 			m_variablesigle = oMap->Lookup(InfoStrings::KEY_VARIABLESIGLE)->ToString();
 		}
-		if (oMap->HasKey(InfoStrings::KEY_VALUE)) {
+		if (oMap->HasKey(InfoStrings::KEY_VALUE) && oMap->HasKey(InfoStrings::KEY_DATATYPE)) {
 			Object^ oval = oMap->Lookup(InfoStrings::KEY_VALUE);
-			if (oMap->HasKey(InfoStrings::KEY_DATATYPE) && (oval != nullptr)) {
+			if (oval != nullptr) {
+				Platform::String^ sv = oval->ToString();
 				Object^ ov = oMap->Lookup(InfoStrings::KEY_DATATYPE);
 				if (ov != nullptr) {
 					String^ s = ov->ToString();
@@ -374,26 +367,34 @@ namespace InfoDomain {
 						switch (t) {
 						case InfoDataType::Text:
 						{
-							Platform::String^ sv = oval->ToString();
 							m_value = ref new InfoDataValue(sv);
 						}
 						break;
 						case InfoDataType::Logical:
 						{
-							bool b = (bool)oval;
-							m_value = ref new InfoDataValue(b);
+							std::wstring ssx{ sv->Data() };
+							std::wstringstream in2{ ssx };
+							bool n{ false };
+							in2 >> n;
+							m_value = ref new InfoDataValue(n);
 						}
 						break;
 						case InfoDataType::Real:
 						{
-							double b = (double)oval;
-							m_value = ref new InfoDataValue(b);
+							std::wstring ssx{ sv->Data() };
+							std::wstringstream in2{ ssx };
+							double n = 0;
+							in2 >> n;
+							m_value = ref new InfoDataValue(n);
 						}
 						break;
 						case InfoDataType::Integer:
 						{
-							int b = (int)oval;
-							m_value = ref new InfoDataValue(b);
+							std::wstring ssx{ sv->Data() };
+							std::wstringstream in2{ ssx };
+							int n = 0;
+							in2 >> n;
+							m_value = ref new InfoDataValue(n);
 						}
 						break;
 						default:
@@ -463,9 +464,6 @@ namespace InfoDomain {
 	Platform::String^ InfoValue::VariableSigle::get() {
 		return m_variablesigle;
 	}
-	Platform::String^ InfoValue::Type::get() {
-		return InfoStrings::TYPE_VALUE;
-	}
 	InfoDataValue^ InfoValue::Value::get() {
 		return m_value;
 	}
@@ -482,7 +480,7 @@ namespace InfoDomain {
 	}
 	IMap<Platform::String^, Object^>^ InfoValue::GetMap(void) {
 		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
-		oMap->Insert(InfoStrings::KEY_TYPE, this->Type);
+		oMap->Insert(InfoStrings::KEY_TYPE, this->InfoType);
 		if (m_status != InfoStatus::Unknown) {
 			int ival = static_cast<int>(m_status);
 			oMap->Insert(InfoStrings::KEY_STATUS, ival);

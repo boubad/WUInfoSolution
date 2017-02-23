@@ -16,6 +16,8 @@ namespace InfoCouchDB {
 		String^ m_database;
 		HttpClient^ m_client;
 		//
+		void check_database(void);
+		//
 		static String^ SLASH;
 		static String^ REV;
 		static String^ JSON_MIME_TYPE;

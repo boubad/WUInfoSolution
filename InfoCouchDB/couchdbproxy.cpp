@@ -2,6 +2,7 @@
 #include "couchdbproxy.h"
 //////////////////////////////
 using namespace Platform::Collections;
+using namespace Windows::Web::Http;
 using namespace Windows::Web::Http::Headers;
 using namespace InfoCouchDB;
 using namespace concurrency;
@@ -36,11 +37,35 @@ CouchDBProxy::CouchDBProxy(String^ url, String^ database) {
 	m_client = ref new HttpClient();
 	m_client->DefaultRequestHeaders->Accept->Clear();
 	m_client->DefaultRequestHeaders->Accept->Append(ref new HttpMediaTypeWithQualityHeaderValue(JSON_MIME_TYPE));
+	this->check_database();
 }
 CouchDBProxy::~CouchDBProxy() {
 	m_url = nullptr;
 	m_database = nullptr;
 	m_client = nullptr;
+}
+void CouchDBProxy::check_database(void) {
+	String^ sUri = this->m_url + this->m_database;
+	Uri^ uri = ref new Uri(sUri);
+	HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
+	auto myop = m_client->SendRequestAsync(req);
+	bool bRet = create_task(myop).then([](HttpResponseMessage^ response) {
+		auto status = response->StatusCode;
+		if ((status != HttpStatusCode::NotFound) && (status != HttpStatusCode::Ok)) {
+			throw ref new OperationCanceledException();
+		}
+		return task_from_result(status == HttpStatusCode::Ok);
+	}).get();
+	if (!bRet) {
+		HttpRequestMessage^ req2 = ref new HttpRequestMessage(HttpMethod::Put, uri);
+		auto myop2 = m_client->SendRequestAsync(req2);
+		create_task(myop2).then([](HttpResponseMessage^ response) {
+			auto status = response->StatusCode;
+			if (status != HttpStatusCode::Created) {
+				throw ref new OperationCanceledException();
+			}
+		}).wait();
+	}
 }
 ////////////////////////////////////////////////
 task<IBuffer^> CouchDBProxy::GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName) {

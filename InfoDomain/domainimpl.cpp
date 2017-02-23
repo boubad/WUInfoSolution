@@ -19,7 +19,7 @@ InfoItemImpl::InfoItemImpl(IMap<String^, Object^>^ oMap) : m_status(InfoStatus::
 		m_rev = oMap->Lookup(InfoStrings::KEY_REV)->ToString();
 	}
 	if (oMap->HasKey(InfoStrings::KEY_DESC)) {
-		m_desc = oMap->Lookup(InfoStrings::KEY_DESC)->ToString();
+		m_desc = StringUtils::Trim(oMap->Lookup(InfoStrings::KEY_DESC)->ToString());
 	}
 	if (oMap->HasKey(InfoStrings::KEY_STATUS)) {
 		Object^ o = oMap->Lookup(InfoStrings::KEY_STATUS);
@@ -73,14 +73,14 @@ SigleNamedItemImpl::SigleNamedItemImpl() {
 }
 SigleNamedItemImpl::SigleNamedItemImpl(IMap<String^, Object^>^ pMap) : InfoItemImpl(pMap) {
 	if (pMap->HasKey(InfoStrings::KEY_SIGLE)) {
-		m_sigle = pMap->Lookup(InfoStrings::KEY_SIGLE)->ToString();
+		m_sigle = StringUtils::ToUpperFormat(pMap->Lookup(InfoStrings::KEY_SIGLE)->ToString());
 	}
 	if (pMap->HasKey(InfoStrings::KEY_NAME)) {
-		m_sigle = pMap->Lookup(InfoStrings::KEY_NAME)->ToString();
+		m_name = StringUtils::FormatName(pMap->Lookup(InfoStrings::KEY_NAME)->ToString());
 	}
 }
 SigleNamedItemImpl::SigleNamedItemImpl(String^ sSigle) {
-	m_sigle = sSigle;
+	m_sigle = StringUtils::ToUpperFormat(sSigle);
 }
 SigleNamedItemImpl::~SigleNamedItemImpl() {
 }
@@ -118,17 +118,20 @@ void DatasetImpl::GetMap(IMap<String^, Object^>^ oMap) const {
 		oMap->Insert(InfoStrings::KEY_ANNEE, m_annee);
 	}
 }
+String^ DatasetImpl::get_Type(void) const {
+	return InfoStrings::TYPE_DATASET;
+}
 /////////////////////////
 DatasetChildItemImpl::DatasetChildItemImpl() {
 
 }
 DatasetChildItemImpl::DatasetChildItemImpl(IMap<String^, Object^>^ pMap) :SigleNamedItemImpl(pMap) {
 	if (pMap->HasKey(InfoStrings::KEY_DATASETSIGLE)) {
-		m_datasetsigle = pMap->Lookup(InfoStrings::KEY_DATASETSIGLE)->ToString();
+		m_datasetsigle = StringUtils::ToUpperFormat(pMap->Lookup(InfoStrings::KEY_DATASETSIGLE)->ToString());
 	}
 }
-DatasetChildItemImpl::DatasetChildItemImpl(String^ setsigle, String^ sigle) : SigleNamedItemImpl(sigle), m_datasetsigle(setsigle) {
-
+DatasetChildItemImpl::DatasetChildItemImpl(String^ setsigle, String^ sigle) : SigleNamedItemImpl(sigle) {
+	m_datasetsigle = StringUtils::ToUpperFormat(setsigle);
 }
 DatasetChildItemImpl::~DatasetChildItemImpl() {
 
@@ -155,6 +158,9 @@ IndivImpl::IndivImpl(String^ setsigle, String^ sigle) : DatasetChildItemImpl(set
 }
 IndivImpl::~IndivImpl() {
 
+}
+String^ IndivImpl::get_Type(void) const {
+	return InfoStrings::TYPE_INDIV;
 }
 /////////////////////////
 VariableImpl::VariableImpl() :m_datatype(InfoDataType::Unknown), m_kind(InfoKind::Unknown) {
@@ -236,6 +242,9 @@ IVector<String^>^ VariableImpl::get_Modalites(void)  {
 void VariableImpl::set_Modalites(IVector<String^>^ pVec) {
 	m_modalites = pVec;
 }//set_Modalites
+String^ VariableImpl::get_Type(void) const {
+	return InfoStrings::TYPE_VARIABLE;
+}
 /////////////////////////////
 EtudiantImpl::EtudiantImpl(){
 

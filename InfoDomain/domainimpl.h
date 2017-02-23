@@ -1,5 +1,7 @@
 #pragma once
 #include <memory>
+#include "StringUtils.h"
+///////////////////////////
 using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
@@ -153,7 +155,7 @@ namespace InfoDomain
 			return this->m_desc;
 		}
 		void set_Observations(String^ s) {
-			this->m_desc = s;
+			this->m_desc = StringUtils::Trim(s);
 		}
 		//
 		virtual bool get_IsPersisted(void) const;
@@ -172,19 +174,19 @@ namespace InfoDomain
 	public:
 		virtual ~SigleNamedItemImpl();
 		String^ get_Sigle(void) const {
-			return m_sigle;
+			return (m_sigle == nullptr) ? "" : m_sigle;
 		}
 		String^ ToString(void) const {
 			return (m_sigle == nullptr) ? "" : m_sigle;
 		}
 		void set_Sigle(String^ s) {
-			m_sigle = s; 
+			m_sigle = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Name(void) const {
-			return m_name;
+			return (m_name == nullptr) ? "" : m_name;
 		}
 		void set_Name(String^ name) {
-			m_name = name;
+			m_name = StringUtils::FormatName(name);
 		}
 		virtual bool get_IsStoreable(void) const override;
 		virtual void GetMap(IMap<String^, Object^>^ oMap) const override;
@@ -199,11 +201,12 @@ namespace InfoDomain
 		virtual ~DatasetImpl();
 		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
 		String^ get_Annee(void) const {
-			return m_annee;
+			return (m_annee == nullptr) ? "" : m_annee;
 		}
 		void set_Annee(String^ s) {
-			m_annee = s;
+			m_annee = StringUtils::ToUpperFormat(s);
 		}
+		virtual String^ get_Type(void) const override;
 	};// class DatasetImpl
 	//
 	class DatasetChildItemImpl : public SigleNamedItemImpl {
@@ -231,6 +234,7 @@ namespace InfoDomain
 		IndivImpl(IMap<String^, Object^>^ pMap);
 		IndivImpl(String^ setsigle, String^ sigle);
 		virtual ~IndivImpl();
+		virtual String^ get_Type(void) const override;
 	};// class DatasetChildItemImp
 	//
 	class VariableImpl : public DatasetChildItemImpl {
@@ -260,6 +264,7 @@ namespace InfoDomain
 		void set_Modalites(IVector<String^>^ pVec);
 		virtual bool get_IsStoreable(void) const override;
 		virtual void GetMap(IMap<String^, Object^>^ oMap) const override;
+		virtual String^ get_Type(void) const override;
 	};// class VariableImpl
 	//
 	class EtudiantImpl : public InfoItemImpl {
@@ -289,112 +294,112 @@ namespace InfoDomain
 		virtual ~EtudiantImpl();
 	public:
 		String^ get_Dossier(void) const {
-			return m_dossier;
+			return (m_dossier == nullptr) ? "" : m_dossier;
 		}
 		void set_Dossier(String^ s) {
-			m_dossier = s;
+			m_dossier = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Sexe(void) const {
-			return m_sexe;
+			return (m_sexe == nullptr) ? "" : m_sexe;
 		}
 		void set_Sexe(String^ s) {
-			m_sexe = s;
+			m_sexe = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Birth(void) const {
-			return m_birth;
+			return (m_birth == nullptr) ? "" : m_birth;
 		}
 		void set_Birth(String^ s) {
-			m_birth = s;
+			m_birth = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Firstname(void) const {
-			return m_firstname;
+			return (m_firstname == nullptr) ? "" : m_firstname;
 		}
 		void set_Firstname(String^ s) {
-			m_firstname = s;
+			m_firstname = StringUtils::FormatName(s);
 		}
 		String^ get_Lastname(void) const {
-			return m_lastname;
+			return (m_lastname == nullptr) ? "" :m_lastname;
 		}
 		void set_Lastname(String^ s) {
-			m_lastname = s;
+			m_lastname = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Departement(void) const {
-			return m_dep;
+			return (m_dep == nullptr) ? "" : m_dep;
 		}
 		void set_Departement(String^ s) {
-			m_dep = s;
+			m_dep = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Ville(void) const {
-			return m_ville;
+			return (m_ville == nullptr) ? "" : m_ville;
 		}
 		void set_Ville(String^ s) {
-			m_ville = s;
+			m_ville = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Lycee(void) const {
-			return m_lycee;
+			return (m_lycee == nullptr) ? "" : m_lycee;
 		}
 		void set_Lycee(String^ s) {
-			m_lycee = s;
+			m_lycee = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Groupe(void) const {
-			return m_groupe;
+			return (m_groupe == nullptr) ? "" : m_groupe;
 		}
 		void set_Groupe(String^ s) {
-			m_groupe = s;
+			m_groupe = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Annee(void) const {
-			return m_annee;
+			return (m_annee == nullptr)? "" : m_annee;
 		}
 		void set_Annee(String^ s) {
-			m_annee = s;
+			m_annee = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_SerieBac(void) const {
-			return m_seriebac;
+			return (m_seriebac == nullptr) ? "" : m_seriebac;
 		}
 		void set_SerieBac(String^ s) {
-			m_seriebac = s;
+			m_seriebac = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_OptionBac(void) const {
-			return m_optionbac;
+			return (m_optionbac == nullptr) ? "" : m_optionbac;
 		}
 		void set_OptionBac(String^ s) {
-			m_optionbac = s;
+			m_optionbac = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_MentionBac(void) const {
-			return m_mentionbac;
+			return (m_mentionbac == nullptr) ? "" : m_mentionbac;
 		}
 		void set_MentionBac(String^ s) {
-			m_mentionbac = s;
+			m_mentionbac = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_EtudesSuperieures(void) const {
-			return m_sup;
+			return (m_sup == nullptr) ? "" : m_sup;
 		}
 		void set_EtudesSuperieures(String^ s) {
-			m_sup = s;
+			m_sup = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Apb(void) const {
-			return m_apb;
+			return (m_apb == nullptr) ? "" : m_apb;
 		}
 		void set_Apb(String^ s) {
-			m_apb = s;
+			m_apb = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Redoublant(void) const {
-			return m_red;
+			return (m_red == nullptr) ? "" : m_red;
 		}
 		void set_Redoublant(String^ s) {
-			m_red = s;
+			m_red = StringUtils::ToUpperFormat(s);
 		}
 		String^ get_Avatar(void) const {
-			return m_avatar;
+			return (m_avatar == nullptr) ? "" : m_avatar;
 		}
 		void set_Avatar(String^ s) {
-			m_avatar = s;
+			m_avatar = StringUtils::Trim(s);
 		}
 		String^ get_Email(void) const {
-			return m_email;
+			return (m_email == nullptr) ? "" : m_email;
 		}
 		void set_Email(String^ s) {
-			m_email = s;
+			m_email = StringUtils::Trim(s);
 		}
 		IVector<String^>^ get_DatasetsSigles(void){
 			if (m_sets == nullptr) {

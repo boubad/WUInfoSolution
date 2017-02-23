@@ -88,6 +88,11 @@ namespace InfoDomain {
 				return "gen";
 			}
 		}
+		static property String^ TYPE_BLOB {
+			String^ get() {
+				return "blob";
+			}
+		}
 		static property String^ TYPE_ETUDIANT {
 			String^ get() {
 				return "etud";
