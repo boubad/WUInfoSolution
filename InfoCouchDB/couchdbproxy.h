@@ -29,11 +29,16 @@ namespace InfoCouchDB {
 		static String^ KEY_ATTACHMENTS;
 		static String^ KEY_CONTENT_TYPE;
 		static String^ ARG_ATTACHMENTS;
+		static String^ STRING_INDEX_URI;
 		//
 		static String^ KEY_SELECTOR;
 		static String^ KEY_FIELDS;
 		static String^ KEY_LIMIT;
 		static String^ KEY_SKIP;
+		//
+		static String^ KEY_INDEX;
+		static String^ KEY_DESIGNDOC;
+		static String^ KEY_NAME;
 		//
 		static IJsonValue^ ConvertObject(Object^ obj);
 		static String^ ConvertFindFilter(IMap<String^, Object^>^ oFetch,
@@ -75,6 +80,7 @@ namespace InfoCouchDB {
 		task<bool> MaintainsDocumentsAsync(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete = false);
 		task<bool> RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch);
 		//
+		task<bool> CreateIndexAsync(IVector<String^>^ fields, String^ name = nullptr, String^ designDoc = nullptr);
 	};// class CouchDBProxy
 //////////////////////////////
 }// namespace InfoCouchDB

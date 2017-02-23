@@ -41,6 +41,8 @@ namespace InfoCouchDB {
 		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IVector<byte>^>^ GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName);
+		//
+		IAsyncOperation<bool>^ CreateIndexAsync(IVector<String^>^ fields, String^ name, String^ designDoc);
 	};// class CouchDBManager
 	/////////////////////////////////
 }// InfoCouchDN

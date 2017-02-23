@@ -120,7 +120,7 @@ namespace InfoDomain {
 			void set(Platform::String^ value);
 		}// name
 		IMap<Platform::String^, Object^>^ GetMap(void);
-		Platform::String^ ToString(void) override;
+		virtual Platform::String^ ToString(void) override;
 		property IVector<Variable^>^ Variables {
 			IVector<Variable^>^ get();
 		void set(IVector<Variable^>^ value);
@@ -181,7 +181,7 @@ namespace InfoDomain {
 			void set(Platform::String^ value);
 		}// name
 		IMap<Platform::String^, Object^>^ GetMap(void);
-		Platform::String^ ToString(void) override;
+		virtual Platform::String^ ToString(void) override;
 		property Dataset^ Set {
 			Dataset^ get() {
 				return m_set;
@@ -252,7 +252,7 @@ namespace InfoDomain {
 			void set(IVector<Platform::String^>^ value);
 		}// Modalites
 		IMap<Platform::String^, Object^>^ GetMap(void);
-		Platform::String^ ToString(void) override;
+		virtual Platform::String^ ToString(void) override;
 		property Dataset^ Set {
 			Dataset^ get() {
 				return m_set;
@@ -322,7 +322,7 @@ namespace InfoDomain {
 			bool get();
 		}// IsStoreable
 		IMap<Platform::String^, Object^>^ GetMap(void);
-		Platform::String^ ToString(void) override;
+		virtual Platform::String^ ToString(void) override;
 		property Variable^ Var {
 			Variable^ get() {
 				return m_var;

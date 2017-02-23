@@ -3,6 +3,8 @@
 using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
+using namespace Platform::Collections;
+////////////////////////
 namespace InfoDomain
 {
 	//
@@ -154,6 +156,7 @@ namespace InfoDomain
 			this->m_desc = s;
 		}
 		//
+		virtual bool get_IsPersisted(void) const;
 		virtual bool get_IsStoreable(void) const;
 		virtual String^ get_Type(void) const;
 		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
@@ -183,8 +186,8 @@ namespace InfoDomain
 		void set_Name(String^ name) {
 			m_name = name;
 		}
-		virtual bool get_IsStoreable(void) const;
-		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
+		virtual bool get_IsStoreable(void) const override;
+		virtual void GetMap(IMap<String^, Object^>^ oMap) const override;
 	};// class SigleNamedItemImpl
 	class DatasetImpl : public SigleNamedItemImpl {
 	private:
@@ -218,8 +221,8 @@ namespace InfoDomain
 		void set_DatasetSigle(String^ s) {
 			m_datasetsigle = s;
 		}
-		virtual bool get_IsStoreable(void) const;
-		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
+		virtual bool get_IsStoreable(void) const override;
+		virtual void GetMap(IMap<String^, Object^>^ oMap) const override;
 	};
 	//
 	class IndivImpl : public DatasetChildItemImpl {
@@ -234,7 +237,7 @@ namespace InfoDomain
 	private:
 		InfoDataType m_datatype;
 		InfoKind m_kind;
-		std::vector<std::wstring> m_modalites;
+		IVector<String^>^ m_modalites;
 	public:
 		VariableImpl();
 		VariableImpl(IMap<String^, Object^>^ pMap);
@@ -253,10 +256,158 @@ namespace InfoDomain
 		void set_VariableKind(InfoKind k) {
 			m_kind = k;
 		}
-		IVector<String^>^ get_Modalites(void) const;
+		IVector<String^>^ get_Modalites(void);
 		void set_Modalites(IVector<String^>^ pVec);
-		virtual bool get_IsStoreable(void) const;
-		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
+		virtual bool get_IsStoreable(void) const override;
+		virtual void GetMap(IMap<String^, Object^>^ oMap) const override;
 	};// class VariableImpl
+	//
+	class EtudiantImpl : public InfoItemImpl {
+	private:
+		String^ m_annee;
+		String^ m_dossier;
+		String^ m_sexe;
+		String^ m_birth;
+		String^ m_firstname;
+		String^ m_lastname;
+		String^ m_dep;
+		String^ m_ville;
+		String^ m_lycee;
+		String^ m_groupe;
+		String^ m_seriebac;
+		String^ m_optionbac;
+		String^ m_mentionbac;
+		String^ m_apb;
+		String^ m_sup;
+		String^ m_red;
+		String^ m_avatar;
+		String^ m_email;
+		IVector<String^>^ m_sets;
+	public:
+		EtudiantImpl();
+		EtudiantImpl(IMap<String^, Object^>^ pMap);
+		virtual ~EtudiantImpl();
+	public:
+		String^ get_Dossier(void) const {
+			return m_dossier;
+		}
+		void set_Dossier(String^ s) {
+			m_dossier = s;
+		}
+		String^ get_Sexe(void) const {
+			return m_sexe;
+		}
+		void set_Sexe(String^ s) {
+			m_sexe = s;
+		}
+		String^ get_Birth(void) const {
+			return m_birth;
+		}
+		void set_Birth(String^ s) {
+			m_birth = s;
+		}
+		String^ get_Firstname(void) const {
+			return m_firstname;
+		}
+		void set_Firstname(String^ s) {
+			m_firstname = s;
+		}
+		String^ get_Lastname(void) const {
+			return m_lastname;
+		}
+		void set_Lastname(String^ s) {
+			m_lastname = s;
+		}
+		String^ get_Departement(void) const {
+			return m_dep;
+		}
+		void set_Departement(String^ s) {
+			m_dep = s;
+		}
+		String^ get_Ville(void) const {
+			return m_ville;
+		}
+		void set_Ville(String^ s) {
+			m_ville = s;
+		}
+		String^ get_Lycee(void) const {
+			return m_lycee;
+		}
+		void set_Lycee(String^ s) {
+			m_lycee = s;
+		}
+		String^ get_Groupe(void) const {
+			return m_groupe;
+		}
+		void set_Groupe(String^ s) {
+			m_groupe = s;
+		}
+		String^ get_Annee(void) const {
+			return m_annee;
+		}
+		void set_Annee(String^ s) {
+			m_annee = s;
+		}
+		String^ get_SerieBac(void) const {
+			return m_seriebac;
+		}
+		void set_SerieBac(String^ s) {
+			m_seriebac = s;
+		}
+		String^ get_OptionBac(void) const {
+			return m_optionbac;
+		}
+		void set_OptionBac(String^ s) {
+			m_optionbac = s;
+		}
+		String^ get_MentionBac(void) const {
+			return m_mentionbac;
+		}
+		void set_MentionBac(String^ s) {
+			m_mentionbac = s;
+		}
+		String^ get_EtudesSuperieures(void) const {
+			return m_sup;
+		}
+		void set_EtudesSuperieures(String^ s) {
+			m_sup = s;
+		}
+		String^ get_Apb(void) const {
+			return m_apb;
+		}
+		void set_Apb(String^ s) {
+			m_apb = s;
+		}
+		String^ get_Redoublant(void) const {
+			return m_red;
+		}
+		void set_Redoublant(String^ s) {
+			m_red = s;
+		}
+		String^ get_Avatar(void) const {
+			return m_avatar;
+		}
+		void set_Avatar(String^ s) {
+			m_avatar = s;
+		}
+		String^ get_Email(void) const {
+			return m_email;
+		}
+		void set_Email(String^ s) {
+			m_email = s;
+		}
+		IVector<String^>^ get_DatasetsSigles(void){
+			if (m_sets == nullptr) {
+				m_sets = ref new Vector<String^>();
+			}
+			return m_sets;
+		}
+		void set_DatasetsSigles(IVector<String^>^ pVec) {
+			m_sets = pVec;
+		}
+		virtual bool get_IsStoreable(void) const override;
+		virtual void GetMap(IMap<String^, Object^>^ oMap) const;
+		virtual String^ get_Type(void) const override;
+	};// class EtudiantImpl
 	//
 	}// namespace InfoDommain

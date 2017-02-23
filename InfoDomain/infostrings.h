@@ -103,7 +103,7 @@ namespace InfoDomain {
 				return "lastname";
 			}
 		}
-		static property String^ KEY_BIRTYEAR {
+		static property String^ KEY_BIRTHYEAR {
 			String^ get() {
 				return "birthyear";
 			}

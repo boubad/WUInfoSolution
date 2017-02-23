@@ -19,11 +19,16 @@ String^ CouchDBProxy::KEY_ETAG = "ETag";
 String^ CouchDBProxy::KEY_ATTACHMENTS = "_attachments";
 String^ CouchDBProxy::KEY_CONTENT_TYPE = "content_type";
 String^ CouchDBProxy::ARG_ATTACHMENTS = "?attachments=true";
+String^  CouchDBProxy::STRING_INDEX_URI = "/_index";
 //
 String^ CouchDBProxy::KEY_SELECTOR = "selector";
 String^ CouchDBProxy::KEY_FIELDS = "fields";
 String^ CouchDBProxy::KEY_LIMIT = "limit";
 String^ CouchDBProxy::KEY_SKIP = "skip";
+//
+String^  CouchDBProxy::KEY_INDEX = "index";
+String^  CouchDBProxy::KEY_DESIGNDOC = "ddoc";
+String^  CouchDBProxy::KEY_NAME = "name";
 ///////////////////////
 CouchDBProxy::CouchDBProxy(String^ url, String^ database) {
 	m_url = url;
@@ -154,7 +159,7 @@ task<bool> CouchDBProxy::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
 				auto status = response->StatusCode;
 				if (status == HttpStatusCode::Ok) {
 					auto myopx = response->Content->ReadAsStringAsync();
-					create_task(myopx).then([this,&nRet](String^ jsonText) {
+					create_task(myopx).then([this, &nRet](String^ jsonText) {
 						JsonArray^ oRetArray = ref new JsonArray();
 						JsonValue^ val = JsonValue::Parse(jsonText);
 						if (val->ValueType == JsonValueType::Object) {
@@ -224,7 +229,55 @@ task<bool> CouchDBProxy::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
 		} while (!done);
 		return task_from_result(true);
 	});
-}//RemoveDocumentsAsync
+}
+task<bool> CouchDBProxy::CreateIndexAsync(IVector<String^>^ fields, String ^ name, String ^ designDoc)
+{
+	return task<bool>{[this, fields, name, designDoc]()->bool {
+		if (fields == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		if (fields->Size < 1) {
+			throw ref new InvalidArgumentException();
+		}
+		JsonObject^ oRet = ref new JsonObject();
+		JsonArray^ oAr = ref new JsonArray();
+		auto it = fields->First();
+		while (it->HasCurrent) {
+			String^ s = it->Current;
+			if ((s == nullptr) || s->IsEmpty()) {
+				throw ref new InvalidArgumentException();
+			}
+			oAr->Append(JsonValue::CreateStringValue(s));
+			it->MoveNext();
+		}// it
+		JsonObject^ oIndex = ref new JsonObject();
+		oIndex->Insert(KEY_FIELDS, oAr);
+		oRet->Insert(KEY_INDEX, oIndex);
+		if ((name != nullptr) && (!name->IsEmpty())) {
+			oRet->Insert(KEY_NAME, JsonValue::CreateStringValue(name));
+		}
+		if ((designDoc != nullptr) && (!designDoc->IsEmpty())) {
+			oRet->Insert(KEY_DESIGNDOC, JsonValue::CreateStringValue(designDoc));
+		}
+		String^ sp = oRet->Stringify();
+		String^ sUri = this->m_url + this->m_database + STRING_INDEX_URI;
+		Uri^ uri = ref new Uri(sUri);
+		HttpStringContent^ sc = ref new HttpStringContent(sp);
+		sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
+		auto myop = this->m_client->PostAsync(uri, sc);
+		auto operationTask = create_task(myop);
+		bool bRet = operationTask.then([](HttpResponseMessage^ response) {
+			bool b = false;
+			auto status = response->StatusCode;
+			if (status == HttpStatusCode::Ok) {
+				b = true;
+			}
+			return task_from_result(b);
+		}).get();
+		return bRet;
+	}};
+}// CreateIndex
+//RemoveDocumentsAsync
 task<bool> CouchDBProxy::MaintainsDocumentsAsync(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete /*= false*/) {
 	JsonArray^ oAr = ref new JsonArray();
 	auto it = oVec->First();

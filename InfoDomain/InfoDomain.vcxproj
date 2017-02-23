@@ -209,6 +209,7 @@
     <ClInclude Include="domaindata.h" />
     <ClInclude Include="domainimpl.h" />
     <ClInclude Include="domainmanager.h" />
+    <ClInclude Include="etudiant.h" />
     <ClInclude Include="infostrings.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -216,6 +217,7 @@
     <ClCompile Include="domaindata.cpp" />
     <ClCompile Include="domainimpl.cpp" />
     <ClCompile Include="domainmanager.cpp" />
+    <ClCompile Include="etudiant.cpp" />
     <ClCompile Include="infostrings.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

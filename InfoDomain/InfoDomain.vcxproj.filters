@@ -12,6 +12,7 @@
     <ClCompile Include="domaindata.cpp" />
     <ClCompile Include="infostrings.cpp" />
     <ClCompile Include="domainmanager.cpp" />
+    <ClCompile Include="etudiant.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -19,5 +20,6 @@
     <ClInclude Include="domaindata.h" />
     <ClInclude Include="infostrings.h" />
     <ClInclude Include="domainmanager.h" />
+    <ClInclude Include="etudiant.h" />
   </ItemGroup>
 </Project>

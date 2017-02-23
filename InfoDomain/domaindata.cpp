@@ -95,9 +95,7 @@ namespace InfoDomain {
 		return m_pimpl->get_Rev();
 	}
 	bool Dataset::IsPersisted::get() {
-		Platform::String^ s1 = m_pimpl->get_Id();
-		Platform::String^ s2 = m_pimpl->get_Rev();
-		return (!s1->IsEmpty()) && (!s2->IsEmpty());
+		return m_pimpl->get_IsPersisted();
 	}// IsPersisted
 	InfoStatus Dataset::Status::get() {
 		return m_pimpl->get_Status();
@@ -199,14 +197,11 @@ namespace InfoDomain {
 	Platform::String^ Indiv::Id::get() {
 		return m_pimpl->get_Id();
 	}
-
 	Platform::String^ Indiv::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
 	bool Indiv::IsPersisted::get() {
-		Platform::String^ s1 = m_pimpl->get_Id();
-		Platform::String^ s2 = m_pimpl->get_Rev();
-		return (!s1->IsEmpty()) && (!s2->IsEmpty());
+		return m_pimpl->get_IsPersisted();
 	}
 	InfoStatus Indiv::Status::get() {
 		return m_pimpl->get_Status();
@@ -268,9 +263,7 @@ namespace InfoDomain {
 		return m_pimpl->get_Rev();
 	}
 	bool Variable::IsPersisted::get() {
-		Platform::String^ s1 = m_pimpl->get_Id();
-		Platform::String^ s2 = m_pimpl->get_Rev();
-		return (!s1->IsEmpty()) && (!s2->IsEmpty());
+		return m_pimpl->get_IsPersisted();
 	}// IsPersisted
 	InfoStatus Variable::Status::get() {
 		return m_pimpl->get_Status();
@@ -446,7 +439,8 @@ namespace InfoDomain {
 		return m_rev;
 	}
 	bool InfoValue::IsPersisted::get() {
-		return (!m_id->IsEmpty()) && (!m_rev->IsEmpty());
+		return (m_id != nullptr) && (m_rev != nullptr) &&
+			(!m_id->IsEmpty()) && (!m_rev->IsEmpty());
 	}// IsPersisted
 	InfoStatus InfoValue::Status::get() {
 		return m_status;
@@ -482,7 +476,8 @@ namespace InfoDomain {
 		m_value = value;
 	}
 	bool InfoValue::IsStoreable::get() {
-		return (!m_datasetsigle->IsEmpty()) && (!m_indivsigle->IsEmpty()) &&
+		return (m_datasetsigle != nullptr) && (m_indivsigle != nullptr) &&
+			(m_variablesigle != nullptr) && (!m_datasetsigle->IsEmpty()) && (!m_indivsigle->IsEmpty()) &&
 			(!m_variablesigle->IsEmpty());
 	}
 	IMap<Platform::String^, Object^>^ InfoValue::GetMap(void) {
@@ -492,22 +487,22 @@ namespace InfoDomain {
 			int ival = static_cast<int>(m_status);
 			oMap->Insert(InfoStrings::KEY_STATUS, ival);
 		}
-		if (!m_id->IsEmpty()) {
+		if ((m_id != nullptr) && (!m_id->IsEmpty())) {
 			oMap->Insert(InfoStrings::KEY_ID, m_id);
 		}
-		if (!m_rev->IsEmpty()) {
+		if ((m_rev != nullptr) && (!m_rev->IsEmpty())) {
 			oMap->Insert(InfoStrings::KEY_REV, m_rev);
 		}
-		if (!m_desc->IsEmpty()) {
+		if ((m_desc != nullptr) && (!m_desc->IsEmpty())) {
 			oMap->Insert(InfoStrings::KEY_DESC, m_desc);
 		}
-		if (!m_datasetsigle->IsEmpty()) {
+		if ((m_datasetsigle != nullptr) && (!m_datasetsigle->IsEmpty())) {
 			oMap->Insert(InfoStrings::KEY_DATASETSIGLE, m_datasetsigle);
 		}
-		if (!m_indivsigle->IsEmpty()) {
+		if ((m_indivsigle != nullptr) && (!m_indivsigle->IsEmpty())) {
 			oMap->Insert(InfoStrings::KEY_INDIVSIGLE, m_indivsigle);
 		}
-		if (!m_variablesigle->IsEmpty()) {
+		if ((m_variablesigle != nullptr) && (!m_variablesigle->IsEmpty())) {
 			oMap->Insert(InfoStrings::KEY_VARIABLESIGLE, m_variablesigle);
 		}
 		if (m_value != nullptr) {

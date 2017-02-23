@@ -175,7 +175,15 @@ IAsyncOperation<IVector< CouchDBManager::byte>^>^ CouchDBManager::GetDocumentAtt
 		}// pBuf
 		return (pRet);
 	});
-}// GetDocumentAttachmentDataVectorAsync
+}
+IAsyncOperation<bool>^ CouchDBManager::CreateIndexAsync(IVector<String^>^ fields, String ^ name, String ^ designDoc)
+{
+	CouchDBProxy *pProxy = GetProxy();
+	return create_async([pProxy,fields,name,designDoc]()->bool {
+		return pProxy->CreateIndexAsync(fields, name, designDoc).get();
+	});
+}
+// GetDocumentAttachmentDataVectorAsync
 //////////////////////////////////
 IAsyncOperation<bool>^ CouchDBManager::IsAliveAsync(void) {
 	CouchDBProxy *pProxy = GetProxy();

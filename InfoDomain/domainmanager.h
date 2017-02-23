@@ -1,5 +1,6 @@
 #pragma once
 #include "domaindata.h"
+#include "etudiant.h"
 //
 using namespace InfoCouchDB;
 using namespace Windows::Storage;
@@ -11,14 +12,17 @@ namespace InfoDomain {
 		using byte = uint8;
 	private:
 		CouchDBManager^ m_pman;
+		//
+		void internal_check_index(String^ field, String^ name);
+		void check_indexes(void);
 	public:
 		DomainManager(String^ baseUrl, String^ databaseName);
 		property CouchDBManager^ Manager{
 			CouchDBManager^ get();
 		}
 	public:
-		IAsyncOperation<int>^ GetDatasetsCountAsync(void);
-		IAsyncOperation<IVector<Dataset^>^>^ GetDatasetsAsync(int offset, int count);
+		IAsyncOperation<int>^ GetDatasetsCountAsync(Dataset^ model);
+		IAsyncOperation<IVector<Dataset^>^>^ GetDatasetsAsync(Dataset^ model,int offset, int count);
 		IAsyncOperation<Dataset^>^ FindDatasetAsync(Dataset^ model);
 		IAsyncOperation<Dataset^>^ FindDatasetBySigleAsync(String^ sigle);
 		IAsyncOperation<bool>^ MaintainsDatasetAsync(Dataset^ model);
@@ -54,6 +58,13 @@ namespace InfoDomain {
 		IAsyncOperation<bool>^ MaintainsValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ RemoveValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ MaintainsValuesAsync(IVector<InfoValue^>^ oVec, bool bDelete);
+		//
+		IAsyncOperation<Etudiant^>^ FindEtudiantByDossierAsync(String^ dossier);
+		IAsyncOperation<int>^ GetEtudiantsCountAsync(Etudiant^ pModel);
+		IAsyncOperation<IVector<Etudiant^>^>^ GetEtudiantsAsync(Etudiant^ pModel, int offset, int count);
+		IAsyncOperation<bool>^ MaintainsEtudiantAsync(Etudiant^ pModel);
+		IAsyncOperation<bool>^ RemoveEtudiantAsync(Etudiant^ pModel);
+		IAsyncOperation<bool>^ MaintainsEtudiantsAsync(IVector<Etudiant^>^ pVec,bool bDelete);
 		//
 		IAsyncOperation<bool>^ MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data);
 		IAsyncOperation<bool>^ MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, IStorageFile^ file);
