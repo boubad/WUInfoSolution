@@ -17,20 +17,20 @@ namespace InfoDomain {
 	//
 	public ref class InfoBlob sealed {
 	private:
-		Platform::String^ m_name;
-		Platform::String^ m_mime;
+		String^ m_name;
+		String^ m_mime;
 		IVector<uint8>^ m_data;
 	public:
 		InfoBlob();
-		InfoBlob(Platform::String^ name, Platform::String^ mime, IVector<uint8>^ data);
+		InfoBlob(String^ name, String^ mime, IVector<uint8>^ data);
 		//
-		property Platform::String^ Name {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Name {
+			String^ get();
+			void set(String^ value);
 		}// Name
-		property Platform::String^ MimeType {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ MimeType {
+			String^ get();
+			void set(String^ value);
 		}// MimeType
 		property IVector<uint8>^ Data{
 			IVector<uint8>^ get();
@@ -52,7 +52,7 @@ namespace InfoDomain {
 		InfoDataValue(int b);
 		InfoDataValue(double b);
 		[Windows::Foundation::Metadata::DefaultOverloadAttribute]
-		InfoDataValue(Platform::String^ b);
+		InfoDataValue(String^ b);
 		//
 		property InfoDataType DataType {
 			InfoDataType get();
@@ -60,6 +60,36 @@ namespace InfoDomain {
 		property bool HasValue {
 			bool get();
 		}// HasValue
+		property bool IsEmpty {
+			bool get() {
+				return (!m_impl.get_HasValue());
+			}
+		}
+		property bool IsBoolean {
+			bool get() {
+				return m_impl.get_IsBoolean();
+			}
+		}
+		property bool IsInteger {
+			bool get() {
+				return m_impl.get_IsInteger();
+			}
+		}
+		property bool IsDouble {
+			bool get() {
+				return m_impl.get_IsDouble();
+			}
+		}
+		property bool IsString {
+			bool get() {
+				return m_impl.get_IsString();
+			}
+		}
+		property bool IsNumber {
+			bool get() {
+				return m_impl.get_IsNumber();
+			}
+		}
 		property bool BoolValue {
 			bool get();
 			void set(bool b);
@@ -72,15 +102,15 @@ namespace InfoDomain {
 			double get();
 			void set(double b);
 		}// DoubleValue
-		property Platform::String^ StringValue {
-			Platform::String^ get();
-			void set(Platform::String^ b);
+		property String^ StringValue {
+			String^ get();
+			void set(String^ b);
 		}// StringValue
 		property Object^ Value {
 			Object^ get();
 		}// Value
 		void Clear(void);
-		Platform::String^ ToString(void) override;
+		virtual String^ ToString(void) override;
 	};// class InfoDataValue
 	  ///////////////////////////////
 	public ref class Dataset sealed {
@@ -90,15 +120,15 @@ namespace InfoDomain {
 		IVector<Variable^>^ m_vars;
 	public:
 		Dataset();
-		Dataset(IMap<Platform::String^, Object^>^ pMap);
+		Dataset(IMap<String^, Object^>^ pMap);
 		[Windows::Foundation::Metadata::DefaultOverloadAttribute]
-		Dataset(Platform::String^ sSigle);
+		Dataset(String^ sSigle);
 		//
-		property Platform::String^ Id {
-			Platform::String^ get();
+		property String^ Id {
+			String^ get();
 		}// Id
-		property Platform::String^ Rev {
-			Platform::String^ get();
+		property String^ Rev {
+			String^ get();
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -107,11 +137,11 @@ namespace InfoDomain {
 			InfoStatus get();
 			void set(InfoStatus value);
 		}// Status
-		property Platform::String^ Observations {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Observations {
+			String^ get();
+			void set(String^ value);
 		}// Observations
-		property Platform::String^ InfoType {
+		property String^ InfoType {
 			String^ get() {
 				return m_pimpl->get_Type();
 			}
@@ -119,16 +149,16 @@ namespace InfoDomain {
 		property bool IsStoreable {
 			bool get();
 		}// IsStoreable
-		property Platform::String^ Sigle {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Sigle {
+			String^ get();
+			void set(String^ value);
 		}// Sigle
-		property Platform::String^ Name {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Name {
+			String^ get();
+			void set(String^ value);
 		}// name
-		IMap<Platform::String^, Object^>^ GetMap(void);
-		virtual Platform::String^ ToString(void) override;
+		IMap<String^, Object^>^ GetMap(void);
+		virtual String^ ToString(void) override;
 		property IVector<Variable^>^ Variables {
 			IVector<Variable^>^ get();
 		void set(IVector<Variable^>^ value);
@@ -139,9 +169,9 @@ namespace InfoDomain {
 		}
 		Variable^ FindVariable(String^ sigle);
 		Indiv^ FindIndiv(String^ sigle);
-		property Platform::String^ Annee {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Annee {
+			String^ get();
+			void set(String^ value);
 		}// name
 	};// class Dataset
 	  //////////////////////////////////
@@ -152,16 +182,16 @@ namespace InfoDomain {
 		IVector<InfoValue^>^ m_vals;
 	public:
 		Indiv();
-		Indiv(Dataset^ pSet, Platform::String^ sigle);
-		Indiv(IMap<Platform::String^, Object^>^ pMap);
-		property Platform::String^ DatasetSigle {
-			Platform::String^ get();
+		Indiv(Dataset^ pSet, String^ sigle);
+		Indiv(IMap<String^, Object^>^ pMap);
+		property String^ DatasetSigle {
+			String^ get();
 		}// DatasetSigle
-		property Platform::String^ Id {
-			Platform::String^ get();
+		property String^ Id {
+			String^ get();
 		}// Id
-		property Platform::String^ Rev {
-			Platform::String^ get();
+		property String^ Rev {
+			String^ get();
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -170,11 +200,11 @@ namespace InfoDomain {
 			InfoStatus get();
 			void set(InfoStatus value);
 		}// Status
-		property Platform::String^ Observations {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Observations {
+			String^ get();
+			void set(String^ value);
 		}// Observations
-		property Platform::String^ InfoType {
+		property String^ InfoType {
 			String^ get() {
 				return m_pimpl->get_Type();
 			}
@@ -182,16 +212,16 @@ namespace InfoDomain {
 		property bool IsStoreable {
 			bool get();
 		}// IsStoreable
-		property Platform::String^ Sigle {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Sigle {
+			String^ get();
+			void set(String^ value);
 		}// Sigle
-		property Platform::String^ Name {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Name {
+			String^ get();
+			void set(String^ value);
 		}// name
-		IMap<Platform::String^, Object^>^ GetMap(void);
-		virtual Platform::String^ ToString(void) override;
+		IMap<String^, Object^>^ GetMap(void);
+		virtual String^ ToString(void) override;
 		property Dataset^ Set {
 			Dataset^ get() {
 				return m_set;
@@ -213,16 +243,16 @@ namespace InfoDomain {
 		IVector<InfoValue^>^ m_vals;
 	public:
 		Variable();
-		Variable(Dataset^ pSet, Platform::String^ sigle);
-		Variable(IMap<Platform::String^, Object^>^ pMap);
-		property Platform::String^ DatasetSigle {
-			Platform::String^ get();
+		Variable(Dataset^ pSet, String^ sigle);
+		Variable(IMap<String^, Object^>^ pMap);
+		property String^ DatasetSigle {
+			String^ get();
 		}// DatasetSigle
-		property Platform::String^ Id {
-			Platform::String^ get();
+		property String^ Id {
+			String^ get();
 		}// Id
-		property Platform::String^ Rev {
-			Platform::String^ get();
+		property String^ Rev {
+			String^ get();
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -231,11 +261,11 @@ namespace InfoDomain {
 			InfoStatus get();
 			void set(InfoStatus value);
 		}// Status
-		property Platform::String^ Observations {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Observations {
+			String^ get();
+			void set(String^ value);
 		}// Observations
-		property Platform::String^ InfoType {
+		property String^ InfoType {
 			String^ get() {
 				return m_pimpl->get_Type();
 			}
@@ -243,13 +273,13 @@ namespace InfoDomain {
 		property bool IsStoreable {
 			bool get();
 		}// IsStoreable
-		property Platform::String^ Sigle {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Sigle {
+			String^ get();
+			void set(String^ value);
 		}// Sigle
-		property Platform::String^ Name {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Name {
+			String^ get();
+			void set(String^ value);
 		}// name
 		property InfoDataType  VariableType {
 			InfoDataType get();
@@ -259,12 +289,12 @@ namespace InfoDomain {
 			InfoKind get();
 			void set(InfoKind value);
 		}// VariableKind
-		property IVector<Platform::String^>^ Modalites {
-			IVector<Platform::String^>^ get();
-			void set(IVector<Platform::String^>^ value);
+		property IVector<String^>^ Modalites {
+			IVector<String^>^ get();
+			void set(IVector<String^>^ value);
 		}// Modalites
-		IMap<Platform::String^, Object^>^ GetMap(void);
-		virtual Platform::String^ ToString(void) override;
+		IMap<String^, Object^>^ GetMap(void);
+		virtual String^ ToString(void) override;
 		property Dataset^ Set {
 			Dataset^ get() {
 				return m_set;
@@ -282,26 +312,26 @@ namespace InfoDomain {
 	public ref class InfoValue sealed {
 	private:
 		InfoStatus m_status;
-		Platform::String^ m_id;
-		Platform::String^ m_rev;
-		Platform::String^ m_desc;
-		Platform::String^ m_datasetsigle;
-		Platform::String^ m_indivsigle;
-		Platform::String^ m_variablesigle;
+		String^ m_id;
+		String^ m_rev;
+		String^ m_desc;
+		String^ m_datasetsigle;
+		String^ m_indivsigle;
+		String^ m_variablesigle;
 		InfoDataValue^ m_value;
 		Variable^ m_var;
 		Indiv^ m_ind;
 	public:
 		InfoValue();
-		InfoValue(IMap<Platform::String^, Object^>^ oMap);
+		InfoValue(IMap<String^, Object^>^ oMap);
 		InfoValue(Indiv^ pInd, Variable^ pVar);
 		InfoValue(Indiv^ pInd, Variable^ pVar, InfoDataValue^ val);
 		//
-		property Platform::String^ Id {
-			Platform::String^ get();
+		property String^ Id {
+			String^ get();
 		}// Id
-		property Platform::String^ Rev {
-			Platform::String^ get();
+		property String^ Rev {
+			String^ get();
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -310,20 +340,20 @@ namespace InfoDomain {
 			InfoStatus get();
 			void set(InfoStatus value);
 		}// Status
-		property Platform::String^ Observations {
-			Platform::String^ get();
-			void set(Platform::String^ value);
+		property String^ Observations {
+			String^ get();
+			void set(String^ value);
 		}// Observations
-		property Platform::String^ DatasetSigle {
-			Platform::String^ get();
+		property String^ DatasetSigle {
+			String^ get();
 		}// DatasetSigle
-		property Platform::String^ IndivSigle {
-			Platform::String^ get();
+		property String^ IndivSigle {
+			String^ get();
 		}// IndivSigle
-		property Platform::String^ VariableSigle {
-			Platform::String^ get();
+		property String^ VariableSigle {
+			String^ get();
 		}// VariableSigle
-		property Platform::String^ InfoType {
+		property String^ InfoType {
 			String^ get() {
 				return InfoStrings::TYPE_VALUE;
 			}
@@ -335,8 +365,8 @@ namespace InfoDomain {
 		property bool IsStoreable {
 			bool get();
 		}// IsStoreable
-		IMap<Platform::String^, Object^>^ GetMap(void);
-		virtual Platform::String^ ToString(void) override;
+		IMap<String^, Object^>^ GetMap(void);
+		virtual String^ ToString(void) override;
 		property Variable^ Var {
 			Variable^ get() {
 				return m_var;
@@ -351,6 +381,93 @@ namespace InfoDomain {
 			}
 			void set(Indiv^ value) {
 				m_ind = value;
+			}
+		}
+		property bool HasValue {
+			bool get() {
+				return (m_value != nullptr) && m_value->HasValue;
+			}
+		}
+		property bool IsEmpty {
+			bool get() {
+				return (!this->HasValue);
+			}
+		}
+		property bool IsBoolean {
+			bool get() {
+				return (m_value != nullptr) && m_value->IsBoolean;
+			}
+		}
+		property bool BoolValue {
+			bool get() {
+				return (m_value != nullptr) && m_value->BoolValue;
+			}
+			void set(bool value) {
+				if (m_value == nullptr) {
+					m_value = ref new InfoDataValue{value};
+				}
+				else {
+					m_value->BoolValue = value;
+				}
+			}
+		}
+		property bool IsInteger {
+			bool get() {
+				return (m_value != nullptr) && m_value->IsInteger;
+			}
+		}
+		property int IntValue {
+			int get() {
+				return (m_value != nullptr) ? m_value->IntValue : 0;
+			}
+			void set(int value) {
+				if (m_value == nullptr) {
+					m_value = ref new InfoDataValue{ value };
+				}
+				else {
+					m_value->IntValue = value;
+				}
+			}
+		}
+		property bool IsDouble {
+			bool get() {
+				return (m_value != nullptr) && m_value->IsDouble;
+			}
+		}
+		property double DoubleValue {
+			double get() {
+				return (m_value != nullptr) ? m_value->DoubleValue : 0;
+			}
+			void set(double value) {
+				if (m_value == nullptr) {
+					m_value = ref new InfoDataValue{ value };
+				}
+				else {
+					m_value->DoubleValue = value;
+				}
+			}
+		}
+		property bool IsString {
+			bool get() {
+				return (m_value != nullptr) && m_value->IsString;
+			}
+		}
+		property String^ StringValue {
+			String^ get() {
+				return (m_value != nullptr) ? m_value->StringValue : "";
+			}
+			void set(String^ value) {
+				if (m_value == nullptr) {
+					m_value = ref new InfoDataValue{ value };
+				}
+				else {
+					m_value->StringValue = value;
+				}
+			}
+		}
+		property InfoDataType DataType  {
+			InfoDataType get() {
+				return (m_value != nullptr) ? m_value->DataType : InfoDataType::Unknown;
 			}
 		}
 	};// InfoValue

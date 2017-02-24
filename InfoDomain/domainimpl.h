@@ -52,12 +52,18 @@ namespace InfoDomain
 		bool get_HasValue(void) const {
 			return (m_type != InfoDataType::Unknown);
 		}
+		bool get_IsBoolean(void) const {
+			return (m_type == InfoDataType::Logical);
+		}
 		bool get_BoolValue(void) const {
 			return (this->m_bval);
 		}
 		void set_BoolValue(bool b) {
 			m_bval = b;
 			m_type = InfoDataType::Logical;
+		}
+		bool get_IsInteger(void) const {
+			return (m_type == InfoDataType::Integer);
 		}
 		int get_IntValue(void) const {
 			return (m_ival);
@@ -66,6 +72,9 @@ namespace InfoDomain
 			m_ival = v;
 			m_type = InfoDataType::Integer;
 		}
+		bool get_IsDouble(void) const {
+			return (m_type == InfoDataType::Real);
+		}
 		double get_DoubleValue(void) const {
 			return (m_dval);
 		}
@@ -73,12 +82,18 @@ namespace InfoDomain
 			m_dval = v;
 			m_type = InfoDataType::Real;
 		}
+		bool get_IsString(void) const {
+			return (m_type == InfoDataType::Text);
+		}
 		String^ get_StringValue(void) const {
 			return ref new String(m_sval.c_str());
 		}
 		void set_StringValue(String^ v) {
-			m_sval = std::wstring{ v->Data() };
-			m_type = InfoDataType::Text;
+			String^ sx = StringUtils::ToUpperFormat(v);
+			m_sval = std::wstring{sx->Data()};
+		}
+		bool get_IsNumber(void) const {
+			return (m_type == InfoDataType::Integer) || (m_type == InfoDataType::Real);
 		}
 		String^ ToString(void) const {
 			Object^ oRet = nullptr;

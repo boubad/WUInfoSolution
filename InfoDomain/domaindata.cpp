@@ -14,19 +14,19 @@ namespace InfoDomain {
 	InfoBlob::InfoBlob() {
 
 	}
-	InfoBlob::InfoBlob(Platform::String^ name, Platform::String^ mime, IVector<uint8>^ data) :
+	InfoBlob::InfoBlob(String^ name, String^ mime, IVector<uint8>^ data) :
 		m_name(name), m_mime(mime), m_data(data) {
 	}
-	Platform::String^ InfoBlob::Name::get() {
+	String^ InfoBlob::Name::get() {
 		return (m_name);
 	}
-	void InfoBlob::Name::set(Platform::String^ s) {
+	void InfoBlob::Name::set(String^ s) {
 		m_name = s;
 	}
-	Platform::String^ InfoBlob::MimeType::get() {
+	String^ InfoBlob::MimeType::get() {
 		return (m_mime);
 	}
-	void InfoBlob::MimeType::set(Platform::String^ s) {
+	void InfoBlob::MimeType::set(String^ s) {
 		m_mime = s;
 	}
 	IVector<uint8>^ InfoBlob::Data::get() {
@@ -42,7 +42,7 @@ namespace InfoDomain {
 	}
 	InfoDataValue::InfoDataValue(int b) : m_impl(b) {}
 	InfoDataValue::InfoDataValue(double b) : m_impl(b) {}
-	InfoDataValue::InfoDataValue(Platform::String^ b) : m_impl(b) {}
+	InfoDataValue::InfoDataValue(String^ b) : m_impl(b) {}
 	//
 	InfoDataType InfoDataValue::DataType::get() {
 		return m_impl.get_DataType();
@@ -68,10 +68,10 @@ namespace InfoDomain {
 	void InfoDataValue::DoubleValue::set(double b) {
 		m_impl.set_DoubleValue(b);
 	}
-	Platform::String^ InfoDataValue::StringValue::get() {
+	String^ InfoDataValue::StringValue::get() {
 		return m_impl.get_StringValue();
 	}
-	void InfoDataValue::StringValue::set(Platform::String^ b) {
+	void InfoDataValue::StringValue::set(String^ b) {
 		m_impl.set_StringValue(b);
 	}
 	Object^ InfoDataValue::Value::get() {
@@ -85,13 +85,13 @@ namespace InfoDomain {
 	}
 	///////////////////////////////
 	Dataset::Dataset() :m_pimpl(new DatasetImpl{}) {}
-	Dataset::Dataset(IMap<Platform::String^, Object^>^ pMap) : m_pimpl(new DatasetImpl{ pMap }) {}
-	Dataset::Dataset(Platform::String^ sSigle) : m_pimpl(new DatasetImpl{ sSigle }) {}
+	Dataset::Dataset(IMap<String^, Object^>^ pMap) : m_pimpl(new DatasetImpl{ pMap }) {}
+	Dataset::Dataset(String^ sSigle) : m_pimpl(new DatasetImpl{ sSigle }) {}
 	//
-	Platform::String^ Dataset::Id::get() {
+	String^ Dataset::Id::get() {
 		return m_pimpl->get_Id();
 	}
-	Platform::String^ Dataset::Rev::get() {
+	String^ Dataset::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
 	bool Dataset::IsPersisted::get() {
@@ -103,33 +103,33 @@ namespace InfoDomain {
 	void Dataset::Status::set(InfoStatus value) {
 		m_pimpl->set_Status(value);
 	}
-	Platform::String^ Dataset::Observations::get() {
+	String^ Dataset::Observations::get() {
 		return m_pimpl->get_Observations();
 	}
-	void Dataset::Observations::set(Platform::String^ value) {
+	void Dataset::Observations::set(String^ value) {
 		m_pimpl->set_Observations(value);
 	}
 	bool Dataset::IsStoreable::get() {
 		return m_pimpl->get_IsStoreable();
 	}// IsStoreable
-	Platform::String^ Dataset::Sigle::get() {
+	String^ Dataset::Sigle::get() {
 		return m_pimpl->get_Sigle();
 	}
-	void Dataset::Sigle::set(Platform::String^ value) {
+	void Dataset::Sigle::set(String^ value) {
 		m_pimpl->set_Sigle(value);
 	}
-	Platform::String^ Dataset::Name::get() {
+	String^ Dataset::Name::get() {
 		return m_pimpl->get_Name();
 	}
-	void Dataset::Name::set(Platform::String^ value) {
+	void Dataset::Name::set(String^ value) {
 		m_pimpl->set_Name(value);
 	}
-	IMap<Platform::String^, Object^>^ Dataset::GetMap(void) {
-		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
+	IMap<String^, Object^>^ Dataset::GetMap(void) {
+		Map<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		m_pimpl->GetMap(oMap);
 		return oMap;
 	}
-	Platform::String^ Dataset::ToString(void) {
+	String^ Dataset::ToString(void) {
 		return m_pimpl->ToString();
 	}
 	Variable ^ Dataset::FindVariable(String ^ sigle)
@@ -165,36 +165,42 @@ namespace InfoDomain {
 		return pRet;
 	}
 	IVector<Variable^>^ Dataset::Variables::get() {
+		if (m_vars == nullptr) {
+			m_vars = ref new Vector<Variable^>();
+		}
 		return m_vars;
 	}
 	void Dataset::Variables::set(IVector<Variable^>^ value) {
 		m_vars = value;
 	}
 	IVector<Indiv^>^ Dataset::Indivs::get() {
+		if (m_inds == nullptr) {
+			m_inds = ref new Vector<Indiv^>();
+		}
 		return m_inds;
 	}
 	void Dataset::Indivs::set(IVector<Indiv^>^ value) {
 		m_inds = value;
 	}
-	Platform::String^ Dataset::Annee::get() {
+	String^ Dataset::Annee::get() {
 		return m_pimpl->get_Annee();
 	}
-	void Dataset::Annee::set(Platform::String^ value) {
+	void Dataset::Annee::set(String^ value) {
 		m_pimpl->set_Annee(value);
 	}
 	//////////////////////////////////
 	Indiv::Indiv() :m_pimpl(new IndivImpl{}) {}
-	Indiv::Indiv(Dataset^ pSet, Platform::String^ sigle) : m_pimpl(new IndivImpl{ pSet->Sigle, sigle }) {
+	Indiv::Indiv(Dataset^ pSet, String^ sigle) : m_pimpl(new IndivImpl{ pSet->Sigle, sigle }) {
 		m_set = pSet;
 	}
-	Indiv::Indiv(IMap<Platform::String^, Object^>^ pMap) : m_pimpl(new IndivImpl{ pMap }) {}
-	Platform::String^ Indiv::DatasetSigle::get() {
+	Indiv::Indiv(IMap<String^, Object^>^ pMap) : m_pimpl(new IndivImpl{ pMap }) {}
+	String^ Indiv::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
 	}
-	Platform::String^ Indiv::Id::get() {
+	String^ Indiv::Id::get() {
 		return m_pimpl->get_Id();
 	}
-	Platform::String^ Indiv::Rev::get() {
+	String^ Indiv::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
 	bool Indiv::IsPersisted::get() {
@@ -206,37 +212,39 @@ namespace InfoDomain {
 	void Indiv::Status::set(InfoStatus value) {
 		m_pimpl->set_Status(value);
 	}
-	Platform::String^ Indiv::Observations::get() {
+	String^ Indiv::Observations::get() {
 		return m_pimpl->get_Observations();
 	}
-	void Indiv::Observations::set(Platform::String^ value) {
+	void Indiv::Observations::set(String^ value) {
 		m_pimpl->set_Observations(value);
 	}
-	
 	bool Indiv::IsStoreable::get() {
 		return m_pimpl->get_IsStoreable();
 	}
-	Platform::String^ Indiv::Sigle::get() {
+	String^ Indiv::Sigle::get() {
 		return m_pimpl->get_Sigle();
 	}
-	void Indiv::Sigle::set(Platform::String^ value) {
+	void Indiv::Sigle::set(String^ value) {
 		m_pimpl->set_Sigle(value);
 	}
-	Platform::String^ Indiv::Name::get() {
+	String^ Indiv::Name::get() {
 		return m_pimpl->get_Name();
 	}
-	void Indiv::Name::set(Platform::String^ value) {
+	void Indiv::Name::set(String^ value) {
 		m_pimpl->set_Name(value);
 	}// name
-	IMap<Platform::String^, Object^>^ Indiv::GetMap(void) {
-		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
+	IMap<String^, Object^>^ Indiv::GetMap(void) {
+		Map<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		m_pimpl->GetMap(oMap);
 		return oMap;
 	}
-	Platform::String^ Indiv::ToString(void) {
+	String^ Indiv::ToString(void) {
 		return m_pimpl->ToString();
 	}
 	IVector<InfoValue^>^ Indiv::Values::get() {
+		if (m_vals == nullptr) {
+			m_vals = ref new Vector<InfoValue^>();
+		}
 		return m_vals;
 	}
 	void Indiv::Values::set(IVector<InfoValue^>^ value) {
@@ -244,17 +252,17 @@ namespace InfoDomain {
 	}
 	///////////////////////////////////////
 	Variable::Variable() :m_pimpl(new VariableImpl{}) {}
-	Variable::Variable(Dataset^ pSet, Platform::String^ sigle) : m_pimpl(new VariableImpl{ pSet->Sigle, sigle }) {
+	Variable::Variable(Dataset^ pSet, String^ sigle) : m_pimpl(new VariableImpl{ pSet->Sigle, sigle }) {
 		m_set = pSet;
 	}
-	Variable::Variable(IMap<Platform::String^, Object^>^ pMap) : m_pimpl(new VariableImpl{ pMap }) {}
-	Platform::String^ Variable::DatasetSigle::get() {
+	Variable::Variable(IMap<String^, Object^>^ pMap) : m_pimpl(new VariableImpl{ pMap }) {}
+	String^ Variable::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
 	}
-	Platform::String^ Variable::Id::get() {
+	String^ Variable::Id::get() {
 		return m_pimpl->get_Id();
 	}
-	Platform::String^ Variable::Rev::get() {
+	String^ Variable::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
 	bool Variable::IsPersisted::get() {
@@ -266,25 +274,25 @@ namespace InfoDomain {
 	void Variable::Status::set(InfoStatus value) {
 		m_pimpl->set_Status(value);
 	}
-	Platform::String^ Variable::Observations::get() {
+	String^ Variable::Observations::get() {
 		return m_pimpl->get_Observations();
 	}
-	void Variable::Observations::set(Platform::String^ value) {
+	void Variable::Observations::set(String^ value) {
 		m_pimpl->set_Observations(value);
 	}
 	bool Variable::IsStoreable::get() {
 		return m_pimpl->get_IsStoreable();
 	}
-	Platform::String^ Variable::Sigle::get() {
+	String^ Variable::Sigle::get() {
 		return m_pimpl->get_Sigle();
 	}
-	void Variable::Sigle::set(Platform::String^ value) {
+	void Variable::Sigle::set(String^ value) {
 		m_pimpl->set_Sigle(value);
 	}
-	Platform::String^ Variable::Name::get() {
+	String^ Variable::Name::get() {
 		return m_pimpl->get_Name();
 	}
-	void Variable::Name::set(Platform::String^ value) {
+	void Variable::Name::set(String^ value) {
 		m_pimpl->set_Name(value);
 	}
 	InfoDataType  Variable::VariableType::get() {
@@ -299,21 +307,24 @@ namespace InfoDomain {
 	void Variable::VariableKind::set(InfoKind value) {
 		m_pimpl->set_VariableKind(value);
 	}
-	IVector<Platform::String^>^ Variable::Modalites::get() {
+	IVector<String^>^ Variable::Modalites::get() {
 		return m_pimpl->get_Modalites();
 	}
-	void Variable::Modalites::set(IVector<Platform::String^>^ value) {
+	void Variable::Modalites::set(IVector<String^>^ value) {
 		m_pimpl->set_Modalites(value);
 	}
-	IMap<Platform::String^, Object^>^ Variable::GetMap(void) {
-		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
+	IMap<String^, Object^>^ Variable::GetMap(void) {
+		Map<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		m_pimpl->GetMap(oMap);
 		return oMap;
 	}
-	Platform::String^ Variable::ToString(void) {
+	String^ Variable::ToString(void) {
 		return m_pimpl->ToString();
 	}
 	IVector<InfoValue^>^ Variable::Values::get() {
+		if (m_vals == nullptr) {
+			m_vals = ref new Vector<InfoValue^>();
+		}
 		return m_vals;
 	}
 	void Variable::Values::set(IVector<InfoValue^>^ value) {
@@ -321,7 +332,7 @@ namespace InfoDomain {
 	}
 	////////////////////////////////////
 	InfoValue::InfoValue() :m_status(InfoStatus::Unknown) {}
-	InfoValue::InfoValue(IMap<Platform::String^, Object^>^ oMap) : m_status(InfoStatus::Unknown) {
+	InfoValue::InfoValue(IMap<String^, Object^>^ oMap) : m_status(InfoStatus::Unknown) {
 		if (oMap->HasKey(InfoStrings::KEY_ID)) {
 			m_id = oMap->Lookup(InfoStrings::KEY_ID)->ToString();
 		}
@@ -354,7 +365,7 @@ namespace InfoDomain {
 		if (oMap->HasKey(InfoStrings::KEY_VALUE) && oMap->HasKey(InfoStrings::KEY_DATATYPE)) {
 			Object^ oval = oMap->Lookup(InfoStrings::KEY_VALUE);
 			if (oval != nullptr) {
-				Platform::String^ sv = oval->ToString();
+				String^ sv = oval->ToString();
 				Object^ ov = oMap->Lookup(InfoStrings::KEY_DATATYPE);
 				if (ov != nullptr) {
 					String^ s = ov->ToString();
@@ -433,10 +444,10 @@ namespace InfoDomain {
 		m_value = val;
 	}
 	//
-	Platform::String^ InfoValue::Id::get() {
+	String^ InfoValue::Id::get() {
 		return m_id;
 	}
-	Platform::String^ InfoValue::Rev::get() {
+	String^ InfoValue::Rev::get() {
 		return m_rev;
 	}
 	bool InfoValue::IsPersisted::get() {
@@ -449,25 +460,25 @@ namespace InfoDomain {
 	void InfoValue::Status::set(InfoStatus value) {
 		m_status = value;
 	}
-	Platform::String^ InfoValue::Observations::get() {
+	String^ InfoValue::Observations::get() {
 		return m_desc;
 	}
-	void InfoValue::Observations::set(Platform::String^ value) {
+	void InfoValue::Observations::set(String^ value) {
 		m_desc = value;
 	}
-	Platform::String^ InfoValue::DatasetSigle::get() {
+	String^ InfoValue::DatasetSigle::get() {
 		return m_datasetsigle;
 	}
-	Platform::String^ InfoValue::IndivSigle::get() {
+	String^ InfoValue::IndivSigle::get() {
 		return m_indivsigle;
 	}
-	Platform::String^ InfoValue::VariableSigle::get() {
+	String^ InfoValue::VariableSigle::get() {
 		return m_variablesigle;
 	}
 	InfoDataValue^ InfoValue::Value::get() {
 		return m_value;
 	}
-	Platform::String^ InfoValue::ToString(void) {
+	String^ InfoValue::ToString(void) {
 		return (m_value != nullptr) ? m_value->ToString(): "";
 	}
 	void InfoValue::Value::set(InfoDataValue^ value) {
@@ -478,8 +489,8 @@ namespace InfoDomain {
 			(m_variablesigle != nullptr) && (!m_datasetsigle->IsEmpty()) && (!m_indivsigle->IsEmpty()) &&
 			(!m_variablesigle->IsEmpty());
 	}
-	IMap<Platform::String^, Object^>^ InfoValue::GetMap(void) {
-		Map<Platform::String^, Object^>^ oMap = ref new Map<Platform::String^, Object^>();
+	IMap<String^, Object^>^ InfoValue::GetMap(void) {
+		Map<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, this->InfoType);
 		if (m_status != InfoStatus::Unknown) {
 			int ival = static_cast<int>(m_status);

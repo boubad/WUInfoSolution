@@ -210,5 +210,62 @@ namespace UnitTestCS
                 bool b = await pMan.MaintainsValuesAsync(vals, false);
             }
         }//test_dman_mortal
+        //
+        [TestMethod]
+        public async Task Test_dman_load()
+        {
+            TestData src = new TestData();
+            DomainManager pMan = new DomainManager(st_baseUrl, st_databaseName);
+            string setsigle = src.MortalName;
+            Dataset pSet = await pMan.LoadDatasetAsync(setsigle);
+            Assert.IsNotNull(pSet);
+            Assert.IsTrue(pSet.IsPersisted);
+            //
+            var vars = pSet.Variables;
+            Assert.IsNotNull(vars);
+            Assert.IsTrue(vars.Count > 0);
+            foreach (Variable pVar in vars)
+            {
+                Assert.IsNotNull(pVar);
+                Assert.IsTrue(pVar.IsPersisted);
+                Assert.IsNotNull(pVar.Set);
+                Assert.AreEqual(pSet.Id, pVar.Set.Id);
+                var vals = pVar.Values;
+                Assert.IsNotNull(vals);
+                Assert.IsTrue(vars.Count > 0);
+                foreach (InfoValue pVal in vals)
+                {
+                    Assert.IsNotNull(pVal);
+                    Assert.IsTrue(pVal.IsPersisted);
+                    Assert.IsNotNull(pVal.Var);
+                    Assert.AreEqual(pVar.Id, pVal.Var.Id);
+                    Assert.IsNotNull(pVal.Ind);
+                    Assert.IsTrue(pVal.Ind.IsPersisted);
+                }// pVal
+            }// pVar
+             //
+            var inds = pSet.Indivs;
+            Assert.IsNotNull(inds);
+            Assert.IsTrue(inds.Count > 0);
+            foreach (Indiv pInd in inds)
+            {
+                Assert.IsNotNull(pInd);
+                Assert.IsTrue(pInd.IsPersisted);
+                Assert.IsNotNull(pInd.Set);
+                Assert.AreEqual(pSet.Id, pInd.Set.Id);
+                var vals = pInd.Values;
+                Assert.IsNotNull(vals);
+                Assert.IsTrue(vars.Count > 0);
+                foreach (InfoValue pVal in vals)
+                {
+                    Assert.IsNotNull(pVal);
+                    Assert.IsTrue(pVal.IsPersisted);
+                    Assert.IsNotNull(pVal.Ind);
+                    Assert.AreEqual(pInd.Id, pVal.Ind.Id);
+                    Assert.IsNotNull(pVal.Var);
+                    Assert.IsTrue(pVal.Var.IsPersisted);
+                }// pVal
+            }// pVar
+        }//Test_dman_load
     }// class DomainManagerTest
 }
