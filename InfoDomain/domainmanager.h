@@ -11,14 +11,25 @@ namespace InfoDomain {
 	public ref class DomainManager sealed {
 		using byte = uint8;
 	private:
+		String^ m_base;
+		String^ m_data;
 		CouchDBManager^ m_pman;
 		//
 		void internal_check_index(String^ field, String^ name);
 		void check_indexes(void);
-	public:
-		DomainManager(String^ baseUrl, String^ databaseName);
-		property CouchDBManager^ Manager{
+		property CouchDBManager^ Manager {
 			CouchDBManager^ get();
+		}
+	public:
+		DomainManager();
+		DomainManager(String^ baseUrl, String^ databaseName);
+		property String^ BaseUrl {
+			String^ get();
+			void set(String^ value);
+		}
+		property String^ DatabaseName {
+			String^ get();
+			void set(String^ value);
 		}
 	public:
 		IAsyncOperation<int>^ GetDatasetsCountAsync(Dataset^ model);
@@ -35,6 +46,7 @@ namespace InfoDomain {
 		IAsyncOperation<IVector<Variable^>^>^ GetDatasetVariablesAsync(Dataset^ pSet, int offset, int count);
 		IAsyncOperation<Variable^>^ FindVariable(Variable^ model);
 		IAsyncOperation<Variable^>^ FindVariableBySiglesAsync(String^ setsigle, String^ sigle);
+		IAsyncOperation<Variable^>^ LoadVariableBySiglesAsync(String^ setsigle, String^ sigle);
 		IAsyncOperation<bool>^ MaintainsVariableAsync(Variable^ model);
 		IAsyncOperation<bool>^ RemoveVariableAsync(Variable^ model);
 		IAsyncOperation<bool>^ MaintainsVariablesAsync(IVector<Variable^>^ oVec, bool bDelete);
@@ -43,6 +55,7 @@ namespace InfoDomain {
 		IAsyncOperation<IVector<Indiv^>^>^ GetDatasetIndivsAsync(Dataset^ pSet, int offset, int count);
 		IAsyncOperation<Indiv^>^ FindIndiv(Indiv^ model);
 		IAsyncOperation<Indiv^>^ FindIndivBySiglesAsync(String^ setsigle, String^ sigle);
+		IAsyncOperation<Indiv^>^ LoadIndivBySiglesAsync(String^ setsigle, String^ sigle);
 		IAsyncOperation<bool>^ MaintainsIndivAsync(Indiv^ model);
 		IAsyncOperation<bool>^ RemoveIndivAsync(Indiv^ model);
 		IAsyncOperation<bool>^ MaintainsIndivsAsync(IVector<Indiv^>^ oVec, bool bDelete);
@@ -55,6 +68,7 @@ namespace InfoDomain {
 		IAsyncOperation<IVector<InfoValue^>^>^ GetIndivValuesAsync(Indiv ^model, int offset, int count);
 		IAsyncOperation<InfoValue^>^ FindValue(InfoValue^ model);
 		IAsyncOperation<InfoValue^>^ FindValueBySiglesAsync(String^ setsigle, String^ indsigle, String^ varsigle);
+		IAsyncOperation<InfoValue^>^ LoadValueBySiglesAsync(String^ setsigle, String^ indsigle, String^ varsigle);
 		IAsyncOperation<bool>^ MaintainsValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ RemoveValueAsync(InfoValue^ model);
 		IAsyncOperation<bool>^ MaintainsValuesAsync(IVector<InfoValue^>^ oVec, bool bDelete);

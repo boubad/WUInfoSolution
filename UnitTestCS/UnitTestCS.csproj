@@ -136,6 +136,10 @@
       <Project>{1fce4cbd-7b73-4e01-bdea-e566b931ee14}</Project>
       <Name>InfoLocalDB</Name>
     </ProjectReference>
+    <ProjectReference Include="..\InfoProcs\InfoProcs.vcxproj">
+      <Project>{a57f269a-f177-4aea-9255-cfb18bde79a4}</Project>
+      <Name>InfoProcs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\InfoTestData\InfoTestData.vcxproj">
       <Project>{864e7e6d-bed1-4fd2-9d4d-a381091ca9b6}</Project>
       <Name>InfoTestData</Name>

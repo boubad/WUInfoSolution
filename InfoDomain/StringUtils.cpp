@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <locale>
 //////////////////////////
+using namespace Platform::Collections;
 namespace InfoDomain {
 	/////////////////////////
 	namespace internal {
@@ -46,6 +47,20 @@ namespace InfoDomain {
 			});
 			return (sRet);
 		}	// info_toupper
+		static void info_splitstring(const std::wstring &s,std::vector<std::wstring> &vec, const std::wstring &delim) {
+			vec.clear();
+			std::wstring ss{ s };
+			size_t pos = ss.find_first_of(delim);
+			while (pos != std::wstring::npos) {
+				std::wstring sx{ ss.begin(), ss.begin() + pos };
+				vec.push_back(info_trim(sx));
+				ss = std::wstring{ ss.begin() + pos + 1, ss.end() };
+				pos = ss.find_first_of(delim);
+			} // while
+			if (!ss.empty()) {
+				vec.push_back(info_trim(ss));
+			}
+		} //info_split_string
 	}// namespace internal
 	///////////////////////////////
 	String^ StringUtils::Trim(String^ src) {
@@ -94,6 +109,23 @@ namespace InfoDomain {
 			ss = internal::info_toupper(ss);
 		}
 		return ref new String{ ss.c_str() };
+	}
+	IVector<String^>^ StringUtils::SplitString(String^ src, String^ delim) {
+		IVector<String^>^ oRet = ref new Vector<String^>();
+		if ((src == nullptr) || src->IsEmpty()) {
+			return oRet;
+		}
+		String^ sDelim = ((delim == nullptr) || delim->IsEmpty()) ? ";,:\t " : delim;
+		std::wstring wd{sDelim->Data()};
+		std::wstring s{ src->Data() };
+		std::vector<std::wstring> vec{};
+		internal::info_splitstring(s, vec, wd);
+		for (auto it = vec.begin(); it != vec.end(); ++it) {
+			std::wstring sx = *it;
+			String^ ss = ref new String{sx.c_str()};
+			oRet->Append(ss);
+		}// it
+		return oRet;
 	}
 	/////////////////////////////
 }// namespace InfoDomain

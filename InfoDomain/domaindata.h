@@ -118,9 +118,11 @@ namespace InfoDomain {
 		std::unique_ptr<DatasetImpl> m_pimpl;
 		IVector<Indiv^>^ m_inds;
 		IVector<Variable^>^ m_vars;
+	internal:
+		Dataset(IMap<String^, Object^>^ pMap);
+		IMap<String^, Object^>^ GetMap(void);
 	public:
 		Dataset();
-		Dataset(IMap<String^, Object^>^ pMap);
 		[Windows::Foundation::Metadata::DefaultOverloadAttribute]
 		Dataset(String^ sSigle);
 		//
@@ -157,7 +159,6 @@ namespace InfoDomain {
 			String^ get();
 			void set(String^ value);
 		}// name
-		IMap<String^, Object^>^ GetMap(void);
 		virtual String^ ToString(void) override;
 		property IVector<Variable^>^ Variables {
 			IVector<Variable^>^ get();
@@ -180,10 +181,12 @@ namespace InfoDomain {
 		std::unique_ptr<IndivImpl> m_pimpl;
 		Dataset^ m_set;
 		IVector<InfoValue^>^ m_vals;
+	internal:
+		Indiv(IMap<String^, Object^>^ pMap);
+		IMap<String^, Object^>^ GetMap(void);
 	public:
 		Indiv();
 		Indiv(Dataset^ pSet, String^ sigle);
-		Indiv(IMap<String^, Object^>^ pMap);
 		property String^ DatasetSigle {
 			String^ get();
 		}// DatasetSigle
@@ -220,7 +223,6 @@ namespace InfoDomain {
 			String^ get();
 			void set(String^ value);
 		}// name
-		IMap<String^, Object^>^ GetMap(void);
 		virtual String^ ToString(void) override;
 		property Dataset^ Set {
 			Dataset^ get() {
@@ -241,10 +243,12 @@ namespace InfoDomain {
 		std::unique_ptr<VariableImpl> m_pimpl;
 		Dataset^ m_set;
 		IVector<InfoValue^>^ m_vals;
+	internal:
+		Variable(IMap<String^, Object^>^ pMap);
+		IMap<String^, Object^>^ GetMap(void);
 	public:
 		Variable();
 		Variable(Dataset^ pSet, String^ sigle);
-		Variable(IMap<String^, Object^>^ pMap);
 		property String^ DatasetSigle {
 			String^ get();
 		}// DatasetSigle
@@ -293,7 +297,6 @@ namespace InfoDomain {
 			IVector<String^>^ get();
 			void set(IVector<String^>^ value);
 		}// Modalites
-		IMap<String^, Object^>^ GetMap(void);
 		virtual String^ ToString(void) override;
 		property Dataset^ Set {
 			Dataset^ get() {
@@ -321,9 +324,11 @@ namespace InfoDomain {
 		InfoDataValue^ m_value;
 		Variable^ m_var;
 		Indiv^ m_ind;
+	internal:
+		InfoValue(IMap<String^, Object^>^ oMap);
+		IMap<String^, Object^>^ GetMap(void);
 	public:
 		InfoValue();
-		InfoValue(IMap<String^, Object^>^ oMap);
 		InfoValue(Indiv^ pInd, Variable^ pVar);
 		InfoValue(Indiv^ pInd, Variable^ pVar, InfoDataValue^ val);
 		//
@@ -365,7 +370,6 @@ namespace InfoDomain {
 		property bool IsStoreable {
 			bool get();
 		}// IsStoreable
-		IMap<String^, Object^>^ GetMap(void);
 		virtual String^ ToString(void) override;
 		property Variable^ Var {
 			Variable^ get() {

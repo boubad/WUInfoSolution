@@ -82,7 +82,7 @@ CouchDBProxy *CouchDBManager::GetProxy(void) {
 	if (p == nullptr) {
 		if ((m_url != nullptr) && (m_dataBase != nullptr) &&
 			(!m_url->IsEmpty()) && (!m_dataBase->IsEmpty())) {
-			m_proxy.reset(new CouchDBProxy{m_url,m_dataBase});
+			m_proxy.reset(new CouchDBProxy{ m_url,m_dataBase });
 			p = m_proxy.get();
 		}
 	}// p
@@ -92,78 +92,78 @@ CouchDBProxy *CouchDBManager::GetProxy(void) {
 	return p;
 }// GetProxt
 /////////////////////////////////////
-IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName,IStorageFile^ file) {
-	if ((docid == nullptr) || (attachmentName == nullptr) || (file == nullptr)) {
-		throw ref new InvalidArgumentException();
-	}
-	if (docid->IsEmpty() || attachmentName->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid, attachmentName, file]()->bool {
+IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, IStorageFile^ file) {
+	return create_async([this, docid, attachmentName, file]()->bool {
+		if ((docid == nullptr) || (attachmentName == nullptr) || (file == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		if (docid->IsEmpty() || attachmentName->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->MaintainsDocumentAttachmentAsync(docid, attachmentName, file).get();
 	});
 }//:MaintainsDocumentAttachmentAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data) {
-	if ((docid == nullptr) || (attachmentName == nullptr) || (mimetype == nullptr) || (data == nullptr)) {
-		throw ref new InvalidArgumentException();
-	}
-	if (docid->IsEmpty() || attachmentName->IsEmpty() || mimetype->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	if (data->Length < 1) {
-		throw ref new  InvalidArgumentException();
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid, attachmentName, mimetype, data]()->bool {
+	return create_async([this, docid, attachmentName, mimetype, data]()->bool {
+		if ((docid == nullptr) || (attachmentName == nullptr) || (mimetype == nullptr) || (data == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		if (docid->IsEmpty() || attachmentName->IsEmpty() || mimetype->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		if (data->Length < 1) {
+			throw ref new  InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data).get();
 	});
 }//:MaintainsDocumentAttachmentAsync
 IAsyncOperation<IMap<String^, String^> ^>^ CouchDBManager::GetDocumentAttachmentNamesAsync(String^ docid) {
-	if (docid == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	if (docid->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid]()->IMap<String^, String^>^ {
+	return create_async([this, docid]()->IMap<String^, String^>^ {
+		if (docid == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		if (docid->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->GetDocumentAttachmentNamesAsync(docid).get();
 	});
 }//CouchDBManager::
 IAsyncOperation<bool>^ CouchDBManager::RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName) {
-	if ((docid == nullptr) || (attachmentName == docid)) {
-		throw ref new InvalidArgumentException();
-	}
-	if (docid->IsEmpty() || attachmentName->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid, attachmentName]()->bool {
+	return create_async([this, docid, attachmentName]()->bool {
+		if ((docid == nullptr) || (attachmentName == docid)) {
+			throw ref new InvalidArgumentException();
+		}
+		if (docid->IsEmpty() || attachmentName->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->RemoveDocumentAttachmentAsync(docid, attachmentName).get();
 	});
 }//RemoveDocumentAttachmentAsync
 IAsyncOperation<IBuffer^>^ CouchDBManager::GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName) {
-	if ((docid == nullptr) || (attachmentName == docid)) {
-		throw ref new InvalidArgumentException();
-	}
-	if (docid->IsEmpty() || attachmentName->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid, attachmentName]()->IBuffer^ {
+	return create_async([this, docid, attachmentName]()->IBuffer^ {
+		if ((docid == nullptr) || (attachmentName == docid)) {
+			throw ref new InvalidArgumentException();
+		}
+		if (docid->IsEmpty() || attachmentName->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->GetDocumentAttachmentDataAsync(docid, attachmentName).get();
 	});
 }//GetDocumentAttachmentDataAsync
 IAsyncOperation<IVector< CouchDBManager::byte>^>^ CouchDBManager::GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName) {
-	if ((docid == nullptr) || (attachmentName == docid)) {
-		throw ref new InvalidArgumentException();
-	}
-	if (docid->IsEmpty() || attachmentName->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid, attachmentName]()->IVector<byte>^ {
+	return create_async([this, docid, attachmentName]()->IVector<byte>^ {
+		if ((docid == nullptr) || (attachmentName == docid)) {
+			throw ref new InvalidArgumentException();
+		}
+		if (docid->IsEmpty() || attachmentName->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		IVector<byte>^ pRet = nullptr;
 		IBuffer^ pBuf = pProxy->GetDocumentAttachmentDataAsync(docid, attachmentName).get();
 		if (pBuf != nullptr) {
@@ -178,101 +178,102 @@ IAsyncOperation<IVector< CouchDBManager::byte>^>^ CouchDBManager::GetDocumentAtt
 }
 IAsyncOperation<bool>^ CouchDBManager::CreateIndexAsync(IVector<String^>^ fields, String ^ name, String ^ designDoc)
 {
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy,fields,name,designDoc]()->bool {
+	return create_async([this, fields, name, designDoc]()->bool {
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->CreateIndexAsync(fields, name, designDoc).get();
 	});
 }
 // GetDocumentAttachmentDataVectorAsync
 //////////////////////////////////
 IAsyncOperation<bool>^ CouchDBManager::IsAliveAsync(void) {
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy]()->bool {
+	return create_async([this]()->bool {
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->IsAliveAsync().get();
 	});
 }//IsAliveAsync
 IAsyncOperation<int>^ CouchDBManager::GetDocumentsCountAsync(IMap<String^, Object^>^ oFetch) {
-	if (oFetch == nullptr) {
-		throw ref new InvalidArgumentException("Null filter data.");
-	}
-	if (oFetch->Size < 1) {
-		throw ref new InvalidArgumentException("Empty filter data");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, oFetch]()->int {
+	return create_async([this, oFetch]()->int {
+		if (oFetch == nullptr) {
+			throw ref new InvalidArgumentException("Null filter data.");
+		}
+		if (oFetch->Size < 1) {
+			throw ref new InvalidArgumentException("Empty filter data");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->GetCountFilterAsync(oFetch).get();
 	});
 }//GetDocumentsCountAsync
 IAsyncOperation<IVector<IMap<String^, Object^>^>^>^ CouchDBManager::GetDocumentsAsync(IMap<String^, Object^>^ oFetch,
 	int offset, int count) {
-	if (oFetch == nullptr) {
-		throw ref new InvalidArgumentException("Null filter data.");
-	}
-	if (oFetch->Size < 1) {
-		throw ref new InvalidArgumentException("Empty filter data");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, oFetch, offset, count]()->IVector<IMap<String^, Object^>^>^ {
+	return create_async([this, oFetch, offset, count]()->IVector<IMap<String^, Object^>^>^ {
+		if (oFetch == nullptr) {
+			throw ref new InvalidArgumentException("Null filter data.");
+		}
+		if (oFetch->Size < 1) {
+			throw ref new InvalidArgumentException("Empty filter data");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->ReadDocumentsAsync(oFetch, offset, count).get();
 	});
 }//GetDocumentsAsync
 IAsyncOperation<IMap<String^, Object^>^>^ CouchDBManager::FindDocumentAsync(IMap<String^, Object^>^ oFetch) {
-	if (oFetch == nullptr) {
-		throw ref new InvalidArgumentException("Null filter data.");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, oFetch]()->IMap<String^, Object^>^ {
+	return create_async([this, oFetch]()->IMap<String^, Object^>^ {
+		if (oFetch == nullptr) {
+			throw ref new InvalidArgumentException("Null filter data.");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->FindDocumentAsync(oFetch).get();
 	});
 }//FindDocumentAsync
 IAsyncOperation<IMap<String^, Object^>^>^ CouchDBManager::ReadDocumentByIdAsync(String^ docid) {
-	if (docid == nullptr) {
-		throw ref new InvalidArgumentException("Null document id.");
-	}
-	if (docid->IsEmpty()) {
-		throw ref new InvalidArgumentException("Empty document id.");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid]()->IMap<String^, Object^>^ {
+	return create_async([this, docid]()->IMap<String^, Object^>^ {
+		if (docid == nullptr) {
+			throw ref new InvalidArgumentException("Null document id.");
+		}
+		if (docid->IsEmpty()) {
+			throw ref new InvalidArgumentException("Empty document id.");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->ReadDocumentByIdAsync(docid).get();
 	});
 }//ReadDocumentByIdAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAsync(IMap<String^, Object^>^ oMap) {
-	if (oMap == nullptr) {
-		throw ref new InvalidArgumentException("Null document map.");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, oMap]()->bool {
+	return create_async([this, oMap]()->bool {
+		if (oMap == nullptr) {
+			throw ref new InvalidArgumentException("Null document map.");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->MaintainsDocumentAsync(oMap).get();
 	});
 }//:MaintainsDocumentAsync
 IAsyncOperation<bool>^ CouchDBManager::DeleteDocumentByIdAsync(String^ docid) {
-	if (docid == nullptr) {
-		throw ref new InvalidArgumentException("Null document id.");
-	}
-	if (docid->IsEmpty()) {
-		throw ref new InvalidArgumentException("Empty document id.");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, docid]()->bool {
+	return create_async([this, docid]()->bool {
+		if (docid == nullptr) {
+			throw ref new InvalidArgumentException("Null document id.");
+		}
+		if (docid->IsEmpty()) {
+			throw ref new InvalidArgumentException("Empty document id.");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->DeleteDocumentByIdAsync(docid).get();
 	});
 }//DeleteDocumentByIdAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentsAsync(IVector<IMap<String^, Object^>^>^ oVec, bool bDelete) {
-	if (oVec == nullptr) {
-		throw ref new InvalidArgumentException("Null documents vector.");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, oVec, bDelete]()->bool {
+	return create_async([this, oVec, bDelete]()->bool {
+		if (oVec == nullptr) {
+			throw ref new InvalidArgumentException("Null documents vector.");
+		}
+		CouchDBProxy *pProxy = GetProxy();
+
 		return pProxy->MaintainsDocumentsAsync(oVec, bDelete).get();
 	});
 }//MaintainsDocumentsAsync
 IAsyncOperation<bool>^ CouchDBManager::RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch) {
-	if (oFetch == nullptr) {
-		throw ref new InvalidArgumentException("Null filter data.");
-	}
-	CouchDBProxy *pProxy = GetProxy();
-	return create_async([pProxy, oFetch]()->bool {
+	return create_async([this, oFetch]()->bool {
+		if (oFetch == nullptr) {
+			throw ref new InvalidArgumentException("Null filter data.");
+		}
+		CouchDBProxy *pProxy = GetProxy();
 		return pProxy->RemoveDocumentsAsync(oFetch).get();
 	});
 }//:RemoveDocumentsAsync

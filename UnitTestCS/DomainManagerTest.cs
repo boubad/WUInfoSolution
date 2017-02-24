@@ -232,7 +232,7 @@ namespace UnitTestCS
                 Assert.AreEqual(pSet.Id, pVar.Set.Id);
                 var vals = pVar.Values;
                 Assert.IsNotNull(vals);
-                Assert.IsTrue(vars.Count > 0);
+                Assert.IsTrue(vals.Count > 0);
                 foreach (InfoValue pVal in vals)
                 {
                     Assert.IsNotNull(pVal);
@@ -255,7 +255,7 @@ namespace UnitTestCS
                 Assert.AreEqual(pSet.Id, pInd.Set.Id);
                 var vals = pInd.Values;
                 Assert.IsNotNull(vals);
-                Assert.IsTrue(vars.Count > 0);
+                Assert.IsTrue(vals.Count > 0);
                 foreach (InfoValue pVal in vals)
                 {
                     Assert.IsNotNull(pVal);

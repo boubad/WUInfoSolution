@@ -2,6 +2,7 @@
 ////////////////////
 #include "domainmanager.h"
 #include "infostrings.h"
+#include "StringUtils.h"
 ////////////////////
 using namespace Platform::Collections;
 using namespace concurrency;
@@ -14,21 +15,58 @@ using namespace InfoDomain;
 static std::atomic<bool> st_initalized{ false };
 static std::mutex st_mutex{};
 ///////////////////////////
-DomainManager::DomainManager(String^ baseUrl, String^ databaseName) {
-	if ((baseUrl == nullptr) || (databaseName == nullptr)) {
-		throw ref new InvalidArgumentException("Null baseUrl and (or) databaseBame");
-	}
-	if (baseUrl->IsEmpty() || databaseName->IsEmpty()) {
-		throw ref new InvalidArgumentException("Empty baseUrl and (or) databaseBame");
-	}
-	m_pman = ref new CouchDBManager(baseUrl, databaseName);
-	check_indexes();
-}//DomainManager
-CouchDBManager^ DomainManager::Manager::get() {
-	return this->m_pman;
+DomainManager::DomainManager() {
 }
+DomainManager::DomainManager(String^ baseUrl, String^ databaseName) {
+	this->BaseUrl = baseUrl;
+	this->DatabaseName = databaseName;
+}//DomainManager
+String^ DomainManager::BaseUrl::get() {
+	return m_base;
+}
+void DomainManager::BaseUrl::set(String^ s) {
+	String^ ss = StringUtils::Trim(s);
+	if (ss->IsEmpty()) {
+		throw ref new InvalidArgumentException("Null baseUrl");
+	}
+	std::wstring sx{ ss->Data() };
+	auto it = sx.end();
+	it--;
+	if ((*it) != L'/') {
+		sx += L'/';
+		ss = ref new String{ sx.c_str() };
+	}
+	m_base = ss;
+	m_pman = nullptr;
+}// baseUrl
+String^ DomainManager::DatabaseName::get() {
+	return m_data;
+}
+void DomainManager::DatabaseName::set(String^ s) {
+	String^ ss = StringUtils::ToLower(StringUtils::Trim(s));
+	if (ss->IsEmpty()) {
+		throw ref new InvalidArgumentException("Null database name");
+	}
+	m_data = ss;
+	m_pman = nullptr;
+}
+CouchDBManager^ DomainManager::Manager::get() {
+	if (m_pman == nullptr) {
+		if ((m_base == nullptr) || (m_data == nullptr)) {
+			throw ref new OperationCanceledException();
+		}
+		if (m_base->IsEmpty() || m_data->IsEmpty()) {
+			throw ref new OperationCanceledException();
+		}
+		m_pman = ref new CouchDBManager(m_base, m_data);
+		if (!st_initalized) {
+			check_indexes();
+		}
+	}
+	return this->m_pman;
+}// Manager
 void DomainManager::internal_check_index(String^ field, String^ name) {
-	CouchDBManager^ pMan = this->m_pman;
+	CouchDBManager^ pMan = this->Manager;
 	IVector<String^>^ ff = ref new Vector<String^>();
 	ff->Append(field);
 	String^ designDoc;
@@ -60,16 +98,20 @@ void DomainManager::check_indexes(void) {
 		internal_check_index(InfoStrings::KEY_APB, "i_apb");
 		internal_check_index(InfoStrings::KEY_REDOUBLANT, "i_redoublant");
 		internal_check_index(InfoStrings::KEY_GROUPE, "i_groupe");
+		internal_check_index(InfoStrings::KEY_DEPARTEMENT, "i_departement");
+		internal_check_index(InfoStrings::KEY_VILLE, "i_ville");
+		internal_check_index(InfoStrings::KEY_SUP, "i_etudessuperieures");
+		internal_check_index(InfoStrings::KEY_REDOUBLANT, "i_redoublant");
 		st_initalized = true;
 	}
 }// check_indexes
 ///////////////////////////////
 IAsyncOperation<Etudiant^>^ DomainManager::FindEtudiantByDossierAsync(String^ dossier) {
-	if ((dossier == nullptr) || dossier->IsEmpty()) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, dossier]()->Etudiant^ {
+	return create_async([this, dossier]()->Etudiant^ {
+		if ((dossier == nullptr) || dossier->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Etudiant^ oArg = ref new Etudiant();
 		oArg->Dossier = dossier;
 		Etudiant^ oRet;
@@ -84,17 +126,17 @@ IAsyncOperation<Etudiant^>^ DomainManager::FindEtudiantByDossierAsync(String^ do
 	});
 }//FindEtudiantByDossierAsync
 IAsyncOperation<int>^ DomainManager::GetEtudiantsCountAsync(Etudiant^ pModel) {
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan,pModel]()->int {
+	return create_async([this, pModel]()->int {
+		CouchDBManager^ pMan = this->Manager;
 		Etudiant^ p = (pModel != nullptr) ? pModel : ref new Etudiant();
 		IMap<String^, Object^>^ oMap = p->GetMap();
 		int nRet = create_task(pMan->GetDocumentsCountAsync(oMap)).get();
 		return (nRet);
 	});
 }//GetEtudiantsCountAsync
-IAsyncOperation<IVector<Etudiant^>^>^ DomainManager::GetEtudiantsAsync(Etudiant^ pModel,int offset, int count) {
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, pModel, offset, count]()->IVector<Etudiant^>^ {
+IAsyncOperation<IVector<Etudiant^>^>^ DomainManager::GetEtudiantsAsync(Etudiant^ pModel, int offset, int count) {
+	return create_async([this, pModel, offset, count]()->IVector<Etudiant^>^ {
+		CouchDBManager^ pMan = this->Manager;
 		Etudiant^ px = (pModel != nullptr) ? pModel : ref new Etudiant();
 		IMap<String^, Object^>^ oMap = px->GetMap();
 		IVector<IMap<String^, Object^>^>^ pVec = create_task(pMan->GetDocumentsAsync(oMap, offset, count)).get();
@@ -114,29 +156,29 @@ IAsyncOperation<IVector<Etudiant^>^>^ DomainManager::GetEtudiantsAsync(Etudiant^
 	});
 }//GetEtudiantsAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsEtudiantAsync(Etudiant^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsStoreable) {
-		throw ref new InvalidArgumentException("Not Storeable Etudiant");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsStoreable) {
+			throw ref new InvalidArgumentException("Not Storeable Etudiant");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		bool bRet = create_task(pMan->MaintainsDocumentAsync(oFetch)).get();
 		return (bRet);
 	});
 }//MaintainsEtudiantAsync
 IAsyncOperation<bool>^ DomainManager::RemoveEtudiantAsync(Etudiant^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsPersisted) {
-		throw ref new InvalidArgumentException("Not Persisted Etudiant");
-	}
-	String^ docid = model->Id;
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan,  docid]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsPersisted) {
+			throw ref new InvalidArgumentException("Not Persisted Etudiant");
+		}
+		String^ docid = model->Id;
+		CouchDBManager^ pMan = this->Manager;
 		bool bRet = create_task(pMan->DeleteDocumentByIdAsync(docid)).get();
 		return (bRet);
 	});
@@ -145,7 +187,7 @@ IAsyncOperation<bool>^ DomainManager::MaintainsEtudiantsAsync(IVector<Etudiant^>
 	if (oVec == nullptr) {
 		throw ref new InvalidArgumentException();
 	}
-	CouchDBManager^ pMan = this->m_pman;
+	CouchDBManager^ pMan = this->Manager;
 	return create_async([this, pMan, oVec, bDelete]()->bool {
 		bool bRet = true;
 		IVector<IMap<String^, Object^>^>^ vv = ref new Vector<IMap<String^, Object^>^>();
@@ -188,17 +230,17 @@ IAsyncOperation<bool>^ DomainManager::MaintainsEtudiantsAsync(IVector<Etudiant^>
 }//MaintainsEtudiantsAsync
 ////////////////////////////////
 IAsyncOperation<int>^ DomainManager::GetDatasetsCountAsync(Dataset^ model) {
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan,model]()->int {
+	return create_async([this, model]()->int {
+		CouchDBManager^ pMan = this->Manager;
 		Dataset^ px = (model != nullptr) ? model : ref new Dataset{};
 		IMap<String^, Object^>^ oMap = px->GetMap();
 		int nRet = create_task(pMan->GetDocumentsCountAsync(oMap)).get();
 		return (nRet);
 	});
 }//GetDatasetsCountAsync
-IAsyncOperation<IVector<Dataset^>^>^ DomainManager::GetDatasetsAsync(Dataset^ model,int offset, int count) {
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model, offset, count]()->IVector<Dataset^>^ {
+IAsyncOperation<IVector<Dataset^>^>^ DomainManager::GetDatasetsAsync(Dataset^ model, int offset, int count) {
+	return create_async([this, model, offset, count]()->IVector<Dataset^>^ {
+		CouchDBManager^ pMan = this->Manager;
 		Dataset^ px = (model != nullptr) ? model : ref new Dataset{};
 		IMap<String^, Object^>^ oMap = px->GetMap();
 		IVector<IMap<String^, Object^>^>^ pVec = create_task(pMan->GetDocumentsAsync(oMap, offset, count)).get();
@@ -218,11 +260,11 @@ IAsyncOperation<IVector<Dataset^>^>^ DomainManager::GetDatasetsAsync(Dataset^ mo
 	});
 }//GetDatasetsAsync
 IAsyncOperation<Dataset^>^ DomainManager::FindDatasetAsync(Dataset^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->Dataset^ {
+	return create_async([this, model]()->Dataset^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Dataset^ oRet;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
@@ -235,11 +277,11 @@ IAsyncOperation<Dataset^>^ DomainManager::FindDatasetAsync(Dataset^ model) {
 	});
 }//FindDatasetAsync
 IAsyncOperation<Dataset^>^ DomainManager::FindDatasetBySigleAsync(String^ sigle) {
-	if (sigle == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, sigle]()->Dataset^ {
+	return create_async([this, sigle]()->Dataset^ {
+		if (sigle == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Dataset^ oArg = ref new Dataset{};
 		oArg->Sigle = sigle;
 		Dataset^ oRet = nullptr;
@@ -254,32 +296,32 @@ IAsyncOperation<Dataset^>^ DomainManager::FindDatasetBySigleAsync(String^ sigle)
 	});
 }//FindDatasetBySigleAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsDatasetAsync(Dataset^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsStoreable) {
-		throw ref new InvalidArgumentException("Not Storeable Dataset");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsStoreable) {
+			throw ref new InvalidArgumentException("Not Storeable Dataset");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		bool bRet = create_task(pMan->MaintainsDocumentAsync(oFetch)).get();
 		return (bRet);
 	});
 }//MaintainsDatasetAsync
 IAsyncOperation<bool>^ DomainManager::RemoveDatasetAsync(Dataset^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsPersisted) {
-		throw ref new InvalidArgumentException("Not Persisted Dataset");
-	}
-	String^ sigle = model->Sigle;
-	if (sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid Dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsPersisted) {
+			throw ref new InvalidArgumentException("Not Persisted Dataset");
+		}
+		String^ sigle = model->Sigle;
+		if (sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid Dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
 		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, model->Sigle);
 		bool bRet = create_task(pMan->RemoveDocumentsAsync(oFetch)).get();
@@ -291,11 +333,11 @@ IAsyncOperation<bool>^ DomainManager::RemoveDatasetAsync(Dataset^ model) {
 	});
 }//RemoveDatasetAsync
 IAsyncOperation<bool>^  DomainManager::MaintainsDatasetsAsync(IVector<Dataset^>^ oVec, bool bDelete) {
-	if (oVec == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([this, pMan, oVec, bDelete]()->bool {
+	return create_async([this, oVec, bDelete]()->bool {
+		if (oVec == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		bool bRet = true;
 		if (!bDelete) {
 			IVector<IMap<String^, Object^>^>^ vv = ref new Vector<IMap<String^, Object^>^>();
@@ -402,7 +444,7 @@ IAsyncOperation<IVector<String^>^>^ DomainManager::GetAllDatasetsSigles(void)
 		int n = create_task(this->GetDatasetsCountAsync(nullptr)).get();
 		IVector<String^>^ pRet = ref new Vector<String^>();
 		if (n > 0) {
-			IVector<Dataset^>^ vv = create_task(this->GetDatasetsAsync(nullptr,0, n)).get();
+			IVector<Dataset^>^ vv = create_task(this->GetDatasetsAsync(nullptr, 0, n)).get();
 			if (vv != nullptr) {
 				auto it = vv->First();
 				while (it->HasCurrent) {
@@ -418,30 +460,30 @@ IAsyncOperation<IVector<String^>^>^ DomainManager::GetAllDatasetsSigles(void)
 // MaintainsDatasetsAsync
 //
 IAsyncOperation<int>^ DomainManager::GetDatasetVariablesCountAsync(Dataset^ pSet) {
-	if (pSet == nullptr) {
-		throw ref new InvalidArgumentException("Null Dataset");
-	}
-	if (pSet->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, pSet]()->int {
+	return create_async([this, pSet]()->int {
+		if (pSet == nullptr) {
+			throw ref new InvalidArgumentException("Null Dataset");
+		}
+		if (pSet->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VARIABLE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, pSet->Sigle);
 		int nRet = create_task(pMan->GetDocumentsCountAsync(oMap)).get();
 		return (nRet);
 	});
-}//GetDatasetVariablesCountAsyn
+}//GetDatasetVariablesCountAsync
 IAsyncOperation<IVector<Variable^>^>^ DomainManager::GetDatasetVariablesAsync(Dataset^ pSet, int offset, int count) {
-	if (pSet == nullptr) {
-		throw ref new InvalidArgumentException("Null Dataset");
-	}
-	if (pSet->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, pSet, offset, count]()->IVector<Variable^>^ {
+	return create_async([this, pSet, offset, count]()->IVector<Variable^>^ {
+		if (pSet == nullptr) {
+			throw ref new InvalidArgumentException("Null Dataset");
+		}
+		if (pSet->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VARIABLE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, pSet->Sigle);
@@ -462,11 +504,11 @@ IAsyncOperation<IVector<Variable^>^>^ DomainManager::GetDatasetVariablesAsync(Da
 	});
 }//GetDatasetVariables
 IAsyncOperation<Variable^>^ DomainManager::FindVariable(Variable^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->Variable^ {
+	return create_async([this, model]()->Variable^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Variable^ oRet;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
@@ -479,11 +521,11 @@ IAsyncOperation<Variable^>^ DomainManager::FindVariable(Variable^ model) {
 	});
 }//FindVariable
 IAsyncOperation<Variable^>^ DomainManager::FindVariableBySiglesAsync(String^ setsigle, String^ sigle) {
-	if ((setsigle == nullptr) || (sigle == nullptr)) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, setsigle, sigle]()->Variable^ {
+	return create_async([this, setsigle, sigle]()->Variable^ {
+		if ((setsigle == nullptr) || (sigle == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Variable^ oRet = nullptr;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
 		oFetch->Insert(InfoStrings::KEY_SIGLE, StringUtils::ToUpperFormat(sigle));
@@ -498,33 +540,71 @@ IAsyncOperation<Variable^>^ DomainManager::FindVariableBySiglesAsync(String^ set
 		return (oRet);
 	});
 }//FindVariableBySiglesAsync
+IAsyncOperation<Variable^>^ DomainManager::LoadVariableBySiglesAsync(String^ setsigle, String^ sigle) {
+	return create_async([this, setsigle, sigle]()->Variable^ {
+		if ((setsigle == nullptr) || (sigle == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
+		Variable^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_SIGLE, StringUtils::ToUpperFormat(sigle));
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, StringUtils::ToUpperFormat(setsigle));
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VARIABLE);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new Variable(oMap);
+				Dataset^ pSet = create_task(this->FindDatasetBySigleAsync(oRet->DatasetSigle)).get();
+				pSet->Variables->Append(oRet);
+				oRet->Set = pSet;
+				int nv = create_task(this->GetVariableValuesCountAsync(oRet)).get();
+				if (nv > 0) {
+					oRet->Values = create_task(this->GetVariableValuesAsync(oRet, 0, nv)).get();
+					auto it = oRet->Values->First();
+					while (it->HasCurrent) {
+						InfoValue^ pVal = it->Current;
+						pVal->Var = oRet;
+						Indiv^ pInd = create_task(this->FindIndivBySiglesAsync(pSet->Sigle, pVal->IndivSigle)).get();
+						pInd->Values->Append(pVal);
+						pInd->Set = pSet;
+						pVal->Ind = pInd;
+						pSet->Indivs->Append(pInd);
+						it->MoveNext();
+					}// it
+				}// nv
+			}// var
+		}// oMap
+		return (oRet);
+	});
+}//LoadVariableBySiglesAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsVariableAsync(Variable^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsStoreable) {
-		throw ref new InvalidArgumentException("Not Storeable Variable");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsStoreable) {
+			throw ref new InvalidArgumentException("Not Storeable Variable");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		bool bRet = create_task(pMan->MaintainsDocumentAsync(oFetch)).get();
 		return (bRet);
 	});
 }//MaintainsVariableAsync
 IAsyncOperation<bool>^ DomainManager::RemoveVariableAsync(Variable^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsPersisted) {
-		throw ref new InvalidArgumentException("Not Persisted Variable");
-	}
-	String^ sigle = model->Sigle;
-	if (sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid Variable sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsPersisted) {
+			throw ref new InvalidArgumentException("Not Persisted Variable");
+		}
+		String^ sigle = model->Sigle;
+		if (sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid Variable sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
 		oFetch->Insert(InfoStrings::KEY_VARIABLESIGLE, model->Sigle);
 		bool bRet = create_task(pMan->RemoveDocumentsAsync(oFetch)).get();
@@ -536,11 +616,11 @@ IAsyncOperation<bool>^ DomainManager::RemoveVariableAsync(Variable^ model) {
 	});
 }//RemoveVariableAsync
 IAsyncOperation<bool>^  DomainManager::MaintainsVariablesAsync(IVector<Variable^>^ oVec, bool bDelete) {
-	if (oVec == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([this, pMan, oVec, bDelete]()->bool {
+	return create_async([this, oVec, bDelete]()->bool {
+		if (oVec == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		bool bRet = true;
 		if (!bDelete) {
 			IVector<IMap<String^, Object^>^>^ vv = ref new Vector<IMap<String^, Object^>^>();
@@ -585,16 +665,15 @@ IAsyncOperation<bool>^  DomainManager::MaintainsVariablesAsync(IVector<Variable^
 	});
 }// MaintainsVariablesAsync
 //
-//
 IAsyncOperation<int>^ DomainManager::GetDatasetIndivsCountAsync(Dataset^ pSet) {
-	if (pSet == nullptr) {
-		throw ref new InvalidArgumentException("Null Dataset");
-	}
-	if (pSet->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, pSet]()->int {
+	return create_async([this, pSet]()->int {
+		if (pSet == nullptr) {
+			throw ref new InvalidArgumentException("Null Dataset");
+		}
+		if (pSet->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_INDIV);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, pSet->Sigle);
@@ -603,14 +682,14 @@ IAsyncOperation<int>^ DomainManager::GetDatasetIndivsCountAsync(Dataset^ pSet) {
 	});
 }//GetDatasetVariablesCountAsync
 IAsyncOperation<IVector<Indiv^>^>^ DomainManager::GetDatasetIndivsAsync(Dataset^ pSet, int offset, int count) {
-	if (pSet == nullptr) {
-		throw ref new InvalidArgumentException("Null Dataset");
-	}
-	if (pSet->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, pSet, offset, count]()->IVector<Indiv^>^ {
+	return create_async([this, pSet, offset, count]()->IVector<Indiv^>^ {
+		if (pSet == nullptr) {
+			throw ref new InvalidArgumentException("Null Dataset");
+		}
+		if (pSet->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_INDIV);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, pSet->Sigle);
@@ -631,11 +710,11 @@ IAsyncOperation<IVector<Indiv^>^>^ DomainManager::GetDatasetIndivsAsync(Dataset^
 	});
 }//GetDatasetIndivs
 IAsyncOperation<Indiv^>^ DomainManager::FindIndiv(Indiv^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->Indiv^ {
+	return create_async([this, model]()->Indiv^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Indiv^ oRet;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
@@ -648,11 +727,11 @@ IAsyncOperation<Indiv^>^ DomainManager::FindIndiv(Indiv^ model) {
 	});
 }//FindIndiv
 IAsyncOperation<Indiv^>^ DomainManager::FindIndivBySiglesAsync(String^ setsigle, String^ sigle) {
-	if ((setsigle == nullptr) || (sigle == nullptr)) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, setsigle, sigle]()->Indiv^ {
+	return create_async([this, setsigle, sigle]()->Indiv^ {
+		if ((setsigle == nullptr) || (sigle == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		Indiv^ oRet = nullptr;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
 		oFetch->Insert(InfoStrings::KEY_SIGLE, StringUtils::ToUpperFormat(sigle));
@@ -667,33 +746,71 @@ IAsyncOperation<Indiv^>^ DomainManager::FindIndivBySiglesAsync(String^ setsigle,
 		return (oRet);
 	});
 }//FindIndivBySiglesAsync
+IAsyncOperation<Indiv^>^ DomainManager::LoadIndivBySiglesAsync(String^ setsigle, String^ sigle) {
+	return create_async([this, setsigle, sigle]()->Indiv^ {
+		if ((setsigle == nullptr) || (sigle == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
+		Indiv^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_SIGLE, StringUtils::ToUpperFormat(sigle));
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, StringUtils::ToUpperFormat(setsigle));
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_INDIV);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new Indiv(oMap);
+				Dataset^ pSet = create_task(this->FindDatasetBySigleAsync(oRet->DatasetSigle)).get();
+				pSet->Indivs->Append(oRet);
+				oRet->Set = pSet;
+				int nv = create_task(this->GetIndivValuesCountAsync(oRet)).get();
+				if (nv > 0) {
+					oRet->Values = create_task(this->GetIndivValuesAsync(oRet, 0, nv)).get();
+					auto it = oRet->Values->First();
+					while (it->HasCurrent) {
+						InfoValue^ pVal = it->Current;
+						pVal->Ind = oRet;
+						Variable^ pVar = create_task(this->FindVariableBySiglesAsync(pSet->Sigle, pVal->VariableSigle)).get();
+						pVar->Values->Append(pVal);
+						pVar->Set = pSet;
+						pVal->Var = pVar;
+						pSet->Variables->Append(pVar);
+						it->MoveNext();
+					}// it
+				}// nv
+			}// var
+		}// oMap
+		return (oRet);
+	});
+}//LoadIndivBySiglesAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsIndivAsync(Indiv^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsStoreable) {
-		throw ref new InvalidArgumentException("Not Storeable Indiv");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsStoreable) {
+			throw ref new InvalidArgumentException("Not Storeable Indiv");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		bool bRet = create_task(pMan->MaintainsDocumentAsync(oFetch)).get();
 		return (bRet);
 	});
 }//MaintainsIndivAsync
 IAsyncOperation<bool>^ DomainManager::RemoveIndivAsync(Indiv^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsPersisted) {
-		throw ref new InvalidArgumentException("Not Persisted Indiv");
-	}
-	String^ sigle = model->Sigle;
-	if (sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid Indiv sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsPersisted) {
+			throw ref new InvalidArgumentException("Not Persisted Indiv");
+		}
+		String^ sigle = model->Sigle;
+		if (sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid Indiv sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
 		oFetch->Insert(InfoStrings::KEY_INDIVSIGLE, model->Sigle);
 		bool bRet = create_task(pMan->RemoveDocumentsAsync(oFetch)).get();
@@ -705,11 +822,11 @@ IAsyncOperation<bool>^ DomainManager::RemoveIndivAsync(Indiv^ model) {
 	});
 }//RemoveIndivAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsIndivsAsync(IVector<Indiv^>^ oVec, bool bDelete) {
-	if (oVec == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([this, pMan, oVec, bDelete]()->bool {
+	return create_async([this, oVec, bDelete]()->bool {
+		if (oVec == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		bool bRet = true;
 		if (!bDelete) {
 			IVector<IMap<String^, Object^>^>^ vv = ref new Vector<IMap<String^, Object^>^>();
@@ -755,14 +872,14 @@ IAsyncOperation<bool>^ DomainManager::MaintainsIndivsAsync(IVector<Indiv^>^ oVec
 }//MaintainsIndivsAsync
 //
 IAsyncOperation<int>^ DomainManager::GetDatasetValuesCountAsync(Dataset^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Dataset");
-	}
-	if (model->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->int {
+	return create_async([this, model]()->int {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Dataset");
+		}
+		if (model->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, model->Sigle);
@@ -771,14 +888,14 @@ IAsyncOperation<int>^ DomainManager::GetDatasetValuesCountAsync(Dataset^ model) 
 	});
 }//GetDatasetValuesCountAsync
 IAsyncOperation<IVector<InfoValue^>^>^ DomainManager::GetDatasetValuesAsync(Dataset ^model, int offset, int count) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Dataset");
-	}
-	if (model->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid dataset sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model, offset, count]()->IVector<InfoValue^>^ {
+	return create_async([this, model, offset, count]()->IVector<InfoValue^>^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Dataset");
+		}
+		if (model->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid dataset sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, model->Sigle);
@@ -799,14 +916,14 @@ IAsyncOperation<IVector<InfoValue^>^>^ DomainManager::GetDatasetValuesAsync(Data
 	});
 }//GetDatasetValuesAsync
 IAsyncOperation<int>^ DomainManager::GetVariableValuesCountAsync(Variable^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Variable");
-	}
-	if (model->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid variable sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->int {
+	return create_async([this, model]()->int {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Variable");
+		}
+		if (model->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid variable sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, model->DatasetSigle);
@@ -816,14 +933,14 @@ IAsyncOperation<int>^ DomainManager::GetVariableValuesCountAsync(Variable^ model
 	});
 }//GetVariableValuesCountAsync
 IAsyncOperation<IVector<InfoValue^>^>^ DomainManager::GetVariableValuesAsync(Variable ^model, int offset, int count) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Variable");
-	}
-	if (model->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid variable sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model, offset, count]()->IVector<InfoValue^>^ {
+	return create_async([this, model, offset, count]()->IVector<InfoValue^>^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Variable");
+		}
+		if (model->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid variable sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, model->DatasetSigle);
@@ -845,14 +962,14 @@ IAsyncOperation<IVector<InfoValue^>^>^ DomainManager::GetVariableValuesAsync(Var
 	});
 }// GetVariableValuesAsync(
 IAsyncOperation<int>^ DomainManager::GetIndivValuesCountAsync(Indiv^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Indiv");
-	}
-	if (model->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid indiv sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->int {
+	return create_async([this, model]()->int {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Indiv");
+		}
+		if (model->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid indiv sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, model->DatasetSigle);
@@ -862,14 +979,14 @@ IAsyncOperation<int>^ DomainManager::GetIndivValuesCountAsync(Indiv^ model) {
 	});
 }//GetIndivValuesCountAsyn
 IAsyncOperation<IVector<InfoValue^>^>^ DomainManager::GetIndivValuesAsync(Indiv ^model, int offset, int count) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Indiv");
-	}
-	if (model->Sigle->IsEmpty()) {
-		throw ref new InvalidArgumentException("Invalid indiv sigle");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model, offset, count]()->IVector<InfoValue^>^ {
+	return create_async([this, model, offset, count]()->IVector<InfoValue^>^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Indiv");
+		}
+		if (model->Sigle->IsEmpty()) {
+			throw ref new InvalidArgumentException("Invalid indiv sigle");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
 		oMap->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
 		oMap->Insert(InfoStrings::KEY_DATASETSIGLE, model->DatasetSigle);
@@ -891,11 +1008,11 @@ IAsyncOperation<IVector<InfoValue^>^>^ DomainManager::GetIndivValuesAsync(Indiv 
 	});
 }//GetIndivValuesAsync
 IAsyncOperation<InfoValue^>^ DomainManager::FindValue(InfoValue^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->InfoValue^ {
+	return create_async([this, model]()->InfoValue^ {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		InfoValue^ oRet;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
@@ -908,11 +1025,11 @@ IAsyncOperation<InfoValue^>^ DomainManager::FindValue(InfoValue^ model) {
 	});
 }//FindVal
 IAsyncOperation<InfoValue^>^ DomainManager::FindValueBySiglesAsync(String^ setsigle, String^ indsigle, String^ varsigle) {
-	if ((setsigle == nullptr) || (indsigle == nullptr) || (varsigle == nullptr)) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, setsigle, indsigle, varsigle]()->InfoValue^ {
+	return create_async([this, setsigle, indsigle, varsigle]()->InfoValue^ {
+		if ((setsigle == nullptr) || (indsigle == nullptr) || (varsigle == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		InfoValue^ oRet = nullptr;
 		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
 		oFetch->Insert(InfoStrings::KEY_INDIVSIGLE, StringUtils::ToUpperFormat(indsigle));
@@ -928,40 +1045,72 @@ IAsyncOperation<InfoValue^>^ DomainManager::FindValueBySiglesAsync(String^ setsi
 		return (oRet);
 	});
 }//FindValueBySiglesAsync
+IAsyncOperation<InfoValue^>^ DomainManager::LoadValueBySiglesAsync(String^ setsigle, String^ indsigle, String^ varsigle) {
+	return create_async([this, setsigle, indsigle, varsigle]()->InfoValue^ {
+		if ((setsigle == nullptr) || (indsigle == nullptr) || (varsigle == nullptr)) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
+		InfoValue^ oRet = nullptr;
+		IMap<String^, Object^>^ oFetch = ref new Map<String^, Object^>();
+		oFetch->Insert(InfoStrings::KEY_INDIVSIGLE, StringUtils::ToUpperFormat(indsigle));
+		oFetch->Insert(InfoStrings::KEY_VARIABLESIGLE, StringUtils::ToUpperFormat(varsigle));
+		oFetch->Insert(InfoStrings::KEY_DATASETSIGLE, StringUtils::ToUpperFormat(setsigle));
+		oFetch->Insert(InfoStrings::KEY_TYPE, InfoStrings::TYPE_VALUE);
+		IMap<String^, Object^>^ oMap = create_task(pMan->FindDocumentAsync(oFetch)).get();
+		if (oMap != nullptr) {
+			if (oMap->HasKey(InfoStrings::KEY_ID) && oMap->HasKey(InfoStrings::KEY_REV)) {
+				oRet = ref new InfoValue(oMap);
+				Variable^ pVar = create_task(this->FindVariableBySiglesAsync(oRet->DatasetSigle, oRet->VariableSigle)).get();
+				oRet->Var = pVar;
+				pVar->Values->Append(oRet);
+				Indiv^ pInd = create_task(this->FindIndivBySiglesAsync(oRet->DatasetSigle, oRet->IndivSigle)).get();
+				oRet->Ind = pInd;
+				pInd->Values->Append(oRet);
+				Dataset^ pSet = create_task(this->FindDatasetBySigleAsync(oRet->DatasetSigle)).get();
+				pVar->Set = pSet;
+				pInd->Set = pSet;
+				pSet->Variables->Append(pVar);
+				pSet->Indivs->Append(pInd);
+			}// id
+		}// oMap
+		return (oRet);
+	});
+}//FindValueBySiglesAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsValueAsync(InfoValue^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsStoreable) {
-		throw ref new InvalidArgumentException("Not Storeable InfoValue");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsStoreable) {
+			throw ref new InvalidArgumentException("Not Storeable InfoValue");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		IMap<String^, Object^>^ oFetch = model->GetMap();
 		bool bRet = create_task(pMan->MaintainsDocumentAsync(oFetch)).get();
 		return (bRet);
 	});
 }//MaintainsValueAsync
 IAsyncOperation<bool>^ DomainManager::RemoveValueAsync(InfoValue^ model) {
-	if (model == nullptr) {
-		throw ref new InvalidArgumentException("Null Argument");
-	}
-	if (!model->IsPersisted) {
-		throw ref new InvalidArgumentException("Not Persisted InfoValue");
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([pMan, model]()->bool {
+	return create_async([this, model]()->bool {
+		if (model == nullptr) {
+			throw ref new InvalidArgumentException("Null Argument");
+		}
+		if (!model->IsPersisted) {
+			throw ref new InvalidArgumentException("Not Persisted InfoValue");
+		}
+		CouchDBManager^ pMan = this->Manager;
 		String^ docid = model->Id;
 		bool bRet = create_task(pMan->DeleteDocumentByIdAsync(docid)).get();
 		return (bRet);
 	});
 }//RemoveValueA
 IAsyncOperation<bool>^ DomainManager::MaintainsValuesAsync(IVector<InfoValue^>^ oVec, bool bDelete) {
-	if (oVec == nullptr) {
-		throw ref new InvalidArgumentException();
-	}
-	CouchDBManager^ pMan = this->m_pman;
-	return create_async([this, pMan, oVec, bDelete]()->bool {
+	return create_async([this, oVec, bDelete]()->bool {
+		if (oVec == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBManager^ pMan = this->Manager;
 		bool bRet = true;
 		IVector<IMap<String^, Object^>^>^ vv = ref new Vector<IMap<String^, Object^>^>();
 		if (!bDelete) {
@@ -1002,21 +1151,50 @@ IAsyncOperation<bool>^ DomainManager::MaintainsValuesAsync(IVector<InfoValue^>^ 
 	});
 }//MaintainsValuesAsyn
 //
-IAsyncOperation<bool>^ DomainManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, String^ mimetype, IBuffer^ data) {
-	return m_pman->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data);
+IAsyncOperation<bool>^ DomainManager::MaintainsDocumentAttachmentAsync(String^ docid,
+	String^ attachmentName, String^ mimetype, IBuffer^ data) {
+	return create_async([this, docid, attachmentName, mimetype, data]()->bool {
+		CouchDBManager^ pMan = this->Manager;
+		bool bRet = create_task(pMan->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data)).get();
+		return bRet;
+	});
+
 }//MaintainsDocumentAttachmentAsync
 IAsyncOperation<bool>^ DomainManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, IStorageFile^ file) {
-	return m_pman->MaintainsDocumentAttachmentAsync(docid, attachmentName, file);
-}//MaintainsDocumentAttachmentAsync
+	return create_async([this, docid, attachmentName, file]()->bool {
+		CouchDBManager^ pMan = this->Manager;
+		bool bRet = create_task(pMan->MaintainsDocumentAttachmentAsync(docid, attachmentName, file)).get();
+		return bRet;
+	});
+}//MaintainsDocumentAttachmentAsynck
 IAsyncOperation<IMap<String^, String^> ^>^ DomainManager::GetDocumentAttachmentNamesAsync(String^ docid) {
+	return create_async([this, docid]()->IMap<String^, String^> ^ {
+		CouchDBManager^ pMan = this->Manager;
+		IMap<String^, String^> ^  bRet = create_task(pMan->GetDocumentAttachmentNamesAsync(docid)).get();
+		return bRet;
+	});
 	return m_pman->GetDocumentAttachmentNamesAsync(docid);
 }//GetDocumentAttachmentNamesAsync
 IAsyncOperation<bool>^ DomainManager::RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName) {
+	return create_async([this, docid, attachmentName]()->bool {
+		CouchDBManager^ pMan = this->Manager;
+		bool bRet = create_task(pMan->RemoveDocumentAttachmentAsync(docid, attachmentName)).get();
+		return bRet;
+	});
 	return m_pman->RemoveDocumentAttachmentAsync(docid, attachmentName);
 }//RemoveDocumentAttachmentAsync
 IAsyncOperation<IBuffer^>^ DomainManager::GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName) {
+	return create_async([this, docid, attachmentName]()->IBuffer^ {
+		CouchDBManager^ pMan = this->Manager;
+		IBuffer^ pRet = create_task(pMan->GetDocumentAttachmentDataAsync(docid, attachmentName)).get();
+		return pRet;
+	});
 	return m_pman->GetDocumentAttachmentDataAsync(docid, attachmentName);
 }//GetDocumentAttachmentDataAsync
 IAsyncOperation<IVector<byte>^>^ DomainManager::GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName) {
-	return m_pman->GetDocumentAttachmentDataVectorAsync(docid, attachmentName);
+	return create_async([this, docid, attachmentName]()->IVector<byte>^ {
+		CouchDBManager^ pMan = this->Manager;
+		IVector<byte>^ pRet = create_task(pMan->GetDocumentAttachmentDataVectorAsync(docid, attachmentName)).get();
+		return pRet;
+	});
 }//GetDocumentAttachmentDataVectorAsync
