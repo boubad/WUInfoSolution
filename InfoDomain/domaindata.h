@@ -118,6 +118,7 @@ namespace InfoDomain {
 		std::unique_ptr<DatasetImpl> m_pimpl;
 		IVector<Indiv^>^ m_inds;
 		IVector<Variable^>^ m_vars;
+		IVector<InfoBlob^>^ m_blobs;
 	internal:
 		Dataset(IMap<String^, Object^>^ pMap);
 		IMap<String^, Object^>^ GetMap(void);
@@ -174,6 +175,10 @@ namespace InfoDomain {
 			String^ get();
 			void set(String^ value);
 		}// name
+		property IVector<InfoBlob^>^ Blobs {
+			IVector<InfoBlob^>^ get();
+			void set(IVector<InfoBlob^>^ value);
+		}
 	};// class Dataset
 	  //////////////////////////////////
 	public ref class Indiv sealed {
@@ -181,6 +186,7 @@ namespace InfoDomain {
 		std::unique_ptr<IndivImpl> m_pimpl;
 		Dataset^ m_set;
 		IVector<InfoValue^>^ m_vals;
+		IVector<InfoBlob^>^ m_blobs;
 	internal:
 		Indiv(IMap<String^, Object^>^ pMap);
 		IMap<String^, Object^>^ GetMap(void);
@@ -236,6 +242,10 @@ namespace InfoDomain {
 			IVector<InfoValue^>^ get();
 			void set(IVector<InfoValue^>^ value);
 		}
+		property IVector<InfoBlob^>^ Blobs {
+			IVector<InfoBlob^>^ get();
+			void set(IVector<InfoBlob^>^ value);
+		}
 	};// Indiv
 	  ///////////////////////////////////////
 	public ref class Variable sealed {
@@ -243,6 +253,7 @@ namespace InfoDomain {
 		std::unique_ptr<VariableImpl> m_pimpl;
 		Dataset^ m_set;
 		IVector<InfoValue^>^ m_vals;
+		IVector<InfoBlob^>^ m_blobs;
 	internal:
 		Variable(IMap<String^, Object^>^ pMap);
 		IMap<String^, Object^>^ GetMap(void);
@@ -310,6 +321,10 @@ namespace InfoDomain {
 			IVector<InfoValue^>^ get();
 			void set(IVector<InfoValue^>^ value);
 		}
+		property IVector<InfoBlob^>^ Blobs {
+			IVector<InfoBlob^>^ get();
+			void set(IVector<InfoBlob^>^ value);
+		}
 	};// Variable
 	  ////////////////////////////////////
 	public ref class InfoValue sealed {
@@ -324,6 +339,7 @@ namespace InfoDomain {
 		InfoDataValue^ m_value;
 		Variable^ m_var;
 		Indiv^ m_ind;
+		IVector<InfoBlob^>^ m_blobs;
 	internal:
 		InfoValue(IMap<String^, Object^>^ oMap);
 		IMap<String^, Object^>^ GetMap(void);
@@ -473,6 +489,10 @@ namespace InfoDomain {
 			InfoDataType get() {
 				return (m_value != nullptr) ? m_value->DataType : InfoDataType::Unknown;
 			}
+		}
+		property IVector<InfoBlob^>^ Blobs {
+			IVector<InfoBlob^>^ get();
+			void set(IVector<InfoBlob^>^ value);
 		}
 	};// InfoValue
 	  /////////////////////////////////////

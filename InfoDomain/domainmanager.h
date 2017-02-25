@@ -86,6 +86,8 @@ namespace InfoDomain {
 		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IVector<byte>^>^ GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName);
+		//
+		IAsyncOperation<IVector<InfoBlob^>^>^ GetDocumentBlobsAsync(String^ docid);
 	};// class DomainManager
 //////////////////////////
 }// namespace InfoDomain

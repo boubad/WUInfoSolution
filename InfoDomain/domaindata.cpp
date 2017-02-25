@@ -188,6 +188,15 @@ namespace InfoDomain {
 	void Dataset::Annee::set(String^ value) {
 		m_pimpl->set_Annee(value);
 	}
+	IVector<InfoBlob^>^ Dataset::Blobs::get() {
+		if (m_blobs == nullptr) {
+			m_blobs = ref new Vector<InfoBlob^>();
+		}
+		return m_blobs;
+	}
+	void Dataset::Blobs::set(IVector<InfoBlob^>^ value) {
+		m_blobs = value;
+	}
 	//////////////////////////////////
 	Indiv::Indiv() :m_pimpl(new IndivImpl{}) {}
 	Indiv::Indiv(Dataset^ pSet, String^ sigle) : m_pimpl(new IndivImpl{ pSet->Sigle, sigle }) {
@@ -249,6 +258,15 @@ namespace InfoDomain {
 	}
 	void Indiv::Values::set(IVector<InfoValue^>^ value) {
 		m_vals = value;
+	}
+	IVector<InfoBlob^>^ Indiv::Blobs::get() {
+		if (m_blobs == nullptr) {
+			m_blobs = ref new Vector<InfoBlob^>();
+		}
+		return m_blobs;
+	}
+	void Indiv::Blobs::set(IVector<InfoBlob^>^ value) {
+		m_blobs = value;
 	}
 	///////////////////////////////////////
 	Variable::Variable() :m_pimpl(new VariableImpl{}) {}
@@ -329,6 +347,15 @@ namespace InfoDomain {
 	}
 	void Variable::Values::set(IVector<InfoValue^>^ value) {
 		m_vals = value;
+	}
+	IVector<InfoBlob^>^ Variable::Blobs::get() {
+		if (m_blobs == nullptr) {
+			m_blobs = ref new Vector<InfoBlob^>();
+		}
+		return m_blobs;
+	}
+	void Variable::Blobs::set(IVector<InfoBlob^>^ value) {
+		m_blobs = value;
 	}
 	////////////////////////////////////
 	InfoValue::InfoValue() :m_status(InfoStatus::Unknown) {}
@@ -527,5 +554,14 @@ namespace InfoDomain {
 		}// value
 		return oMap;
 	}// GetMap
+	IVector<InfoBlob^>^ InfoValue::Blobs::get() {
+		if (m_blobs == nullptr) {
+			m_blobs = ref new Vector<InfoBlob^>();
+		}
+		return m_blobs;
+	}
+	void InfoValue::Blobs::set(IVector<InfoBlob^>^ value) {
+		m_blobs = value;
+	}
 	/////////////////////////////////////
 }// Namespace InfoDomain

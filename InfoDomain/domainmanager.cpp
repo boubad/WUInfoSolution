@@ -388,6 +388,10 @@ IAsyncOperation<Dataset^>^ DomainManager::LoadDatasetAsync(String ^ sigle)
 		if (pRet == nullptr) {
 			return pRet;
 		}
+		IVector<InfoBlob^>^ blobs = create_task(this->GetDocumentBlobsAsync(pRet->Id)).get();
+		if ((blobs != nullptr) && (blobs->Size > 0)) {
+			pRet->Blobs = blobs;
+		}
 		int nv = create_task(this->GetDatasetVariablesCountAsync(pRet)).get();
 		if (nv > 0) {
 			IVector<Variable^>^ vv = create_task(this->GetDatasetVariablesAsync(pRet, 0, nv)).get();
@@ -395,6 +399,10 @@ IAsyncOperation<Dataset^>^ DomainManager::LoadDatasetAsync(String ^ sigle)
 				auto it = vv->First();
 				while (it->HasCurrent) {
 					Variable^ p = it->Current;
+					IVector<InfoBlob^>^ bb = create_task(this->GetDocumentBlobsAsync(p->Id)).get();
+					if ((bb != nullptr) && (bb->Size > 0)) {
+						p->Blobs = bb;
+					}
 					p->Set = pRet;
 					it->MoveNext();
 				}// it
@@ -408,6 +416,10 @@ IAsyncOperation<Dataset^>^ DomainManager::LoadDatasetAsync(String ^ sigle)
 				auto it = vv->First();
 				while (it->HasCurrent) {
 					Indiv^ p = it->Current;
+					IVector<InfoBlob^>^ bb = create_task(this->GetDocumentBlobsAsync(p->Id)).get();
+					if ((bb != nullptr) && (bb->Size > 0)) {
+						p->Blobs = bb;
+					}
 					p->Set = pRet;
 					it->MoveNext();
 				}// it
@@ -421,6 +433,10 @@ IAsyncOperation<Dataset^>^ DomainManager::LoadDatasetAsync(String ^ sigle)
 				auto it = vv->First();
 				while (it->HasCurrent) {
 					InfoValue^ p = it->Current;
+					IVector<InfoBlob^>^ bb = create_task(this->GetDocumentBlobsAsync(p->Id)).get();
+					if ((bb != nullptr) && (bb->Size > 0)) {
+						p->Blobs = bb;
+					}
 					Variable^ pVar = pRet->FindVariable(p->VariableSigle);
 					if (pVar != nullptr) {
 						p->Var = pVar;
@@ -1198,3 +1214,23 @@ IAsyncOperation<IVector<byte>^>^ DomainManager::GetDocumentAttachmentDataVectorA
 		return pRet;
 	});
 }//GetDocumentAttachmentDataVectorAsync
+IAsyncOperation<IVector<InfoBlob^>^>^ DomainManager::GetDocumentBlobsAsync(String^ docid) {
+	return create_async([this, docid]()->IVector<InfoBlob^>^ {
+		IVector<InfoBlob^>^ pRet = ref new Vector<InfoBlob^>();
+		IMap<String^, String^>^ oMap = create_task(this->GetDocumentAttachmentNamesAsync(docid)).get();
+		if ((oMap != nullptr) && (oMap->Size > 0)) {
+			auto it = oMap->First();
+			while (it->HasCurrent) {
+				String^ name = it->Current->Key;
+				String^ mime = it->Current->Value;
+				IVector<byte>^ data = create_task(this->GetDocumentAttachmentDataVectorAsync(docid, name)).get();
+				if ((data != nullptr) && (data->Size > 0)) {
+					InfoBlob^ p = ref new InfoBlob(name,mime,data);
+					pRet->Append(p);
+				}// data
+				it->MoveNext();
+			}// it
+		}// oMap
+		return (pRet);
+	});
+}//GetDocumentBlobsAsync
