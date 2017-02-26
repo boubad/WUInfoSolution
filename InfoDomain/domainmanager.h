@@ -32,6 +32,7 @@ namespace InfoDomain {
 			void set(String^ value);
 		}
 	public:
+		static IAsyncAction^ CheckDatabaseAsync(String^ url, String^ databaseName);
 		IAsyncOperation<int>^ GetDatasetsCountAsync(Dataset^ model);
 		IAsyncOperation<IVector<Dataset^>^>^ GetDatasetsAsync(Dataset^ model,int offset, int count);
 		IAsyncOperation<Dataset^>^ FindDatasetAsync(Dataset^ model);

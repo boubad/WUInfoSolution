@@ -105,6 +105,11 @@ void DomainManager::check_indexes(void) {
 		st_initalized = true;
 	}
 }// check_indexes
+IAsyncAction^ DomainManager::CheckDatabaseAsync(String^ url, String^ databaseName) {
+	return create_async([url, databaseName]() {
+		create_task(CouchDBManager::CheckDatabaseAsync(url, databaseName)).wait();
+	});
+}//CheckDatabaseAsync
 ///////////////////////////////
 IAsyncOperation<Etudiant^>^ DomainManager::FindEtudiantByDossierAsync(String^ dossier) {
 	return create_async([this, dossier]()->Etudiant^ {

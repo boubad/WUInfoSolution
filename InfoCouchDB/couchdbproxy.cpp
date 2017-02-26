@@ -31,6 +31,12 @@ String^  CouchDBProxy::KEY_INDEX = "index";
 String^  CouchDBProxy::KEY_DESIGNDOC = "ddoc";
 String^  CouchDBProxy::KEY_NAME = "name";
 ///////////////////////
+CouchDBProxy::CouchDBProxy(String^ url) {
+	m_url = url;
+	m_client = ref new HttpClient();
+	m_client->DefaultRequestHeaders->Accept->Clear();
+	m_client->DefaultRequestHeaders->Accept->Append(ref new HttpMediaTypeWithQualityHeaderValue(JSON_MIME_TYPE));
+}
 CouchDBProxy::CouchDBProxy(String^ url, String^ database) {
 	m_url = url;
 	m_database = database;
@@ -44,6 +50,76 @@ CouchDBProxy::~CouchDBProxy() {
 	m_database = nullptr;
 	m_client = nullptr;
 }
+task<bool> CouchDBProxy::ExistsDatabaseAsync(String^ databaseName) {
+	return task<bool>{[this, databaseName]()->bool {
+		if ((m_url == nullptr) || m_url->IsEmpty()) {
+			throw ref new OperationCanceledException();
+		}
+		bool bRet{ false };
+		String^ sUri = this->m_url + databaseName;
+		Uri^ uri = ref new Uri(sUri);
+		HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
+		auto myop = m_client->SendRequestAsync(req);
+		bRet = create_task(myop).then([](HttpResponseMessage^ response) {
+			auto status = response->StatusCode;
+			bool b = ((status != HttpStatusCode::NotFound) && (status != HttpStatusCode::Ok));
+			return task_from_result(b);
+		}).get();
+		return (bRet);
+	}
+	};
+}//ExistsDatabaseAsync
+task<bool> CouchDBProxy::CreateDatabaseAsync(String^ databaseName) {
+	return task<bool>{[this, databaseName]()->bool {
+		if ((m_url == nullptr) || m_url->IsEmpty()) {
+			throw ref new OperationCanceledException();
+		}
+		bool bRet{ true };
+		String^ sUri = this->m_url + this->m_database;
+		Uri^ uri = ref new Uri(sUri);
+		HttpRequestMessage^ req2 = ref new HttpRequestMessage(HttpMethod::Put, uri);
+		auto myop2 = m_client->SendRequestAsync(req2);
+		bRet = create_task(myop2).then([](HttpResponseMessage^ response) {
+			auto status = response->StatusCode;
+			bool b = (status == HttpStatusCode::Created);
+			return task_from_result(b);
+		}).get();
+		return (bRet);
+	}
+	};
+}//ExistsDatabaseAsync
+task<void> CouchDBProxy::CheckDatabaseAsync(String^url, String^ databaseName) {
+	return task<void>{[url, databaseName]() {
+		if ((url == nullptr) || (databaseName == nullptr) ||
+			url->IsEmpty() || databaseName->IsEmpty()) {
+			throw ref new  InvalidArgumentException();
+		}
+		HttpClient^ client = ref new HttpClient();
+		client->DefaultRequestHeaders->Accept->Clear();
+		client->DefaultRequestHeaders->Accept->Append(ref new HttpMediaTypeWithQualityHeaderValue(JSON_MIME_TYPE));
+		String^ sUri = url + databaseName;
+		Uri^ uri = ref new Uri(sUri);
+		HttpRequestMessage^ req = ref new HttpRequestMessage(HttpMethod::Head, uri);
+		auto myop = client->SendRequestAsync(req);
+		bool bRet = create_task(myop).then([](HttpResponseMessage^ response) {
+			auto status = response->StatusCode;
+			if ((status != HttpStatusCode::NotFound) && (status != HttpStatusCode::Ok)) {
+				throw ref new OperationCanceledException();
+			}
+			return task_from_result(status == HttpStatusCode::Ok);
+		}).get();
+		if (!bRet) {
+			HttpRequestMessage^ req2 = ref new HttpRequestMessage(HttpMethod::Put, uri);
+			auto myop2 = client->SendRequestAsync(req2);
+			create_task(myop2).then([](HttpResponseMessage^ response) {
+				auto status = response->StatusCode;
+				if (status != HttpStatusCode::Created) {
+					throw ref new OperationCanceledException();
+				}
+			}).wait();
+		}
+	}};
+}//CheckDatabaseAsync
 void CouchDBProxy::check_database(void) {
 	String^ sUri = this->m_url + this->m_database;
 	Uri^ uri = ref new Uri(sUri);
@@ -79,7 +155,7 @@ task<IBuffer^> CouchDBProxy::GetDocumentAttachmentDataAsync(String^ docid, Strin
 		Uri^ uri = ref new Uri(sUri);
 		auto myop = this->m_client->GetAsync(uri);
 		auto operationTask = create_task(myop);
-		oRet = create_task(myop).then([](HttpResponseMessage^ response)->IBuffer^ {
+		oRet = operationTask.then([](HttpResponseMessage^ response) {
 			IBuffer^ r;
 			auto status = response->StatusCode;
 			if ((status == HttpStatusCode::NotModified) || (status == HttpStatusCode::Ok)) {
@@ -136,6 +212,9 @@ task<bool> CouchDBProxy::MaintainsDocumentAttachmentAsync(String^ docid, String^
 		bool bRet = create_task(file->OpenReadAsync()).
 			then([this, docid, attachmentName](IRandomAccessStreamWithContentType^ stream) {
 			String^ mime = stream->ContentType;
+			if ((mime == nullptr) || mime->IsEmpty()) {
+				mime = "application/octet-stream";
+			}
 			unsigned int  n = static_cast<unsigned int>(stream->Size);
 			IInputStream^ ss = stream->GetInputStreamAt(0);
 			DataReader^ reader = ref new DataReader(ss);
@@ -155,14 +234,15 @@ task<bool> CouchDBProxy::MaintainsDocumentAttachmentAsync(String^ docid, String^
 			throw ref new InvalidArgumentException();
 		}
 		HttpBufferContent^ sc = ref new HttpBufferContent(data);
-		sc->Headers->ContentType->MediaType = mimetype;
+		//sc->Headers->ContentType->MediaType = mimetype;
 		String^ sUri = this->m_url + this->m_database + SLASH + Uri::EscapeComponent(docid) + SLASH + Uri::EscapeComponent(attachmentName) + REV + rev;
 		Uri^ uri = ref new Uri(sUri);
 		auto myop = this->m_client->PutAsync(uri, sc);
 		bool bRet = create_task(myop).then([](HttpResponseMessage^ response) {
 			bool b = false;
 			auto status = response->StatusCode;
-			if ((status == HttpStatusCode::Accepted) || (status == HttpStatusCode::Ok)) {
+			if ((status == HttpStatusCode::Accepted) || (status == HttpStatusCode::Ok) ||
+				(status == HttpStatusCode::Created)) {
 				b = true;
 			}
 			return task_from_result(b);
@@ -593,7 +673,7 @@ task<IMap<String^, Object^>^> CouchDBProxy::FindDocumentAsync(IMap<String^, Obje
 	}};
 }//FindDocumentAsync
 task<IVector<IMap<String^, Object^>^>^> CouchDBProxy::ReadDocumentsAsync(IMap<String^, Object^>^ oFetch, int offset, int count) {
-	return task<IVector<IMap<String^, Object^>^>^>{[this,oFetch,offset,count]()->IVector<IMap<String^, Object^>^>^ {
+	return task<IVector<IMap<String^, Object^>^>^>{[this, oFetch, offset, count]()->IVector<IMap<String^, Object^>^>^ {
 		String^ sUri = this->m_url + this->m_database + STRING_FIND;
 		Uri^ uri = ref new Uri(sUri);
 		IVector<String^>^ pFields = ref new Vector<String^>();

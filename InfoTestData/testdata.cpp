@@ -1,12 +1,12 @@
 ﻿#include "pch.h"
 #include "testdata.h"
-
+#include <cassert>
 using namespace Platform;
 using namespace Platform::Collections;
 using namespace concurrency;
 ////////////////////////////
 namespace InfoTestData {
-	String^ TestData::TESTFILE_NAME = "..\\..\\resources\\testimage.jpg";
+	String^ TestData::TESTFILE_NAME = "testfile.dat";
 	///////////////////////////////
 	TestData::TestData()
 	{
@@ -92,27 +92,52 @@ namespace InfoTestData {
 		return oRet;
 	}
 	//
+	String^ TestData::TestImageFileName::get() {
+		using byte = uint8;
+		StorageFolder^ folder = Windows::Storage::ApplicationData::Current->LocalFolder;
+		assert(folder != nullptr);
+		IStorageFile^ pFile = create_task(folder->CreateFileAsync(TESTFILE_NAME, CreationCollisionOption::ReplaceExisting)).get();
+		assert(pFile != nullptr);
+		int nMax{ 256 };
+		Array<byte>^ oAr = ref new Array<byte>(nMax);
+		assert(oAr != nullptr);
+		for (int i = 0; i < nMax; ++i) {
+			oAr[i] = (byte)i;
+		}// i
+		create_task(Windows::Storage::FileIO::WriteBytesAsync(pFile, oAr)).wait();
+		String^ sRet = pFile->Path;
+		return sRet;
+	}
 	IStorageFile^ TestData::TestImageFile::get() {
-		String^ filepath = TESTFILE_NAME;
+		String^ filepath = this->TestImageFileName;
 		auto op = StorageFile::GetFileFromPathAsync(filepath);
-		return create_task(op).get();
+		IStorageFile^ pRet = create_task(op).get();
+		return pRet;
+	}
+	String^ TestData::AttachmentName::get() {
+		return "attachName";
+	}
+	String^ TestData::AttachmentMime::get() {
+		IStorageFile^ p = this->TestImageFile;
+		assert(p != nullptr);
+		String^ sRet = p->ContentType;
+		if ((sRet == nullptr) || sRet->IsEmpty()) {
+			sRet = "application/octet-stream";
+		}
+		return sRet;
 	}
 	IBuffer^ TestData::TestImageBuffer::get() {
-		DataReader^ reader;
-		String^ filepath = TESTFILE_NAME;
-		return create_task(StorageFile::GetFileFromPathAsync(filepath)).then([](IStorageFile^ file) {
-			if (file == nullptr) {
-				throw ref new InvalidArgumentException();
-			}
-			return create_task(file->OpenReadAsync());
-		}).then([&reader](IRandomAccessStreamWithContentType^ stream)-> DataReaderLoadOperation^ {
-			unsigned int  n = static_cast<unsigned int>(stream->Size);
-			IInputStream^ ss = stream->GetInputStreamAt(0);
-			reader = ref new DataReader(ss);
-			return reader->LoadAsync(n);
-		}).then([reader](auto nx) {
-			IBuffer^ pBuf = reader->DetachBuffer();
-			return pBuf;
-		}).get();
+		String^ filepath = this->TestImageFileName;
+		IStorageFile^ file = create_task(StorageFile::GetFileFromPathAsync(filepath)).get();
+		if (file == nullptr) {
+			throw ref new InvalidArgumentException();
+		}
+		IRandomAccessStreamWithContentType^ stream = create_task(file->OpenReadAsync()).get();
+		unsigned int  n = static_cast<unsigned int>(stream->Size);
+		IInputStream^ ss = stream->GetInputStreamAt(0);
+		DataReader^ reader = ref new DataReader(ss);
+		create_task(reader->LoadAsync(n)).get();
+		IBuffer^ pBuf = reader->DetachBuffer();
+		return pBuf;
 	}
 }// namespace InfoTestData

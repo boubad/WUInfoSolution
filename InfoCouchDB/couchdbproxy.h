@@ -54,9 +54,14 @@ namespace InfoCouchDB {
 		static IVector<IMap<String^, Object^>^>^ StReadDocs(String^ jsonText);
 		//
 	public:
+		CouchDBProxy(String^ url);
 		CouchDBProxy(String^ url, String^ database);
 		~CouchDBProxy();
 	public:
+		//
+		task<bool> ExistsDatabaseAsync(String^ databaseName);
+		task<bool> CreateDatabaseAsync(String^ databaseName);
+		static task<void> CheckDatabaseAsync(String^ url,String^ databaseName);
 		//
 		task<IMap<String^, Object^>^> ReadDocumentByIdAsync(String^ docid);
 		task<bool> DeleteDocumentByIdAsync(String^ docid);

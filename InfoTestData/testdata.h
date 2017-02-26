@@ -53,6 +53,15 @@ namespace InfoTestData
 			IVector<int>^ get();
 		}
 		//
+		property String^ AttachmentName {
+			String^ get();
+		}
+		property String^ AttachmentMime {
+			String^ get();
+		}
+		property String^ TestImageFileName {
+			String^ get();
+		}
 		property IStorageFile^ TestImageFile {
 			IStorageFile^ get();
 		}

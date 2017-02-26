@@ -25,10 +25,10 @@ CouchDBManager::CouchDBManager() {
 
 }
 CouchDBManager::CouchDBManager(String^ baseUrl, String^ databaseName) {
-	if (baseUrl->IsEmpty()) {
+	if ((baseUrl == nullptr) || baseUrl->IsEmpty()) {
 		throw ref new InvalidArgumentException("Bad BaseUrl");
 	}
-	if (databaseName->IsEmpty()) {
+	if ((baseUrl == nullptr) || databaseName->IsEmpty()) {
 		throw ref new InvalidArgumentException("Bad Database name.");
 	}
 	std::wstring xurl{ baseUrl->Data() };
@@ -40,6 +40,25 @@ CouchDBManager::CouchDBManager(String^ baseUrl, String^ databaseName) {
 	m_url = ref new String(xurl.c_str());
 	m_dataBase = databaseName;
 }//CouchDBManager
+IAsyncAction^ CouchDBManager::CheckDatabaseAsync(String^ baseUrl, String^ databaseName) {
+	return create_async([baseUrl, databaseName]() {
+		if ((baseUrl == nullptr) || baseUrl->IsEmpty()) {
+			throw ref new InvalidArgumentException("Bad BaseUrl");
+		}
+		if ((baseUrl == nullptr) || databaseName->IsEmpty()) {
+			throw ref new InvalidArgumentException("Bad Database name.");
+		}
+		std::wstring xurl{ baseUrl->Data() };
+		auto it = xurl.end();
+		--it;
+		if ((*it) != L'/') {
+			xurl = xurl + L"/";
+		}
+		String^ sUrl = ref new String(xurl.c_str());
+		String^ sBase = databaseName;
+		CouchDBProxy::CheckDatabaseAsync(sUrl, sBase).wait();
+	});
+}//CheckDatabaseAsync
 void CouchDBManager::SetUrlDatabase(String^ url, String^ database) {
 	m_url = url;
 	m_dataBase = database;
