@@ -6,11 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="420"
+    d:DesignHeight="350"
     d:DesignWidth="500" DataContextChanged="UserControl_DataContextChanged">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -19,7 +19,7 @@
         <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0">
             <ListBox x:Name="listboxVariables" Margin="4,4" SelectionMode="Single"
                      ItemsSource="{Binding Path=Variables}" SelectedItem="{Binding Path=CurrentVariable}"
-                     VerticalAlignment="Stretch" MinHeight="360" SelectionChanged="listboxVariables_SelectionChanged"></ListBox>
+                     VerticalAlignment="Stretch"  SelectionChanged="listboxVariables_SelectionChanged"></ListBox>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <Button x:Name="buttonRefresh" Margin="4,0" Click="buttonRefresh_Click">Rafraîchir</Button>
                 <Button x:Name="buttonNew" Margin="4,0" Click="buttonNew_Click">Nouveau</Button>
@@ -30,31 +30,32 @@
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4,4">Abbréviation:</TextBlock>
                 <TextBox x:Name="textboxSigle" Text="{Binding Path=VariableSigle}"
-                         HorizontalAlignment="Left" Margin="4,4" MinWidth="100" TextChanged="textboxSigle_TextChanged" />
+                         HorizontalAlignment="Left" Margin="4,4"  TextChanged="textboxSigle_TextChanged" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Nom complet:</TextBlock>
-                <TextBox x:Name="textboxName" Text="{Binding Path=VariableName}" HorizontalAlignment="Left"  Margin="4,4" MinWidth="180" TextChanged="textboxName_TextChanged"
+                <TextBox x:Name="textboxName" Text="{Binding Path=VariableName}" HorizontalAlignment="Left"  Margin="4,4" TextChanged="textboxName_TextChanged"
                           
                          />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Type de données:</TextBlock>
-                <ComboBox x:Name="comboboxType" Margin="4,4" MinWidth="100" SelectedItem="{Binding Path=VariableType}"
+                <ComboBox x:Name="comboboxType" Margin="4,4"  SelectedItem="{Binding Path=VariableType}"
                           ItemsSource="{Binding Path=DataTypeStrings}" SelectionChanged="comboboxType_SelectionChanged"                    />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Genre variable:</TextBlock>
-                <ComboBox x:Name="comboboxKind" Margin="4,4" MinWidth="100" SelectedItem="{Binding Path=VariableKind}"
+                <ComboBox x:Name="comboboxKind" Margin="4,4"  SelectedItem="{Binding Path=VariableKind}"
                           ItemsSource="{Binding Path=DataKindStrings}" SelectionChanged="comboboxKind_SelectionChanged"                    />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" Margin="4,4">Observations:</TextBlock>
-                <TextBox x:Name="textboxObservations" Text="{Binding Path=VariableObservations}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="100" MinWidth="180"/>
+                <TextBox x:Name="textboxObservations" Text="{Binding Path=VariableObservations}" TextWrapping="Wrap"
+                         AcceptsReturn="True" HorizontalAlignment="Stretch" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Etat:</TextBlock>
-                <ComboBox x:Name="comboboxStatus" Margin="4,4" MinWidth="100" SelectedItem="{Binding Path=VariableStatus}"
+                <ComboBox x:Name="comboboxStatus" Margin="4,4"  SelectedItem="{Binding Path=VariableStatus}"
                           ItemsSource="{Binding Path=StatusStrings}" SelectionChanged="comboboxStatus_SelectionChanged"
                    />
             </StackPanel>

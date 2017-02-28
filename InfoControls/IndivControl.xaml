@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="320"
+    d:DesignHeight="250"
     d:DesignWidth="480" DataContextChanged="UserControl_DataContextChanged">
 
     <Grid>
@@ -18,7 +18,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0">
-            <ListBox x:Name="listboxIndivs" MinHeight="265" Margin="4,4" SelectionMode="Single"
+            <ListBox x:Name="listboxIndivs"  Margin="4,4" SelectionMode="Single"
                      ItemsSource="{Binding Path=Indiv}" SelectedItem="{Binding Path=CurrentIndiv}"
                      VerticalAlignment="Stretch" SelectionChanged="listboxIndivs_SelectionChanged" ></ListBox>
             <StackPanel Orientation="Horizontal" Margin="4,4">
@@ -31,21 +31,22 @@
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4,4">Abbréviation:</TextBlock>
                 <TextBox x:Name="textboxSigle" Text="{Binding Path=IndivSigle}"
-                         HorizontalAlignment="Left" Margin="4,4" MinWidth="100" TextChanged="textboxSigle_TextChanged" />
+                         HorizontalAlignment="Left" Margin="4,4"  TextChanged="textboxSigle_TextChanged" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Nom complet:</TextBlock>
                 <TextBox x:Name="textboxName" Text="{Binding Path=IndivName}" HorizontalAlignment="Left"  Margin="4,4" 
-                         MinWidth="180" TextChanged="textboxName_TextChanged" 
+                          TextChanged="textboxName_TextChanged" 
                          />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" Margin="4,4">Observations:</TextBlock>
-                <TextBox x:Name="textboxObservations" Text="{Binding Path=IndivObservations}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="100" MinWidth="180"/>
+                <TextBox x:Name="textboxObservations" Text="{Binding Path=IndivObservations}" TextWrapping="Wrap"
+                         AcceptsReturn="True"  HorizontalAlignment="Stretch"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <TextBlock HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Etat:</TextBlock>
-                <ComboBox x:Name="comboboxStatus" Margin="4,4" MinWidth="100" SelectedItem="{Binding Path=IndivStatus}"
+                <ComboBox x:Name="comboboxStatus" Margin="4,4" SelectedItem="{Binding Path=IndivStatus}"
                           ItemsSource="{Binding Path=StatusStrings}" SelectionChanged="comboboxStatus_SelectionChanged"
                    />
             </StackPanel>

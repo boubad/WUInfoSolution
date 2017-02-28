@@ -6,8 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="510"
-    d:DesignWidth="510">
+    d:DesignHeight="440"
+    d:DesignWidth="490">
 
     <Pivot x:Name="rootPivot" Title="Gestion des ensembles de données" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <PivotItem x:Name="datasetPivot" Header="Datasets">
