@@ -129,6 +129,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\InfoControls\InfoControls.csproj">
+      <Project>{48ff51c4-31d5-4093-978b-376fc6e7797b}</Project>
+      <Name>InfoControls</Name>
+    </ProjectReference>
     <ProjectReference Include="..\InfoCouchDB\InfoCouchDB.vcxproj">
       <Project>{cbff9b0e-1d43-486e-ab27-1f4c6e487eb6}</Project>
       <Name>InfoCouchDB</Name>

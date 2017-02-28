@@ -59,6 +59,28 @@ IAsyncAction^ CouchDBManager::CheckDatabaseAsync(String^ baseUrl, String^ databa
 		CouchDBProxy::CheckDatabaseAsync(sUrl, sBase).wait();
 	});
 }//CheckDatabaseAsync
+IAsyncOperation<bool>^ CouchDBManager::ExistsDatabaseAsync(String^ baseUrl, String^ databaseName) {
+	return create_async([baseUrl, databaseName]() ->bool {
+		if ((baseUrl == nullptr) || baseUrl->IsEmpty()) {
+			throw ref new InvalidArgumentException("Bad BaseUrl");
+		}
+		if ((baseUrl == nullptr) || databaseName->IsEmpty()) {
+			throw ref new InvalidArgumentException("Bad Database name.");
+		}
+		std::wstring xurl{ baseUrl->Data() };
+		auto it = xurl.end();
+		--it;
+		if ((*it) != L'/') {
+			xurl = xurl + L"/";
+		}
+		String^ sUrl = ref new String(xurl.c_str());
+		String^ sBase = databaseName;
+		CouchDBManager^ pMan = ref new CouchDBManager(sUrl, sBase);
+		CouchDBProxy pp{sUrl,sBase};
+		bool bRet = create_task(pp.ExistsDatabaseAsync(sBase)).get();
+		return (bRet);
+	});
+}//ExistsDatabaseAsync
 void CouchDBManager::SetUrlDatabase(String^ url, String^ database) {
 	m_url = url;
 	m_dataBase = database;

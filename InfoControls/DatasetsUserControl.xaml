@@ -19,5 +19,8 @@
         <PivotItem x:Name="indivsItem" Header="Individus">
             <local:IndivControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
         </PivotItem>
+        <PivotItem x:Name="paramsItem" Header="Paramètres">
+            <local:DataserverParametersControl />
+        </PivotItem>
     </Pivot>
 </UserControl>

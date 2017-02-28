@@ -12,7 +12,6 @@ namespace InfoControls
 {
     class DatasetEditModel : INotifyPropertyChanged
     {
-        //
         private readonly Object _syncObj = new object();
         private ObservableCollection<Dataset> _datasets = null;
         private Dataset _currentDataset = null;
@@ -34,6 +33,8 @@ namespace InfoControls
         private bool _bnewindiv = false;
         private ObservableCollection<InfoValue> _varvalues = null;
         private ObservableCollection<InfoValue> _indvalues = null;
+        private String _workurl = null;
+        private String _workdatabase = null;
         //
         public event PropertyChangedEventHandler PropertyChanged;
         protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -112,6 +113,48 @@ namespace InfoControls
                 NotifyPropertyChanged("Datasets");
             }
         }// DatabaseName
+        public String WorkBaseUrl
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_workurl))
+                {
+                    _workurl = BaseUrl;
+                }
+                return _workurl;
+            }
+            set
+            {
+                String s1 = string.IsNullOrEmpty(WorkBaseUrl) ? "" : WorkBaseUrl;
+                String s2 = (string.IsNullOrEmpty(value)) ? "" : value.Trim();
+                if (s1 != s2)
+                {
+                    _workurl = s2;
+                    NotifyPropertyChanged("WorkBaseUrl");
+                }
+            }
+        }
+        public String WorkDatabaseName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_workdatabase))
+                {
+                    _workdatabase = DatabaseName;
+                }
+                return _workdatabase;
+            }
+            set
+            {
+                String s1 = string.IsNullOrEmpty(WorkDatabaseName) ? "" : WorkDatabaseName;
+                String s2 = (string.IsNullOrEmpty(value)) ? "" : value.Trim();
+                if (s1 != s2)
+                {
+                    _workdatabase = s2;
+                    NotifyPropertyChanged("WorkDatabaseName");
+                }
+            }
+        }
         public DomainManager Manager
         {
             get

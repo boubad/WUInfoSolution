@@ -26,6 +26,7 @@ namespace InfoCouchDB {
 		void SetUrlDatabase(String^ url, String^ database);
 		//
 		static IAsyncAction^ CheckDatabaseAsync(String^ url, String^ databaseName);
+		static IAsyncOperation<bool>^ ExistsDatabaseAsync(String^ url, String^ databaseName);
 		IAsyncOperation<bool>^ IsAliveAsync(void);
 		IAsyncOperation<int>^ GetDocumentsCountAsync(IMap<String^, Object^>^ oFetch);
 		IAsyncOperation<IVector<IMap<String^, Object^>^>^>^ GetDocumentsAsync(IMap<String^, Object^>^ oFetch, int offset, int count);

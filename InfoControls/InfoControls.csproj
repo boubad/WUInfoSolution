@@ -107,6 +107,9 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataserverParametersControl.xaml.cs">
+      <DependentUpon>DataserverParametersControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DatasetControl.xaml.cs">
       <DependentUpon>DatasetControl.xaml</DependentUpon>
     </Compile>
@@ -134,6 +137,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="DataserverParametersControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="DatasetControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
