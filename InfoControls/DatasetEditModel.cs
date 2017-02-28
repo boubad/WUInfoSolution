@@ -195,13 +195,13 @@ namespace InfoControls
         }
         public ObservableCollection<Dataset> Datasets
         {
-            get
+           get
             {
                 if (_datasets == null)
                 {
                     RefreshDatasets().Wait();
                 }
-                return _datasets;
+                return (_datasets == null) ? new ObservableCollection<Dataset>() : _datasets;
             }
             set { }
         }
@@ -455,7 +455,7 @@ namespace InfoControls
                 {
                     RefreshVariables().Wait();
                 }
-                return _variables;
+                return (_variables == null) ?  new ObservableCollection<Variable>() :_variables;
             }
             set { }
         }// variables
@@ -715,11 +715,10 @@ namespace InfoControls
                 {
                     RefreshVariableValues().Wait();
                 }
-                return _varvalues;
+                return (_varvalues == null) ? new ObservableCollection<InfoValue>() :_varvalues;
             }
             set
             {
-                _varvalues = null;
             }
         }// VariableValues
         public void PerformVariableNew()
@@ -832,7 +831,7 @@ namespace InfoControls
                 {
                     RefreshIndivs().Wait();
                 }
-                return _indivs;
+                return (_indivs == null) ? new ObservableCollection<Indiv>() :_indivs;
             }
             set { }
         }// indivs
@@ -985,11 +984,10 @@ namespace InfoControls
                 {
                     RefreshIndivValues().Wait();
                 }
-                return _indvalues;
+                return (_indvalues == null) ? new ObservableCollection<InfoValue>() : _indvalues;
             }
             set
             {
-                _indvalues = null;
             }
         }// VariableValues
         public void PerformIndivNew()

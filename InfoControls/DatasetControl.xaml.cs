@@ -25,13 +25,14 @@ namespace InfoControls
             MyCheckUI();
         }
         //
-        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private async void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             _model = null;
             Object obj = this.DataContext;
             if ((obj != null) && (obj is DatasetEditModel))
             {
                 _model = obj as DatasetEditModel;
+                await _model.RefreshDatasets();
             }
             MyCheckUI();
         }
@@ -56,11 +57,11 @@ namespace InfoControls
             buttonRefresh.IsEnabled = bOk && (_model.Manager != null) && (!_bnew);
         }// MyCheckUI
         //
-        private void buttonRefresh_Click(object sender, RoutedEventArgs e)
+        private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
             if (_model != null)
             {
-                _model.RefreshDatasets().Wait();
+                await _model.RefreshDatasets();
                 _bnew = false;
                 MyCheckUI();
             }
@@ -86,20 +87,20 @@ namespace InfoControls
             }
         }
 
-        private void buttonSave_Click(object sender, RoutedEventArgs e)
+        private async void buttonSave_Click(object sender, RoutedEventArgs e)
         {
             if (_model != null)
             {
-                _model.PerformDatasetSave().Wait();
+                await _model.PerformDatasetSave();
                 MyCheckUI();
             }
         }
 
-        private void buttonRemove_Click(object sender, RoutedEventArgs e)
+        private async void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
             if (_model != null)
             {
-                _model.PerformRemoveDataset().Wait();
+                await _model.PerformRemoveDataset();
                 MyCheckUI();
             }
         }

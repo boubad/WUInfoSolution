@@ -73,11 +73,11 @@ namespace InfoControls
             }// not nusy
         }
 
-        private void buttonRefresh_Click(object sender, RoutedEventArgs e)
+        private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
             if (_model != null)
             {
-                _model.RefreshVariables().Wait();
+                await _model.RefreshVariables();
                 MyCheckUI();
             }
         }
@@ -142,20 +142,20 @@ namespace InfoControls
             }
         }
 
-        private void buttonSave_Click(object sender, RoutedEventArgs e)
+        private async void buttonSave_Click(object sender, RoutedEventArgs e)
         {
             if (_model != null)
             {
-                _model.PerformVariableSave().Wait();
+               await  _model.PerformVariableSave();
                 MyCheckUI();
             }
         }
 
-        private void buttonRemove_Click(object sender, RoutedEventArgs e)
+        private async void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
             if (_model != null)
             {
-                _model.PerformVariableRemove().Wait();
+                await _model.PerformVariableRemove();
                 MyCheckUI();
             }
         }
