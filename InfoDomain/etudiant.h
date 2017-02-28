@@ -15,6 +15,22 @@ namespace InfoDomain {
 		Etudiant();
 		Etudiant(IMap<Platform::String^, Object^>^ pMap);
 		//
+		property bool IsModified {
+			bool get() {
+				return m_pimpl->get_IsModified();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsModified(b);
+			}
+		}// IsModified
+		property bool IsSelected {
+			bool get() {
+				return m_pimpl->get_IsSelected();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsSelected(b);
+			}
+		}// IsSelected
 		property String^ Id {
 			String^ get() {
 				return m_pimpl->get_Id();

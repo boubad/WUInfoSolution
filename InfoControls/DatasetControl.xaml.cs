@@ -12,16 +12,12 @@ namespace InfoControls
     public sealed partial class DatasetControl : UserControl
     {
         //
-        private DatasetEditModel _model;
-        private bool _bnew;
-        private bool _busy;
+        private DatasetEditModel _model = null;
+        private bool _busy = false;
         //
         public DatasetControl()
         {
             this.InitializeComponent();
-            _model = null;
-            _bnew = false;
-            _busy = false;
             MyCheckUI();
         }
         //
@@ -32,7 +28,7 @@ namespace InfoControls
             if ((obj != null) && (obj is DatasetEditModel))
             {
                 _model = obj as DatasetEditModel;
-                await _model.RefreshDatasets();
+                await _model.RefreshDatasetsAsync();
             }
             MyCheckUI();
         }
@@ -42,82 +38,115 @@ namespace InfoControls
             {
                 buttonSave.IsEnabled = false;
                 buttonRemove.IsEnabled = false;
-                buttonCancel.IsEnabled = _bnew;
-                buttonNew.IsEnabled = !_bnew;
+                buttonCancel.IsEnabled = false;
+                buttonNew.IsEnabled = false;
                 buttonRefresh.IsEnabled = false;
                 return;
             }
             bool bOk = (!_busy); 
-            bool bSave = bOk && _model.IsDatasetStoreable && (_model.Manager != null);
+            bool bSave = bOk && _model.IsDatasetStoreable;
             buttonSave.IsEnabled = bSave;
-            bool bRemove = bOk && _model.IsDatasetRemoveable && (!_bnew) && (_model.Manager != null);
+            bool bRemove = bOk && _model.IsDatasetRemoveable;
             buttonRemove.IsEnabled = bRemove;
-            buttonCancel.IsEnabled = bOk && _bnew;
-            buttonNew.IsEnabled = bOk && !_bnew;
-            buttonRefresh.IsEnabled = bOk && (_model.Manager != null) && (!_bnew);
+            buttonCancel.IsEnabled = bOk && _model.IsDatasetCancellable;
+            buttonNew.IsEnabled = bOk && _model.IsDatasetCreatable;
+            buttonRefresh.IsEnabled = bOk && (_model.Manager != null);
         }// MyCheckUI
         //
         private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((_model != null) && (!_busy))
             {
-                await _model.RefreshDatasets();
-                _bnew = false;
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.RefreshDatasetsAsync();
+                } catch(Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
-        private void buttonNew_Click(object sender, RoutedEventArgs e)
+        private async void buttonNew_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((_model != null) && (!_busy))
             {
-                _bnew = true;
-                _model.PerformDatasetNew();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformDatasetNewAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private async void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((_model != null) && (!_busy))
             {
-                _model.PerformDatasetCancel();
-                _bnew = false;
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformDatasetCancelAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private async void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((_model != null) && (!_busy))
             {
-                await _model.PerformDatasetSave();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformIndivCancelAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private async void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((_model != null) && (!_busy))
             {
-                await _model.PerformRemoveDataset();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformDatasetRemoveAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
-        private void listboxSets_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void listboxSets_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
-                _busy = true;
-                MyCheckUI();
-                Dataset p = null;
-                Object obj = listboxSets.SelectedItem;
-                if ((obj != null) && (obj is Dataset))
+                try
                 {
-                    p = obj as Dataset;
-                }
-                _model.SelectDataset(p);
-                _bnew = false;
+                    _busy = true;
+                    MyCheckUI();
+                    Dataset p = null;
+                    Object obj = listboxSets.SelectedItem;
+                    if ((obj != null) && (obj is Dataset))
+                    {
+                        p = obj as Dataset;
+                    }
+                    await _model.SelectDatasetAsync(p);
+                } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }// not nusy

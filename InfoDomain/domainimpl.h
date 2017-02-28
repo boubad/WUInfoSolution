@@ -139,6 +139,8 @@ namespace InfoDomain
 	//
 	class InfoItemImpl {
 	private:
+		bool	 m_modified;
+		bool	 m_selected;
 		InfoStatus m_status;
 		String^ m_id;
 		String^ m_rev;
@@ -148,6 +150,18 @@ namespace InfoDomain
 		InfoItemImpl(IMap<String^, Object^>^ pMap);
 	public:
 		virtual ~InfoItemImpl();
+		bool get_IsModified(void) const {
+			return (m_modified);
+		}
+		void set_IsModified(bool b) {
+			m_modified = b;
+		}
+		bool get_IsSelected(void) const {
+			return (m_selected);
+		}
+		void set_IsSelected(bool b) {
+			m_selected = b;
+		}
 		String^ get_Id(void) const {
 			return this->m_id;
 		}

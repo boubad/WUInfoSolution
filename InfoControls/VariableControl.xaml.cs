@@ -11,25 +11,22 @@ namespace InfoControls
     public sealed partial class VariableControl : UserControl
     {
         //
-        private DatasetEditModel _model;
-        private bool _bnew;
-        private bool _busy;
+        private DatasetEditModel _model = null;
+        private bool _busy = false;
         //
         public VariableControl()
         {
             this.InitializeComponent();
-            _model = null;
-            _bnew = false;
-            _busy = false;
             MyCheckUI();
         }
-        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private async void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             _model = null;
             Object obj = this.DataContext;
             if ((obj != null) && (obj is DatasetEditModel))
             {
                 _model = obj as DatasetEditModel;
+                await _model.RefreshVariablesAsync();
             }
             MyCheckUI();
         }
@@ -39,35 +36,37 @@ namespace InfoControls
             {
                 buttonSave.IsEnabled = false;
                 buttonRemove.IsEnabled = false;
-                buttonCancel.IsEnabled = _bnew;
-                buttonNew.IsEnabled = !_bnew;
+                buttonCancel.IsEnabled = false;
+                buttonNew.IsEnabled = false;
                 buttonRefresh.IsEnabled = false;
                 return;
             }
             bool bOk = (!_busy);
-            bool bSave = bOk && _model.IsVariableStoreable && (_model.Manager != null);
+            bool bSave = bOk && _model.IsVariableStoreable;
             buttonSave.IsEnabled = bSave;
-            bool bRemove = bOk && _model.IsVariableRemoveable && (!_bnew) && (_model.Manager != null);
+            bool bRemove = bOk && _model.IsVariableRemoveable;
             buttonRemove.IsEnabled = bRemove;
-            buttonCancel.IsEnabled = bOk && _bnew;
-            buttonNew.IsEnabled = bOk && !_bnew;
-            buttonRefresh.IsEnabled = bOk && (_model.Manager != null) && (!_bnew);
+            buttonCancel.IsEnabled = bOk && _model.IsVariableCancellable;
+            buttonNew.IsEnabled = bOk && _model.IsVariableCreatable;
+            buttonRefresh.IsEnabled = bOk && (_model.Manager != null);
         }// MyCheckUI
 
-        private void listboxVariables_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void listboxVariables_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
-                _busy = true;
-                MyCheckUI();
-                Variable p = null;
-                Object obj = listboxVariables.SelectedItem;
-                if ((obj != null) && (obj is Variable))
+                try
                 {
-                    p = obj as Variable;
-                }
-                _model.SelectVariable(p);
-                _bnew = false;
+                    _busy = true;
+                    MyCheckUI();
+                    Variable p = null;
+                    Object obj = listboxVariables.SelectedItem;
+                    if ((obj != null) && (obj is Variable))
+                    {
+                        p = obj as Variable;
+                    }
+                    await _model.SelectVariableAsync(p);
+                } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }// not nusy
@@ -75,19 +74,31 @@ namespace InfoControls
 
         private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                await _model.RefreshVariables();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.RefreshVariablesAsync();
+                } catch(Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
-        private void buttonNew_Click(object sender, RoutedEventArgs e)
+        private async  void buttonNew_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                _bnew = true;
-                _model.PerformVariableNew();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformVariableNewAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
@@ -132,30 +143,50 @@ namespace InfoControls
             }
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private async void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                _model.PerformVariableCancel();
-                _bnew = false;
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformVariableCancelAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private async void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-               await  _model.PerformVariableSave();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformVariableSaveAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private async void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                await _model.PerformVariableRemove();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformVariableRemoveAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }

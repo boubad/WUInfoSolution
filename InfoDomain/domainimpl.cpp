@@ -8,10 +8,10 @@ using namespace Windows::Foundation::Collections;
 using namespace Platform::Collections;
 using namespace InfoDomain;
 /////////////////////////////
-InfoItemImpl::InfoItemImpl() :m_status(InfoStatus::Unknown) {
+InfoItemImpl::InfoItemImpl() :m_modified(false),m_selected(false),m_status(InfoStatus::Unknown) {
 
 }
-InfoItemImpl::InfoItemImpl(IMap<String^, Object^>^ oMap) : m_status(InfoStatus::Unknown) {
+InfoItemImpl::InfoItemImpl(IMap<String^, Object^>^ oMap) : m_modified(false), m_selected(false), m_status(InfoStatus::Unknown) {
 	if (oMap->HasKey(InfoStrings::KEY_ID)) {
 		m_id = oMap->Lookup(InfoStrings::KEY_ID)->ToString();
 	}

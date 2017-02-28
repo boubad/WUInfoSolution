@@ -127,6 +127,23 @@ namespace InfoDomain {
 		[Windows::Foundation::Metadata::DefaultOverloadAttribute]
 		Dataset(String^ sSigle);
 		//
+		property bool IsModified {
+			bool get(){
+				return m_pimpl->get_IsModified();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsModified(b);
+			}
+		}// IsModified
+		property bool IsSelected {
+			bool get() {
+				return m_pimpl->get_IsSelected();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsSelected(b);
+			}
+		}// IsSelected
+		//
 		property String^ Id {
 			String^ get();
 		}// Id
@@ -193,6 +210,22 @@ namespace InfoDomain {
 	public:
 		Indiv();
 		Indiv(Dataset^ pSet, String^ sigle);
+		property bool IsModified {
+			bool get() {
+				return m_pimpl->get_IsModified();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsModified(b);
+			}
+		}// IsModified
+		property bool IsSelected {
+			bool get() {
+				return m_pimpl->get_IsSelected();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsSelected(b);
+			}
+		}// IsSelected
 		property String^ DatasetSigle {
 			String^ get();
 		}// DatasetSigle
@@ -260,6 +293,22 @@ namespace InfoDomain {
 	public:
 		Variable();
 		Variable(Dataset^ pSet, String^ sigle);
+		property bool IsModified {
+			bool get() {
+				return m_pimpl->get_IsModified();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsModified(b);
+			}
+		}// IsModified
+		property bool IsSelected {
+			bool get() {
+				return m_pimpl->get_IsSelected();
+			}
+			void set(bool b) {
+				m_pimpl->set_IsSelected(b);
+			}
+		}// IsSelected
 		property String^ DatasetSigle {
 			String^ get();
 		}// DatasetSigle
@@ -329,6 +378,8 @@ namespace InfoDomain {
 	  ////////////////////////////////////
 	public ref class InfoValue sealed {
 	private:
+		bool m_modified;
+		bool m_selected;
 		InfoStatus m_status;
 		String^ m_id;
 		String^ m_rev;
@@ -347,6 +398,23 @@ namespace InfoDomain {
 		InfoValue();
 		InfoValue(Indiv^ pInd, Variable^ pVar);
 		InfoValue(Indiv^ pInd, Variable^ pVar, InfoDataValue^ val);
+		//
+		property bool IsModified {
+			bool get() {
+				return m_modified;
+			}
+			void set(bool b) {
+				m_modified = b;
+			}
+		}// IsModified
+		property bool IsSelected {
+			bool get() {
+				return m_selected;
+			}
+			void set(bool b) {
+				m_selected = false;
+			}
+		}// IsSelected
 		//
 		property String^ Id {
 			String^ get();

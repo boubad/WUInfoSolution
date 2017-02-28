@@ -11,26 +11,23 @@ namespace InfoControls
     public sealed partial class IndivControl : UserControl
     {
         //
-        private DatasetEditModel _model;
-        private bool _bnew;
-        private bool _busy;
+        private DatasetEditModel _model = null;
+        private bool _busy = false;
         //
         public IndivControl()
         {
             this.InitializeComponent();
-            _model = null;
-            _bnew = false;
-            _busy = false;
             MyCheckUI();
         }
 
-        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private async void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             _model = null;
             Object obj = this.DataContext;
             if ((obj != null) && (obj is DatasetEditModel))
             {
                 _model = obj as DatasetEditModel;
+                await _model.RefreshIndivsAsync();
             }
             MyCheckUI();
         }
@@ -40,34 +37,36 @@ namespace InfoControls
             {
                 buttonSave.IsEnabled = false;
                 buttonRemove.IsEnabled = false;
-                buttonCancel.IsEnabled = _bnew;
-                buttonNew.IsEnabled = !_bnew;
+                buttonCancel.IsEnabled = false;
+                buttonNew.IsEnabled = false;
                 buttonRefresh.IsEnabled = false;
                 return;
             }
             bool bOk = (!_busy);
-            bool bSave = bOk && _model.IsIndivStoreable && (_model.Manager != null);
+            bool bSave = bOk && _model.IsIndivStoreable;
             buttonSave.IsEnabled = bSave;
-            bool bRemove = bOk && _model.IsIndivRemoveable && (!_bnew) && (_model.Manager != null);
+            bool bRemove = bOk && _model.IsIndivRemoveable;
             buttonRemove.IsEnabled = bRemove;
-            buttonCancel.IsEnabled = bOk && _bnew;
-            buttonNew.IsEnabled = bOk && !_bnew;
-            buttonRefresh.IsEnabled = bOk && (_model.Manager != null) && (!_bnew);
+            buttonCancel.IsEnabled = bOk && _model.IsIndivCancellable;
+            buttonNew.IsEnabled = bOk && _model.IsIndivCreatable;
+            buttonRefresh.IsEnabled = bOk && (_model.Manager != null);
         }// MyCheckUI
-        private void listboxIndivs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void listboxIndivs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
-                _busy = true;
-                MyCheckUI();
-                Indiv p = null;
-                Object obj = listboxIndivs.SelectedItem;
-                if ((obj != null) && (obj is Indiv))
+                try
                 {
-                    p = obj as Indiv;
-                }
-                _model.SelectIndiv(p);
-                _bnew = false;
+                    _busy = true;
+                    MyCheckUI();
+                    Indiv p = null;
+                    Object obj = listboxIndivs.SelectedItem;
+                    if ((obj != null) && (obj is Indiv))
+                    {
+                        p = obj as Indiv;
+                    }
+                   await _model.SelectIndivAsync(p);
+                } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }// not nusy
@@ -75,19 +74,31 @@ namespace InfoControls
 
         private  async void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                await _model.RefreshIndivs();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.RefreshIndivsAsync();
+                } catch(Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
-        private void buttonNew_Click(object sender, RoutedEventArgs e)
+        private async void buttonNew_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                _bnew = true;
-                _model.PerformIndivNew();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformIndivNewAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
@@ -116,30 +127,50 @@ namespace InfoControls
             }
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private async void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                _model.PerformIndivCancel();
-                _bnew = false;
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformIndivCancelAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private async void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                await _model.PerformIndivSave();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformIndivSaveAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private async void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (_model != null)
+            if ((!_busy) && (_model != null))
             {
-                await _model.PerformIndivRemove();
+                try
+                {
+                    _busy = true;
+                    MyCheckUI();
+                    await _model.PerformIndivRemoveAsync();
+                }
+                catch (Exception /* e */) { }
+                _busy = false;
                 MyCheckUI();
             }
         }

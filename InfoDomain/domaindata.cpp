@@ -358,8 +358,8 @@ namespace InfoDomain {
 		m_blobs = value;
 	}
 	////////////////////////////////////
-	InfoValue::InfoValue() :m_status(InfoStatus::Unknown) {}
-	InfoValue::InfoValue(IMap<String^, Object^>^ oMap) : m_status(InfoStatus::Unknown) {
+	InfoValue::InfoValue() :m_modified(false),m_selected(false),m_status(InfoStatus::Unknown) {}
+	InfoValue::InfoValue(IMap<String^, Object^>^ oMap) : m_modified(false), m_selected(false), m_status(InfoStatus::Unknown) {
 		if (oMap->HasKey(InfoStrings::KEY_ID)) {
 			m_id = oMap->Lookup(InfoStrings::KEY_ID)->ToString();
 		}
