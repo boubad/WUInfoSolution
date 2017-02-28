@@ -16,6 +16,7 @@
     <ClCompile Include="UnitTestApp.xaml.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="UnitTest_CouchDBManager.cpp" />
+    <ClCompile Include="UnitTest_DomainManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

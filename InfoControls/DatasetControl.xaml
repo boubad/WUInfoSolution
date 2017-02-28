@@ -1,0 +1,63 @@
+﻿<UserControl
+    x:Class="InfoControls.DatasetControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:InfoControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="370"
+    d:DesignWidth="480" DataContextChanged="UserControl_DataContextChanged">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition  Width="auto"/>
+            <ColumnDefinition  Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0">
+            <ListBox x:Name="listboxSets" MinHeight="312" Margin="4,4" SelectionMode="Single"
+                     ItemsSource="{Binding Path=Datasets}" SelectedItem="{Binding Path=CurrentDataset}"
+                     VerticalAlignment="Stretch" SelectionChanged="listboxSets_SelectionChanged"></ListBox>
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <Button x:Name="buttonRefresh" Margin="4,0" Click="buttonRefresh_Click">Rafraîchir</Button>
+                <Button x:Name="buttonNew" Margin="4,0" Click="buttonNew_Click">Nouveau</Button>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0">
+            <TextBlock x:Name="textblockSelectedName" HorizontalAlignment="Center" Text="{Binding Path=DatasetDetailTitle}" />
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4,4">Abbréviation:</TextBlock>
+                <TextBox x:Name="textboxSigle" Text="{Binding Path=DatasetSigle}"
+                         HorizontalAlignment="Left" Margin="4,4" MinWidth="100" TextChanged="textboxSigle_TextChanged" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Année:</TextBlock>
+                <TextBox x:Name="textboxAnnee" Text="{Binding Path=DatasetAnnee}" HorizontalAlignment="Left"  Margin="4,4" MinWidth="120" TextChanged="textboxName_TextChanged" 
+                         />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Nom complet:</TextBlock>
+                <TextBox x:Name="textboxName" Text="{Binding Path=DatasetName}" HorizontalAlignment="Left"  Margin="4,4" MinWidth="180" TextChanged="textboxName_TextChanged" 
+                         />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <TextBlock HorizontalAlignment="Right" Margin="4,4">Observations:</TextBlock>
+                <TextBox x:Name="textboxObservations" Text="{Binding Path=DatasetObservations}" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="100" MinWidth="180"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <TextBlock HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Etat:</TextBlock>
+                <ComboBox x:Name="comboboxStatus" Margin="4,4" MinWidth="100" SelectedItem="{Binding Path=DatasetStatus}"
+                          ItemsSource="{Binding Path=StatusStrings}" SelectionChanged="comboboxStatus_SelectionChanged"
+                   />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="4,4">
+                <Button x:Name="buttonCancel" Margin="4,0" Click="buttonCancel_Click">Annuler</Button>
+                <Button x:Name="buttonSave" Margin="4,0" Click="buttonSave_Click">Enregistrer</Button>
+                <Button x:Name="buttonRemove" Margin="4,0" Click="buttonRemove_Click">Supprimer</Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -135,7 +135,8 @@ IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ 
 			throw ref new  InvalidArgumentException();
 		}
 		CouchDBProxy *pProxy = GetProxy();
-		return pProxy->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data).get();
+		bool b =  pProxy->MaintainsDocumentAttachmentAsync(docid, attachmentName, mimetype, data).get();
+		return (b);
 	});
 }//:MaintainsDocumentAttachmentAsync
 IAsyncOperation<IMap<String^, String^> ^>^ CouchDBManager::GetDocumentAttachmentNamesAsync(String^ docid) {
