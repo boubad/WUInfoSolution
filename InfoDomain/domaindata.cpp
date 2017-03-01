@@ -91,9 +91,16 @@ namespace InfoDomain {
 	String^ Dataset::Id::get() {
 		return m_pimpl->get_Id();
 	}
+	void Dataset::Id::set(String ^s) {
+		m_pimpl->set_Id(s);
+	}
+	void Dataset::Rev::set(String ^s) {
+		m_pimpl->set_Rev(s);
+	}
 	String^ Dataset::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
+
 	bool Dataset::IsPersisted::get() {
 		return m_pimpl->get_IsPersisted();
 	}// IsPersisted
@@ -212,6 +219,12 @@ namespace InfoDomain {
 	String^ Indiv::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
+	void Indiv::Id::set(String ^s) {
+		m_pimpl->set_Id(s);
+	}
+	void Indiv::Rev::set(String ^s) {
+		m_pimpl->set_Rev(s);
+	}
 	bool Indiv::IsPersisted::get() {
 		return m_pimpl->get_IsPersisted();
 	}
@@ -282,6 +295,12 @@ namespace InfoDomain {
 	}
 	String^ Variable::Rev::get() {
 		return m_pimpl->get_Rev();
+	}
+	void Variable::Id::set(String ^s) {
+		m_pimpl->set_Id(s);
+	}
+	void Variable::Rev::set(String ^s) {
+		m_pimpl->set_Rev(s);
 	}
 	bool Variable::IsPersisted::get() {
 		return m_pimpl->get_IsPersisted();
@@ -476,6 +495,12 @@ namespace InfoDomain {
 	}
 	String^ InfoValue::Rev::get() {
 		return m_rev;
+	}
+	void InfoValue::Id::set(String ^s) {
+		m_id = s;
+	}
+	void InfoValue::Rev::set(String ^s) {
+		m_rev = s;
 	}
 	bool InfoValue::IsPersisted::get() {
 		return (m_id != nullptr) && (m_rev != nullptr) &&

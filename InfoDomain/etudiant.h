@@ -35,10 +35,16 @@ namespace InfoDomain {
 			String^ get() {
 				return m_pimpl->get_Id();
 			}
+			void set(String^ s) {
+				m_pimpl->set_Id(s);
+			}
 		}// Id
 		property String^ Rev {
 			String^ get() {
 				return m_pimpl->get_Rev();
+			}
+			void set(String^ s) {
+				m_pimpl->set_Id(s);
 			}
 		}// rev
 		property InfoStatus Status {

@@ -146,9 +146,11 @@ namespace InfoDomain {
 		//
 		property String^ Id {
 			String^ get();
+			void set(String^ value);
 		}// Id
 		property String^ Rev {
 			String^ get();
+			void set(String^ value);
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -231,9 +233,11 @@ namespace InfoDomain {
 		}// DatasetSigle
 		property String^ Id {
 			String^ get();
+			void set(String^ value);
 		}// Id
 		property String^ Rev {
 			String^ get();
+			void set(String^ value);
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -314,9 +318,11 @@ namespace InfoDomain {
 		}// DatasetSigle
 		property String^ Id {
 			String^ get();
+			void set(String^ value);
 		}// Id
 		property String^ Rev {
 			String^ get();
+			void set(String^ value);
 		}// rev
 		property bool IsPersisted {
 			bool get();
@@ -418,9 +424,11 @@ namespace InfoDomain {
 		//
 		property String^ Id {
 			String^ get();
+			void set(String^ value);
 		}// Id
 		property String^ Rev {
 			String^ get();
+			void set(String^ value);
 		}// rev
 		property bool IsPersisted {
 			bool get();

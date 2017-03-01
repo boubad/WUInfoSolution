@@ -19,42 +19,53 @@
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="0">
             <ListBox x:Name="listboxIndivs"  Margin="4,4" SelectionMode="Single"
-                     ItemsSource="{Binding Path=Indiv}" SelectedItem="{Binding Path=CurrentIndiv}"
-                     VerticalAlignment="Stretch" SelectionChanged="listboxIndivs_SelectionChanged" ></ListBox>
+                     ItemsSource="{Binding Path=Indivs}" SelectedItem="{Binding Path=CurrentIndiv}" MaxHeight="300"
+                     VerticalAlignment="Stretch" SelectionChanged="listboxIndivs_SelectionChanged" >
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical" Margin="2,2">
+                            <TextBlock Text="{Binding Sigle}" Margin="0,2" />
+                            <TextBlock Text="{Binding Name}" Margin="0,2" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
             <StackPanel Orientation="Horizontal" Margin="4,4">
                 <Button x:Name="buttonRefresh" Margin="4,0" Click="buttonRefresh_Click">Rafraîchir</Button>
                 <Button x:Name="buttonNew" Margin="4,0" Click="buttonNew_Click" >Nouveau</Button>
             </StackPanel>
         </StackPanel>
-        <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0">
-            <TextBlock x:Name="textblockIndivTitle" HorizontalAlignment="Center" Text="{Binding Path=IndivDetailTitle}" />
-            <StackPanel Orientation="Horizontal" Margin="4,4">
-                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4,4">Abbréviation:</TextBlock>
-                <TextBox x:Name="textboxSigle" Text="{Binding Path=IndivSigle}"
-                         HorizontalAlignment="Left" Margin="4,4"  TextChanged="textboxSigle_TextChanged" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="4,4">
-                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center">Nom complet:</TextBlock>
-                <TextBox x:Name="textboxName" Text="{Binding Path=IndivName}" HorizontalAlignment="Left"  Margin="4,4" 
-                          TextChanged="textboxName_TextChanged" 
-                         />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="4,4">
-                <TextBlock HorizontalAlignment="Right" Margin="4,4">Observations:</TextBlock>
-                <TextBox x:Name="textboxObservations" Text="{Binding Path=IndivObservations}" TextWrapping="Wrap"
-                         AcceptsReturn="True"  HorizontalAlignment="Stretch"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="4,4">
-                <TextBlock HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Etat:</TextBlock>
-                <ComboBox x:Name="comboboxStatus" Margin="4,4" SelectedItem="{Binding Path=IndivStatus}"
+        <Grid Grid.Row="0" Grid.Column="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Text="{Binding IndivDetailTitle}" />
+            <TextBlock Grid.Row="1" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4,4">Abbréviation:</TextBlock>
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="textboxSigle" Text="{Binding Path=IndivSigle}"
+                         HorizontalAlignment="Left" Margin="4,4" LostFocus="textboxSigle_LostFocus"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center">Nom complet:</TextBlock>
+            <TextBox Grid.Row="2" Grid.Column="1" x:Name="textboxName" Text="{Binding Path=IndivName}" HorizontalAlignment="Left"  Margin="4,4" LostFocus="textboxName_LostFocus" />
+            <TextBlock Grid.Row="3" Grid.Column="0" HorizontalAlignment="Right" Margin="4,4">Observations:</TextBlock>
+            <TextBox Grid.Row="3" Grid.Column="1" x:Name="textboxObservations" Text="{Binding Path=IndivObservations}" TextWrapping="Wrap"
+                         AcceptsReturn="True"  HorizontalAlignment="Stretch" LostFocus="textboxObservations_LostFocus"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right" Margin="4,4" VerticalAlignment="Center">Etat:</TextBlock>
+            <ComboBox Grid.Row="4" Grid.Column="1" x:Name="comboboxStatus" Margin="4,4" SelectedItem="{Binding Path=IndivStatus}"
                           ItemsSource="{Binding Path=StatusStrings}" SelectionChanged="comboboxStatus_SelectionChanged"
                    />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="4,4">
+            <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin="4,4">
                 <Button x:Name="buttonCancel" Margin="4,0" Click="buttonCancel_Click">Annuler</Button>
                 <Button x:Name="buttonSave" Margin="4,0" Click="buttonSave_Click">Enregistrer</Button>
                 <Button x:Name="buttonRemove" Margin="4,0" Click="buttonRemove_Click">Supprimer</Button>
             </StackPanel>
-        </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

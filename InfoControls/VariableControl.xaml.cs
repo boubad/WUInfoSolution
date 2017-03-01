@@ -19,14 +19,13 @@ namespace InfoControls
             this.InitializeComponent();
             MyCheckUI();
         }
-        private async void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             _model = null;
             Object obj = this.DataContext;
             if ((obj != null) && (obj is DatasetEditModel))
             {
                 _model = obj as DatasetEditModel;
-                await _model.RefreshVariablesAsync();
             }
             MyCheckUI();
         }
@@ -51,7 +50,7 @@ namespace InfoControls
             buttonRefresh.IsEnabled = bOk && (_model.Manager != null);
         }// MyCheckUI
 
-        private async void listboxVariables_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void listboxVariables_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -65,14 +64,14 @@ namespace InfoControls
                     {
                         p = obj as Variable;
                     }
-                    await _model.SelectVariableAsync(p);
+                    _model.SelectVariable(p);
                 } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }// not nusy
         }
 
-        private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
+        private void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -80,14 +79,14 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.RefreshVariablesAsync();
+                    _model.RefreshVariables();
                 } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }
         }
 
-        private async  void buttonNew_Click(object sender, RoutedEventArgs e)
+        private void buttonNew_Click(object sender, RoutedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -95,55 +94,53 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformVariableNewAsync();
+                     _model.PerformVariableNew();
                 }
                 catch (Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }
         }
-
-        private void textboxSigle_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (!_busy)
-            {
-                MyCheckUI();
-            }
-        }
-
-        private void textboxName_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (!_busy)
-            {
-                MyCheckUI();
-            }
-        }
-
         private void comboboxType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!_busy)
+            if ((_model != null) && (!_busy))
             {
+                _busy = true;
+                var obj = comboboxType.SelectedItem;
+                String s = (obj == null) ? "Inconnu" : obj.ToString();
+                _model.VariableType = s;
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private void comboboxKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!_busy)
+            if ((_model != null) && (!_busy))
             {
+                _busy = true;
+                var obj = comboboxKind.SelectedItem;
+                String s = (obj == null) ? "Inconnu" : obj.ToString();
+                _model.VariableKind = s;
+                _busy = false;
                 MyCheckUI();
             }
         }
 
         private void comboboxStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!_busy)
+            if ((_model != null) && (!_busy))
             {
+                _busy = true;
+                var obj = comboboxStatus.SelectedItem;
+                String s = (obj == null) ? "Inconnu" : obj.ToString();
+                _model.VariableStatus = s;
+                _busy = false;
                 MyCheckUI();
             }
         }
 
-        private async void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -151,7 +148,7 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformVariableCancelAsync();
+                    _model.PerformVariableCancel();
                 }
                 catch (Exception /* e */) { }
                 _busy = false;
@@ -159,7 +156,7 @@ namespace InfoControls
             }
         }
 
-        private async void buttonSave_Click(object sender, RoutedEventArgs e)
+        private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -167,7 +164,7 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformVariableSaveAsync();
+                    _model.PerformVariableSave();
                 }
                 catch (Exception /* e */) { }
                 _busy = false;
@@ -175,7 +172,7 @@ namespace InfoControls
             }
         }
 
-        private async void buttonRemove_Click(object sender, RoutedEventArgs e)
+        private void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -183,9 +180,42 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformVariableRemoveAsync();
+                    _model.PerformVariableRemove();
                 }
                 catch (Exception /* e */) { }
+                _busy = false;
+                MyCheckUI();
+            }
+        }
+
+        private void textboxSigle_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((!_busy) && (_model != null))
+            {
+                _busy = true;
+                _model.VariableSigle = textboxSigle.Text;
+                _busy = false;
+                MyCheckUI();
+            }
+        }
+
+        private void textboxName_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((!_busy) && (_model != null))
+            {
+                _busy = true;
+                _model.VariableName = textboxName.Text;
+                _busy = false;
+                MyCheckUI();
+            }
+        }
+
+        private void textboxObservations_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((!_busy) && (_model != null))
+            {
+                _busy = true;
+                _model.VariableObservations = textboxObservations.Text;
                 _busy = false;
                 MyCheckUI();
             }

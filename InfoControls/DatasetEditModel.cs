@@ -10,7 +10,7 @@ using InfoDomain;
 //
 namespace InfoControls
 {
-    class DatasetEditModel : INotifyPropertyChanged
+    public class DatasetEditModel : INotifyPropertyChanged
     {
         private readonly Object _syncObj = new object();
         private ObservableCollection<Dataset> _datasets = null;
@@ -55,16 +55,6 @@ namespace InfoControls
             _baseUrl = baseUrl;
             _databaseName = databaseName;
         }
-        private async Task<DomainManager> GetDomainManagerAsync()
-        {
-            DomainManager pRet = null;
-            try
-            {
-                await DomainManager.CheckDatabaseAsync(BaseUrl,DatabaseName);
-                pRet = new DomainManager(BaseUrl, DatabaseName);
-            }catch(Exception /* e */) { }
-            return pRet;
-        }//GetDomainManagerAsync
         //
         public String BaseUrl
         {
@@ -161,7 +151,7 @@ namespace InfoControls
             {
                 if (_m_pman == null)
                 {
-                    _m_pman = GetDomainManagerAsync().Result;
+                    _m_pman = new DomainManager(BaseUrl, DatabaseName);
                 }
                 return _m_pman;
             }
@@ -193,7 +183,7 @@ namespace InfoControls
             }
         }
         //
-        public async Task SelectDatasetAsync(Dataset pSet)
+        public void SelectDataset(Dataset pSet)
         {
             _bnewdataset = false;
             OldDataset = pSet;
@@ -205,7 +195,9 @@ namespace InfoControls
                     Annee = pSet.Annee,
                     Observations = pSet.Observations,
                     Status = pSet.Status,
-                    IsModified = true
+                    IsModified = true,
+                    Id = pSet.Id,
+                    Rev = pSet.Rev
                 };
             }
             else
@@ -216,13 +208,13 @@ namespace InfoControls
                     IsModified = true
                 };
             }
-            await RefreshVariablesAsync();
-            await RefreshIndivsAsync();
+            RefreshVariables();
+            RefreshIndivs();
             NotifyPropertyChanged("IsDatasetCreatable");
             NotifyPropertyChanged("IsDatasetCancellable");
             NotifyPropertyChanged("IsDatasetRemoveable");
         }// SelectDataset
-        public async Task RefreshDatasetsAsync()
+        public async void RefreshDatasets()
         {
             ObservableCollection<Dataset> col = null;
             DomainManager pMan = Manager;
@@ -253,42 +245,42 @@ namespace InfoControls
             Datasets = col;
             if (Datasets.Count() > 0)
             {
-                await SelectDatasetAsync(Datasets.First());
+                SelectDataset(Datasets.First());
             }
             else
             {
-                await SelectDatasetAsync(null);
+                SelectDataset(null);
             }
         }
-        public async Task PerformDatasetSaveAsync()
+        public async void PerformDatasetSave()
         {
             DomainManager pMan = Manager;
             if ((pMan != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable)
             {
-                await pMan.MaintainsDatasetAsync(CurrentDataset);
-                await RefreshDatasetsAsync();
+                bool b = await pMan.MaintainsDatasetAsync(CurrentDataset);
+                RefreshDatasets();
             }
         }// PerformSave
-        public async Task PerformDatasetRemoveAsync()
+        public async void PerformDatasetRemove()
         {
             DomainManager pMan = Manager;
             if ((pMan != null) && (OldDataset != null) && OldDataset.IsPersisted)
             {
-                await pMan.RemoveDatasetAsync(OldDataset);
-                await RefreshDatasetsAsync();
+                bool b = await pMan.RemoveDatasetAsync(OldDataset);
+                RefreshDatasets();
             }
         }// Performremove
-        public async Task PerformDatasetNewAsync()
+        public void PerformDatasetNew()
         {
-            await SelectDatasetAsync(null);
+            SelectDataset(null);
             _bnewdataset = true;
             NotifyPropertyChanged("IsDatasetCreatable");
             NotifyPropertyChanged("IsDatasetCancellable");
             NotifyPropertyChanged("IsDatasetRemoveable");
         }
-        public async Task PerformDatasetCancelAsync()
+        public void PerformDatasetCancel()
         {
-            await SelectDatasetAsync(OldDataset);
+            SelectDataset(OldDataset);
             _bnewdataset = false;
             NotifyPropertyChanged("IsDatasetCreatable");
             NotifyPropertyChanged("IsDatasetCancellable");
@@ -298,7 +290,7 @@ namespace InfoControls
         {
             get
             {
-                return (Manager != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable && CurrentDataset.IsModified;
+                return (Manager != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable;
             }
             set {
                 NotifyPropertyChanged("IsDatasetStoreable");
@@ -340,10 +332,6 @@ namespace InfoControls
         {
            get
             {
-                if (_datasets == null)
-                {
-                    RefreshDatasetsAsync().Wait();
-                }
                 return _datasets ?? new ObservableCollection<Dataset>();
             }
             set
@@ -535,32 +523,32 @@ namespace InfoControls
             }
         }
         //
-        public async Task PerformVariableSaveAsync()
+        public async void PerformVariableSave()
         {
             DomainManager pMan = Manager;
             if ((pMan != null) && (CurrentVariable != null) && CurrentVariable.IsStoreable)
             {
-                await pMan.MaintainsVariableAsync(CurrentVariable);
-                await RefreshVariablesAsync();
+                bool b = await pMan.MaintainsVariableAsync(CurrentVariable);
+                RefreshVariables();
             }
         }// PerformVariableSave
-        public async Task PerformVariableRemoveAsync()
+        public  async void PerformVariableRemove()
         {
             DomainManager pMan = Manager;
             if ((pMan != null) && (OldVariable != null) && OldVariable.IsPersisted)
             {
-                await pMan.RemoveVariableAsync(OldVariable);
-                await RefreshVariablesAsync();
+                bool b = await pMan.RemoveVariableAsync(OldVariable);
+                RefreshVariables();
             }
         }// Performremove
-        public async Task RefreshVariableValuesAsync()
+        public  async void RefreshVariableValues()
         {
             List<InfoValue> bList = new List<InfoValue>();
             DomainManager pMan = Manager;
             if ((pMan != null) && (OldVariable != null) && OldVariable.IsPersisted)
             {
                 IList<InfoValue> oList = new List<InfoValue>();
-                int n = await pMan.GetVariableValuesCountAsync(OldVariable);
+                int n =  await pMan.GetVariableValuesCountAsync(OldVariable);
                 if (n > 0)
                 {
                     oList = await pMan.GetVariableValuesAsync(OldVariable, 0, n);
@@ -586,7 +574,7 @@ namespace InfoControls
             }// pMan
             VariableValues = new ObservableCollection<InfoValue>(bList.OrderBy(x => x.IndivSigle));
         }
-        public async Task SelectVariableAsync(Variable pVar)
+        public void SelectVariable(Variable pVar)
         {
             _bnewvariable = false;
             OldVariable = pVar;
@@ -599,7 +587,9 @@ namespace InfoControls
                     Status = pVar.Status,
                     VariableKind = pVar.VariableKind,
                     VariableType = pVar.VariableType,
-                    IsModified = false
+                    IsModified = false,
+                    Id = pVar.Id,
+                    Rev = pVar.Rev
                 };
             }
             else
@@ -612,19 +602,19 @@ namespace InfoControls
                     IsModified = false
                 };
             }
-            await RefreshVariableValuesAsync();
+            RefreshVariableValues();
             NotifyPropertyChanged("IsVariableCreatable");
             NotifyPropertyChanged("IsVariableCancellable");
             NotifyPropertyChanged("IsVariableRemoveable");
         }// SelectVariable
-        public async Task RefreshVariablesAsync()
+        public async void RefreshVariables()
         {
             ObservableCollection<Variable> col = null;
             DomainManager pMan = Manager;
-            Dataset pSet = CurrentDataset;
+            Dataset pSet = OldDataset;
             if ((pMan != null) && (pSet != null) && pSet.IsPersisted)
             {
-                int n = await pMan.GetDatasetVariablesCountAsync(pSet);
+                int n =  await pMan.GetDatasetVariablesCountAsync(pSet);
                 if (n > 0)
                 {
                     var oList = await pMan.GetDatasetVariablesAsync(pSet, 0, n);
@@ -648,24 +638,24 @@ namespace InfoControls
             Variables = col;
             if (Variables.Count() > 0)
             {
-                await SelectVariableAsync(Variables.First());
+                SelectVariable(Variables.First());
             }
             else
             {
-                await SelectVariableAsync(null);
+                SelectVariable(null);
             }
         }
-        public async Task PerformVariableNewAsync()
+        public void PerformVariableNew()
         {
-            await SelectVariableAsync(null);
+            SelectVariable(null);
             _bnewvariable = true;
             NotifyPropertyChanged("IsVariableCreatable");
             NotifyPropertyChanged("IsVariableCancellable");
             NotifyPropertyChanged("IsVariableRemoveable");
         }
-        public async Task PerformVariableCancelAsync()
+        public void PerformVariableCancel()
         {
-            await SelectVariableAsync(OldVariable);
+            SelectVariable(OldVariable);
             _bnewvariable = false;
             NotifyPropertyChanged("IsVariableCreatable");
             NotifyPropertyChanged("IsVariableCancellable");
@@ -735,10 +725,6 @@ namespace InfoControls
         {
             get
             {
-                if (_variables == null)
-                {
-                    RefreshVariablesAsync().Wait();
-                }
                 return _variables ?? new ObservableCollection<Variable>();
             }
             set {
@@ -1005,10 +991,6 @@ namespace InfoControls
         {
             get
             {
-                if (_varvalues == null)
-                {
-                    RefreshVariableValuesAsync().Wait();
-                }
                 return _varvalues ?? new ObservableCollection<InfoValue>();
             }
             set
@@ -1060,11 +1042,11 @@ namespace InfoControls
             }
         }
         //
-        public async Task RefreshIndivsAsync()
+        public  async void RefreshIndivs()
         {
             ObservableCollection<Indiv> col = null;
             DomainManager pMan = Manager;
-            Dataset pSet = CurrentDataset;
+            Dataset pSet = OldDataset;
             if ((pMan != null) && (pSet != null) && pSet.IsPersisted)
             {
                 int n = await pMan.GetDatasetIndivsCountAsync(pSet);
@@ -1091,14 +1073,14 @@ namespace InfoControls
             Indivs = col;
             if (Indivs.Count() > 0)
             {
-               await  SelectIndivAsync(Indivs.First());
+               SelectIndiv(Indivs.First());
             }
             else
             {
-                await SelectIndivAsync(null);
+                SelectIndiv(null);
             }
         }// RefreshIndivs
-        public async Task SelectIndivAsync(Indiv pInd)
+        public void SelectIndiv(Indiv pInd)
         {
             _bnewindiv = false;
             OldIndiv = pInd;
@@ -1109,7 +1091,9 @@ namespace InfoControls
                     Name = pInd.Name,
                     Observations = pInd.Observations,
                     Status = pInd.Status,
-                    IsModified = false
+                    IsModified = false,
+                    Id = pInd.Id,
+                    Rev = pInd.Rev
                 };
             }
             else
@@ -1120,46 +1104,46 @@ namespace InfoControls
                     IsModified = false
                 };
             }
-            await RefreshIndivValuesAsync();
+            RefreshIndivValues();
             NotifyPropertyChanged("IsIndivCreatable");
             NotifyPropertyChanged("IsIndivCancellable");
             NotifyPropertyChanged("IsIndivRemoveable");
         }// SelectIndiv
-        public async Task PerformIndivSaveAsync()
+        public async void PerformIndivSave()
         {
             DomainManager pMan = Manager;
             if ((pMan != null) && (CurrentIndiv != null) && CurrentIndiv.IsStoreable)
             {
-                await pMan.MaintainsIndivAsync(CurrentIndiv);
-                await RefreshIndivsAsync();
+                bool b = await pMan.MaintainsIndivAsync(CurrentIndiv);
+                RefreshIndivs();
             }
         }// PerformIndivSave
-        public async Task PerformIndivRemoveAsync()
+        public async void PerformIndivRemove()
         {
             DomainManager pMan = Manager;
             if ((pMan != null) && (OldIndiv != null) && OldIndiv.IsPersisted)
             {
-                await pMan.RemoveIndivAsync(OldIndiv);
-                await RefreshIndivsAsync();
+                bool b = await pMan.RemoveIndivAsync(OldIndiv);
+                RefreshIndivs();
             }
         }// Performremoveindiv
-        public async Task PerformIndivNewAsync()
+        public void PerformIndivNew()
         {
-            await SelectIndivAsync(null);
+            SelectIndiv(null);
             _bnewindiv = true;
             NotifyPropertyChanged("IsIndivCreatable");
             NotifyPropertyChanged("IsIndivCancellable");
             NotifyPropertyChanged("IsIndivRemoveable");
         }
-        public async Task PerformIndivCancelAsync()
+        public void PerformIndivCancel()
         {
-            await SelectIndivAsync(OldIndiv);
+            SelectIndiv(OldIndiv);
             _bnewvariable = false;
             NotifyPropertyChanged("IsIndivCreatable");
             NotifyPropertyChanged("IsIndivCancellable");
             NotifyPropertyChanged("IsIndivRemoveable");
         }
-        public async Task RefreshIndivValuesAsync()
+        public  async void RefreshIndivValues()
         {
             List<InfoValue> bList = new List<InfoValue>();
             DomainManager pMan = Manager;
@@ -1214,13 +1198,10 @@ namespace InfoControls
         {
             get
             {
-                if (_indivs == null)
-                {
-                    RefreshIndivsAsync().Wait();
-                }
                 return _indivs ?? new ObservableCollection<Indiv>();
             }
             set {
+                _indivs = value;
                 NotifyPropertyChanged("Indivs");
             }
         }// indivs
@@ -1378,10 +1359,6 @@ namespace InfoControls
         {
             get
             {
-                if (_indvalues == null)
-                {
-                    RefreshIndivValuesAsync().Wait();
-                }
                 return _indvalues ?? new ObservableCollection<InfoValue>();
             }
             set

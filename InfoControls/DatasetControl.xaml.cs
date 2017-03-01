@@ -21,14 +21,14 @@ namespace InfoControls
             MyCheckUI();
         }
         //
-        private async void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             _model = null;
             Object obj = this.DataContext;
             if ((obj != null) && (obj is DatasetEditModel))
             {
                 _model = obj as DatasetEditModel;
-                await _model.RefreshDatasetsAsync();
+               // _model.RefreshDatasetsAsync().Wait();
             }
             MyCheckUI();
         }
@@ -53,7 +53,7 @@ namespace InfoControls
             buttonRefresh.IsEnabled = bOk && (_model.Manager != null);
         }// MyCheckUI
         //
-        private async void buttonRefresh_Click(object sender, RoutedEventArgs e)
+        private void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
             if ((_model != null) && (!_busy))
             {
@@ -61,14 +61,14 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.RefreshDatasetsAsync();
+                    _model.RefreshDatasets();
                 } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }
         }
 
-        private async void buttonNew_Click(object sender, RoutedEventArgs e)
+        private void buttonNew_Click(object sender, RoutedEventArgs e)
         {
             if ((_model != null) && (!_busy))
             {
@@ -76,7 +76,7 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformDatasetNewAsync();
+                    _model.PerformDatasetNew();
                 }
                 catch (Exception /* e */) { }
                 _busy = false;
@@ -84,7 +84,7 @@ namespace InfoControls
             }
         }
 
-        private async void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private  void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
             if ((_model != null) && (!_busy))
             {
@@ -92,7 +92,7 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformDatasetCancelAsync();
+                    _model.PerformDatasetCancel();
                 }
                 catch (Exception /* e */) { }
                 _busy = false;
@@ -100,7 +100,7 @@ namespace InfoControls
             }
         }
 
-        private async void buttonSave_Click(object sender, RoutedEventArgs e)
+        private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
             if ((_model != null) && (!_busy))
             {
@@ -108,15 +108,19 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformIndivCancelAsync();
+                    _model.PerformDatasetSave();
                 }
-                catch (Exception /* e */) { }
+                catch (Exception ex ) {
+                    string s = ex.Message;
+                    string s3 = ex.ToString();
+                    string z = s;
+                }
                 _busy = false;
                 MyCheckUI();
             }
         }
 
-        private async void buttonRemove_Click(object sender, RoutedEventArgs e)
+        private void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
             if ((_model != null) && (!_busy))
             {
@@ -124,14 +128,14 @@ namespace InfoControls
                 {
                     _busy = true;
                     MyCheckUI();
-                    await _model.PerformDatasetRemoveAsync();
+                    _model.PerformDatasetRemove();
                 }
                 catch (Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }
         }
-        private async void listboxSets_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void listboxSets_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if ((!_busy) && (_model != null))
             {
@@ -145,33 +149,67 @@ namespace InfoControls
                     {
                         p = obj as Dataset;
                     }
-                    await _model.SelectDatasetAsync(p);
+                    _model.SelectDataset(p);
                 } catch(Exception /* e */) { }
                 _busy = false;
                 MyCheckUI();
             }// not nusy
         }
-
-        private void textboxSigle_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (!_busy)
-            {
-                MyCheckUI();
-            }
-        }
-
-        private void textboxName_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (!_busy)
-            {
-                MyCheckUI();
-            }
-        }
-
         private void comboboxStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!_busy)
+            if ((_model != null) && (!_busy))
             {
+                _busy = true;
+                var obj = comboboxStatus.SelectedItem;
+                String s = (obj == null) ? "Inconnu" : obj.ToString();
+                _model.DatasetStatus = s;
+                _busy = false;
+                MyCheckUI();
+            }
+        }
+
+       
+
+        private void textboxSigle_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((_model != null) && (!_busy))
+            {
+                _busy = true;
+                _model.DatasetSigle = textboxSigle.Text;
+                 _busy = false;
+                MyCheckUI();
+            }
+        }
+
+        private void textboxName_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((_model != null) && (!_busy))
+            {
+                 _busy = true;
+                 _model.DatasetName = textboxName.Text;
+                 _busy = false;
+                MyCheckUI();
+            }
+        }
+
+        private void textboxAnnee_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((_model != null) && (!_busy))
+            {
+                 _busy = true;
+                 _model.DatasetAnnee = textboxAnnee.Text;
+                 _busy = false;
+                MyCheckUI();
+            }
+        }
+
+        private void textboxObservations_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if ((_model != null) && (!_busy))
+            {
+                 _busy = true;
+                 _model.DatasetObservations = textboxObservations.Text;
+                  _busy = false;
                 MyCheckUI();
             }
         }
