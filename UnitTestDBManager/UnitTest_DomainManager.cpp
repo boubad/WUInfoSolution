@@ -49,10 +49,10 @@ namespace UnitTestDBManager
 			if (pSet == nullptr)
 			{
 				Dataset^ xSet = ref new Dataset();
-				Assert::IsNull(xSet);
+				Assert::IsNotNull(xSet);
 				xSet->Sigle = name;
-				xSet->Name = "Conso Data Name";
-				xSet->Observations = "Conso Data Description";
+				xSet->Name = name + " Data Name";
+				xSet->Observations = name + " Data Description";
 				xSet->Status = InfoStatus::Normal;
 				bool bRet = create_task(pMan->MaintainsDatasetAsync(xSet)).get();
 				Assert::IsTrue(bRet);
