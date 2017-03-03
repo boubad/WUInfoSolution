@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "StringUtils.h"
+#include <string>
 #include <cctype>
 #include <algorithm>
 #include <locale>

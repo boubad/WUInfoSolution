@@ -2,6 +2,7 @@
 #include "domaindata.h"
 #include "domainimpl.h"
 #include "infostrings.h"
+#include "StringUtils.h"
 //////////////////////////////
 #include <sstream>
 //////////////////////////////////
@@ -83,10 +84,32 @@ namespace InfoDomain {
 	String^ InfoDataValue::ToString(void) {
 		return m_impl.ToString();
 	}
+	InfoDataValue^ InfoDataValue::Clone(void) {
+		InfoDataValue^ p = ref new InfoDataValue{};
+		p->m_impl = this->m_impl;
+		return (p);
+	}//Clone
 	///////////////////////////////
 	Dataset::Dataset() :m_pimpl(new DatasetImpl{}) {}
 	Dataset::Dataset(IMap<String^, Object^>^ pMap) : m_pimpl(new DatasetImpl{ pMap }) {}
 	Dataset::Dataset(String^ sSigle) : m_pimpl(new DatasetImpl{ sSigle }) {}
+	//
+	IVector<String^>^ Dataset::AllStatusStrings(void) {
+		Vector<String^>^ pRet = ref new Vector<String^>{
+			"Unknown","Normal","Tail","Disabled","Info","Inactive",
+		"Inserted","Updated","Deleted" };
+		return pRet;
+	}//AllStatusStrings
+	IVector<String^>^ Dataset::AllVariableTypesStrings(void) {
+		Vector<String^>^ pRet = ref new Vector<String^>{
+			"Unknown","Logical","Integer","Real","Text","other" };
+		return pRet;
+	}
+	IVector<String^>^ Dataset::AllVariableKindStrings(void) {
+		Vector<String^>^ pRet = ref new Vector<String^>{
+			"Unknown","Normal","Modal","Ordinal" };
+		return pRet;
+	}
 	//
 	String^ Dataset::Id::get() {
 		return m_pimpl->get_Id();
@@ -100,7 +123,6 @@ namespace InfoDomain {
 	String^ Dataset::Rev::get() {
 		return m_pimpl->get_Rev();
 	}
-
 	bool Dataset::IsPersisted::get() {
 		return m_pimpl->get_IsPersisted();
 	}// IsPersisted
@@ -204,6 +226,17 @@ namespace InfoDomain {
 	void Dataset::Blobs::set(IVector<InfoBlob^>^ value) {
 		m_blobs = value;
 	}
+	Dataset^ Dataset::Clone(void) {
+		Dataset^ p = ref new Dataset{};
+		p->Id = this->Id;
+		p->Rev = this->Rev;
+		p->Status = this->Status;
+		p->Observations = this->Observations;
+		p->Sigle = this->Sigle;
+		p->Name = this->Name;
+		p->Annee = this->Annee;
+		return (p);
+	}// clone
 	//////////////////////////////////
 	Indiv::Indiv() :m_pimpl(new IndivImpl{}) {}
 	Indiv::Indiv(Dataset^ pSet, String^ sigle) : m_pimpl(new IndivImpl{ pSet->Sigle, sigle }) {
@@ -212,6 +245,9 @@ namespace InfoDomain {
 	Indiv::Indiv(IMap<String^, Object^>^ pMap) : m_pimpl(new IndivImpl{ pMap }) {}
 	String^ Indiv::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
+	}
+	void Indiv::DatasetSigle::set(String^ s) {
+		m_pimpl->set_DatasetSigle(s);
 	}
 	String^ Indiv::Id::get() {
 		return m_pimpl->get_Id();
@@ -281,6 +317,17 @@ namespace InfoDomain {
 	void Indiv::Blobs::set(IVector<InfoBlob^>^ value) {
 		m_blobs = value;
 	}
+	Indiv^ Indiv::Clone(void) {
+		Indiv^ p = ref new Indiv{};
+		p->Id = this->Id;
+		p->Rev = this->Rev;
+		p->Status = this->Status;
+		p->Observations = this->Observations;
+		p->Sigle = this->Sigle;
+		p->Name = this->Name;
+		p->DatasetSigle = this->DatasetSigle;
+		return (p);
+	}// clone
 	///////////////////////////////////////
 	Variable::Variable() :m_pimpl(new VariableImpl{}) {}
 	Variable::Variable(Dataset^ pSet, String^ sigle) : m_pimpl(new VariableImpl{ pSet->Sigle, sigle }) {
@@ -289,6 +336,9 @@ namespace InfoDomain {
 	Variable::Variable(IMap<String^, Object^>^ pMap) : m_pimpl(new VariableImpl{ pMap }) {}
 	String^ Variable::DatasetSigle::get() {
 		return m_pimpl->get_DatasetSigle();
+	}
+	void Variable::DatasetSigle::set(String^ s) {
+		m_pimpl->set_DatasetSigle(s);
 	}
 	String^ Variable::Id::get() {
 		return m_pimpl->get_Id();
@@ -348,7 +398,29 @@ namespace InfoDomain {
 		return m_pimpl->get_Modalites();
 	}
 	void Variable::Modalites::set(IVector<String^>^ value) {
-		m_pimpl->set_Modalites(value);
+		IVector<String^>^ pRet = nullptr;
+		if ((value != nullptr) && (value->Size > 0)) {
+			Map<String^, String^>^ pMap = ref new Map<String^, String^>{};
+			auto it = value->First();
+			while (it->HasCurrent) {
+				String^ s = StringUtils::ToUpperFormat(it->Current);
+				if ((s != nullptr) && (!s->IsEmpty())) {
+					pMap->Insert(s, s);
+				}// s
+				it->MoveNext();
+			}// it
+			if (pMap->Size > 0) {
+				pRet = ref new Vector<String^>{};
+				auto jt = pMap->First();
+				while (jt->HasCurrent) {
+					auto p = jt->Current;
+					String^ s = p->Key;
+					pRet->Append(s);
+					jt->MoveNext();
+				}// jt
+			}// pMap
+		}// Value
+		m_pimpl->set_Modalites(pRet);
 	}
 	IMap<String^, Object^>^ Variable::GetMap(void) {
 		Map<String^, Object^>^ oMap = ref new Map<String^, Object^>();
@@ -376,8 +448,37 @@ namespace InfoDomain {
 	void Variable::Blobs::set(IVector<InfoBlob^>^ value) {
 		m_blobs = value;
 	}
+	Variable^ Variable::Clone(void) {
+		Variable^ p = ref new Variable{};
+		p->Id = this->Id;
+		p->Rev = this->Rev;
+		p->Status = this->Status;
+		p->Observations = this->Observations;
+		p->Sigle = this->Sigle;
+		p->Name = this->Name;
+		p->DatasetSigle = this->DatasetSigle;
+		p->VariableKind = this->VariableKind;
+		p->VariableType = this->VariableType;
+		IVector<String^>^ vv = this->Modalites;
+		if ((vv != nullptr) && (vv->Size > 0)) {
+			IVector<String^>^ res = ref new Vector<String^>{};
+			auto it = res->First();
+			while (it->HasCurrent) {
+				String^ s = it->Current;
+				if ((s != nullptr) && (!s->IsEmpty())) {
+					String^ ss = ref new String{ s->Data() };
+					res->Append(ss);
+				}
+				it->MoveNext();
+			}// it
+			if (res->Size > 0) {
+				p->Modalites = res;
+			}
+		}// vv
+		return (p);
+	}// clone
 	////////////////////////////////////
-	InfoValue::InfoValue() :m_modified(false),m_selected(false),m_status(InfoStatus::Unknown) {}
+	InfoValue::InfoValue() :m_modified(false), m_selected(false), m_status(InfoStatus::Unknown) {}
 	InfoValue::InfoValue(IMap<String^, Object^>^ oMap) : m_modified(false), m_selected(false), m_status(InfoStatus::Unknown) {
 		if (oMap->HasKey(InfoStrings::KEY_ID)) {
 			m_id = oMap->Lookup(InfoStrings::KEY_ID)->ToString();
@@ -521,17 +622,26 @@ namespace InfoDomain {
 	String^ InfoValue::DatasetSigle::get() {
 		return m_datasetsigle;
 	}
+	void InfoValue::DatasetSigle::set(String^ s) {
+		m_datasetsigle = s;
+	}
 	String^ InfoValue::IndivSigle::get() {
 		return m_indivsigle;
 	}
+	void InfoValue::IndivSigle::set(String^ s) {
+		m_indivsigle = s;
+	}
 	String^ InfoValue::VariableSigle::get() {
 		return m_variablesigle;
+	}
+	void InfoValue::VariableSigle::set(String^ s) {
+		m_variablesigle = s;
 	}
 	InfoDataValue^ InfoValue::Value::get() {
 		return m_value;
 	}
 	String^ InfoValue::ToString(void) {
-		return (m_value != nullptr) ? m_value->ToString(): "";
+		return (m_value != nullptr) ? m_value->ToString() : "";
 	}
 	void InfoValue::Value::set(InfoDataValue^ value) {
 		m_value = value;
@@ -588,5 +698,19 @@ namespace InfoDomain {
 	void InfoValue::Blobs::set(IVector<InfoBlob^>^ value) {
 		m_blobs = value;
 	}
+	InfoValue^ InfoValue::Clone(void) {
+		InfoValue^ p = ref new InfoValue{};
+		p->Id = this->Id;
+		p->Rev = this->Rev;
+		p->Status = this->Status;
+		p->Observations = this->Observations;
+		p->DatasetSigle = this->DatasetSigle;
+		p->VariableSigle = this->VariableSigle;
+		p->IndivSigle = this->IndivSigle;
+		if (m_value != nullptr) {
+			p->m_value = this->m_value->Clone();
+		}
+		return (p);
+	}// Clone
 	/////////////////////////////////////
 }// Namespace InfoDomain

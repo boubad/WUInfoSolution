@@ -13,15 +13,13 @@ namespace InfoControls
     public class DatasetEditModel : INotifyPropertyChanged
     {
         private readonly Object _syncObj = new object();
+        private readonly Object _syncBusyObj = new object();
         private ObservableCollection<Dataset> _datasets = null;
         private Dataset _currentDataset = null;
         private Dataset _oldset = null;
-        private ObservableCollection<String> _status = null;
         private String _baseUrl = "http://localhost:5984/";
         private String _databaseName = "test";
         private DomainManager _m_pman = null;
-        private ObservableCollection<String> _datatypes = null;
-        private ObservableCollection<String> _datakind = null;
         private ObservableCollection<Variable> _variables = null;
         private Variable _currentVariable = null;
         private Variable _oldVariable = null;
@@ -35,6 +33,7 @@ namespace InfoControls
         private ObservableCollection<InfoValue> _indvalues = null;
         private String _workurl = null;
         private String _workdatabase = null;
+        private bool _busy = false;
         //
         public event PropertyChangedEventHandler PropertyChanged;
         protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
@@ -56,6 +55,33 @@ namespace InfoControls
             _databaseName = databaseName;
         }
         //
+        public bool IsBusy
+        {
+            get
+            {
+                return _busy;
+            }
+            set
+            {
+                if (_busy != value)
+                {
+                    lock (_syncBusyObj)
+                    {
+                        _busy = value;
+                    }
+                    NotifyPropertyChanged("IsBusy");
+                    NotifyPropertyChanged("IsNotBusy");
+                }
+            }
+        }// IsBusy
+        public bool IsNotBusy
+        {
+            get
+            {
+                return (!IsBusy);
+            }
+            set { }
+        }// IsNotBusy
         public String BaseUrl
         {
             get
@@ -159,29 +185,6 @@ namespace InfoControls
                 NotifyPropertyChanged("Manager");
             }
         }// Manager
-        public ObservableCollection<String> StatusStrings
-        {
-            get
-            {
-                if (_status == null)
-                {
-                    lock (_syncObj)
-                    {
-                        _status = new ObservableCollection<string>
-                        {
-                            "Normal",
-                            "Inactif",
-                            "Désactivé",
-                            "Inconnu"
-                        };
-                    }// lock
-                }
-                return _status;
-            }
-            set {
-                NotifyPropertyChanged("StatusStrings");
-            }
-        }
         //
         public void SelectDataset(Dataset pSet)
         {
@@ -189,23 +192,14 @@ namespace InfoControls
             OldDataset = pSet;
             if (pSet != null)
             {
-                CurrentDataset = new Dataset(pSet.Sigle)
-                {
-                    Name = pSet.Name,
-                    Annee = pSet.Annee,
-                    Observations = pSet.Observations,
-                    Status = pSet.Status,
-                    IsModified = true,
-                    Id = pSet.Id,
-                    Rev = pSet.Rev
-                };
+                CurrentDataset = pSet.Clone();
             }
             else
             {
                 CurrentDataset = new Dataset()
                 {
                     Status = InfoStatus.Normal,
-                    IsModified = true
+                    IsModified = false
                 };
             }
             RefreshVariables();
@@ -213,62 +207,97 @@ namespace InfoControls
             NotifyPropertyChanged("IsDatasetCreatable");
             NotifyPropertyChanged("IsDatasetCancellable");
             NotifyPropertyChanged("IsDatasetRemoveable");
+            NotifyPropertyChanged("IsDatasetStoreable");
         }// SelectDataset
         public async void RefreshDatasets()
         {
-            ObservableCollection<Dataset> col = null;
-            DomainManager pMan = Manager;
-            if (pMan != null)
+            if (!IsBusy)
             {
-                Dataset model = new Dataset();
-                int n = await pMan.GetDatasetsCountAsync(model);
-                if (n > 0)
+                try
                 {
-                    var oList = await pMan.GetDatasetsAsync(model, 0, n);
-                    if (oList != null)
+                    IsBusy = true;
+                    ObservableCollection<Dataset> col = null;
+                    DomainManager pMan = Manager;
+                    if (pMan != null)
                     {
-                        if (oList.Count() > 1)
+                        Dataset model = new Dataset();
+                        int n = await pMan.GetDatasetsCountAsync(model);
+                        if (n > 0)
                         {
-                            col = new ObservableCollection<Dataset>(oList.OrderBy(x => x.Sigle));
-                        }
-                        else
-                        {
-                            col = new ObservableCollection<Dataset>(oList);
-                        }
-                    }// oList
-                }// n
-            }// pMan
-            if (col == null)
-            {
-                col = new ObservableCollection<Dataset>();
-            }
-            Datasets = col;
-            if (Datasets.Count() > 0)
-            {
-                SelectDataset(Datasets.First());
-            }
-            else
-            {
-                SelectDataset(null);
-            }
+                            var oList = await pMan.GetDatasetsAsync(model, 0, n);
+                            if (oList != null)
+                            {
+                                if (oList.Count() > 1)
+                                {
+                                    col = new ObservableCollection<Dataset>(oList.OrderBy(x => x.Sigle));
+                                }
+                                else
+                                {
+                                    col = new ObservableCollection<Dataset>(oList);
+                                }
+                            }// oList
+                        }// n
+                    }// pMan
+                    if (col == null)
+                    {
+                        col = new ObservableCollection<Dataset>();
+                    }
+                    IsBusy = false;
+                    Datasets = col;
+                    if (Datasets.Count() > 0)
+                    {
+                        SelectDataset(Datasets.First());
+                    }
+                    else
+                    {
+                        SelectDataset(null);
+                    }
+                } catch(Exception /* ex */)
+                {
+
+                }
+                IsBusy = false;
+            }// busy
+           
         }
         public async void PerformDatasetSave()
         {
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable)
+            if (!IsBusy)
             {
-                bool b = await pMan.MaintainsDatasetAsync(CurrentDataset);
-                RefreshDatasets();
+                try
+                {
+                    IsBusy = true;
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable)
+                    {
+                        bool b = await pMan.MaintainsDatasetAsync(CurrentDataset);
+                        IsBusy = false;
+                        RefreshDatasets();
+                    }
+                }
+                catch(Exception /* ex */) { }
+                IsBusy = false;
             }
+            
         }// PerformSave
         public async void PerformDatasetRemove()
         {
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (OldDataset != null) && OldDataset.IsPersisted)
+            if (!IsBusy)
             {
-                bool b = await pMan.RemoveDatasetAsync(OldDataset);
-                RefreshDatasets();
-            }
+                try
+                {
+                    IsBusy = true;
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (OldDataset != null) && OldDataset.IsPersisted)
+                    {
+                        bool b = await pMan.RemoveDatasetAsync(OldDataset);
+                        IsBusy = false;
+                        RefreshDatasets();
+                    }
+                } catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// busy
+            
         }// Performremove
         public void PerformDatasetNew()
         {
@@ -290,7 +319,7 @@ namespace InfoControls
         {
             get
             {
-                return (Manager != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable;
+                return (Manager != null) && (CurrentDataset != null) && CurrentDataset.IsStoreable && (!IsBusy);
             }
             set {
                 NotifyPropertyChanged("IsDatasetStoreable");
@@ -300,7 +329,7 @@ namespace InfoControls
         {
             get
             {
-                return (Manager != null) && (OldDataset != null) && OldDataset.IsPersisted && (!_bnewdataset);
+                return (Manager != null) && (OldDataset != null) && OldDataset.IsPersisted && (!_bnewdataset) && (!IsBusy);
             }
             set {
                 NotifyPropertyChanged("IsDatasetRemoveable");
@@ -310,7 +339,7 @@ namespace InfoControls
         {
             get
             {
-                return (OldDataset != null) && OldDataset.IsPersisted && _bnewdataset;
+                return (OldDataset != null) && OldDataset.IsPersisted && _bnewdataset && (!IsBusy);
             }
             set
             {
@@ -321,7 +350,7 @@ namespace InfoControls
         {
             get
             {
-                return (!_bnewdataset);
+                return (!_bnewdataset) && (!IsBusy);
             }
             set
             {
@@ -357,13 +386,10 @@ namespace InfoControls
             {
                 _currentDataset = value;
                 NotifyPropertyChanged("CurrentDataset");
-                NotifyPropertyChanged("DatasetDetailTitle");
-                NotifyPropertyChanged("DatasetAnnee");
-                NotifyPropertyChanged("DatasetSigle");
-                NotifyPropertyChanged("DatasetName");
-                NotifyPropertyChanged("DatasetObservations");
-                NotifyPropertyChanged("DatasetStatus");
                 NotifyPropertyChanged("IsDatasetStoreable");
+                NotifyPropertyChanged("IsDatasetCreatable");
+                NotifyPropertyChanged("IsDatasetCancellable");
+                NotifyPropertyChanged("IsDatasetRemoveable");
             }
         }
         public Dataset OldDataset
@@ -380,199 +406,87 @@ namespace InfoControls
                 NotifyPropertyChanged("IsDatasetCancelleble");
             }
         }
-        public String DatasetDetailTitle
-        {
-            get
-            {
-
-                return CurrentDataset.Name;
-            }
-            set {
-                NotifyPropertyChanged("DatasetDetailTitle");
-            }
-        }
-        public String DatasetAnnee
-        {
-            get
-            {
-                return CurrentDataset.Annee;
-            }
-            set
-            {
-                String old = DatasetAnnee;
-                CurrentDataset.Annee = value;
-                String cur = DatasetAnnee;
-                if (cur != old)
-                {
-                    CurrentDataset.IsModified = true;
-                    NotifyPropertyChanged("DatasetAnnee");
-                    NotifyPropertyChanged("IsDatasetStoreable");
-                }
-            }
-        }
-        public String DatasetSigle
-        {
-            get
-            {
-                return CurrentDataset.Sigle;
-            }
-            set
-            {
-                string old = DatasetSigle;
-                CurrentDataset.Sigle = value;
-                string cur = DatasetSigle;
-                if (cur != old)
-                {
-                    CurrentDataset.IsModified = true;
-                    NotifyPropertyChanged("DatasetSigle");
-                    NotifyPropertyChanged("IsDatasetStoreable");
-                }
-            }
-        }
-        public String DatasetName
-        {
-            get
-            {
-                return CurrentDataset.Name;
-            }
-            set
-            {
-                string old = DatasetName;
-                CurrentDataset.Name = value;
-                string cur = DatasetName;
-                if (cur != old)
-                {
-                    CurrentDataset.IsModified = true;
-                    NotifyPropertyChanged("DatasetName");
-                    NotifyPropertyChanged("IsDatasetStoreable");
-                }
-            }
-        }
-        public String DatasetObservations
-        {
-            get
-            {
-                return CurrentDataset.Observations;
-            }
-            set
-            {
-                string old = DatasetObservations;
-                CurrentDataset.Observations = value;
-                string cur = DatasetObservations;
-                if (cur != old)
-                {
-                    NotifyPropertyChanged("DatasetObservations");
-                    NotifyPropertyChanged("IsDatasetStoreable");
-                }
-            }
-        }
-        public String DatasetStatus
-        {
-            get
-            {
-                String sRet;
-                InfoStatus st = CurrentDataset.Status;
-                switch (st)
-                {
-                    case InfoStatus.Inactive:
-                        sRet = "Inactif";
-                        break;
-                    case InfoStatus.Disabled:
-                        sRet = "Désactivé";
-                        break;
-                    case InfoStatus.Unknown:
-                        sRet = "Inconnu";
-                        break;
-                    default:
-                        sRet = "Normal";
-                        break;
-                }// st
-                return sRet;
-            }
-            set
-            {
-                string old = DatasetStatus;
-                InfoStatus st = InfoStatus.Unknown;
-                if (value == "Désactivé")
-                {
-                    st = InfoStatus.Disabled;
-                    CurrentDataset.Status = st;
-                }
-                else if (value == "Inactif")
-                {
-                    st = InfoStatus.Inactive;
-                    CurrentDataset.Status = st;
-                }
-                else if (value == "Inconnu")
-                {
-                    st = InfoStatus.Unknown;
-                    CurrentDataset.Status = st;
-                }
-                else if (value == "Normal")
-                {
-                    st = InfoStatus.Normal;
-                    CurrentDataset.Status = st;
-                }
-                if (value != old)
-                {
-                    CurrentDataset.IsModified = true;
-                    NotifyPropertyChanged("DatasetStatus");
-                    NotifyPropertyChanged("IsDatasetStoreable");
-                }
-
-            }
-        }
         //
         public async void PerformVariableSave()
         {
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (CurrentVariable != null) && CurrentVariable.IsStoreable)
+            if (!IsBusy)
             {
-                bool b = await pMan.MaintainsVariableAsync(CurrentVariable);
-                RefreshVariables();
-            }
+                try
+                {
+                    IsBusy = true;
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (CurrentVariable != null) && CurrentVariable.IsStoreable)
+                    {
+                        bool b = await pMan.MaintainsVariableAsync(CurrentVariable);
+                        IsBusy = false;
+                        RefreshVariables();
+                    }
+                }
+                catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// busy
+           
         }// PerformVariableSave
         public  async void PerformVariableRemove()
         {
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (OldVariable != null) && OldVariable.IsPersisted)
+            if (!IsBusy)
             {
-                bool b = await pMan.RemoveVariableAsync(OldVariable);
-                RefreshVariables();
-            }
+                try
+                {
+                    IsBusy = true;
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (OldVariable != null) && OldVariable.IsPersisted)
+                    {
+                        bool b = await pMan.RemoveVariableAsync(OldVariable);
+                        IsBusy = false;
+                        RefreshVariables();
+                    }
+                }
+                catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// busy
         }// Performremove
         public  async void RefreshVariableValues()
         {
-            List<InfoValue> bList = new List<InfoValue>();
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (OldVariable != null) && OldVariable.IsPersisted)
+            if (!IsBusy)
             {
-                IList<InfoValue> oList = new List<InfoValue>();
-                int n =  await pMan.GetVariableValuesCountAsync(OldVariable);
-                if (n > 0)
+                try
                 {
-                    oList = await pMan.GetVariableValuesAsync(OldVariable, 0, n);
-                    if (oList == null)
+                    IsBusy = true;
+                    List<InfoValue> bList = new List<InfoValue>();
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (OldVariable != null) && OldVariable.IsPersisted)
                     {
-                        oList = new List<InfoValue>();
-                    }
-                }// n
-                var inds = this.Indivs;
-                foreach (var v in inds)
-                {
-                    String sigle = v.Sigle;
-                    var col = oList.Where(x => x.IndivSigle == sigle);
-                    if (col.Count() > 0)
-                    {
-                        bList.Add(col.First());
-                    }
-                    else
-                    {
-                        bList.Add(new InfoValue(v, OldVariable));
-                    }
-                }
-            }// pMan
-            VariableValues = new ObservableCollection<InfoValue>(bList.OrderBy(x => x.IndivSigle));
+                        IList<InfoValue> oList = new List<InfoValue>();
+                        int n = await pMan.GetVariableValuesCountAsync(OldVariable);
+                        if (n > 0)
+                        {
+                            oList = await pMan.GetVariableValuesAsync(OldVariable, 0, n);
+                            if (oList == null)
+                            {
+                                oList = new List<InfoValue>();
+                            }
+                        }// n
+                        var inds = this.Indivs;
+                        foreach (var v in inds)
+                        {
+                            String sigle = v.Sigle;
+                            var col = oList.Where(x => x.IndivSigle == sigle);
+                            if (col.Count() > 0)
+                            {
+                                bList.Add(col.First());
+                            }
+                            else
+                            {
+                                bList.Add(new InfoValue(v, OldVariable));
+                            }
+                        }
+                    }// pMan
+                    VariableValues = new ObservableCollection<InfoValue>(bList.OrderBy(x => x.IndivSigle));
+                } catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// isBusy
+            
         }
         public void SelectVariable(Variable pVar)
         {
@@ -580,17 +494,7 @@ namespace InfoControls
             OldVariable = pVar;
             if (pVar != null)
             {
-                CurrentVariable = new Variable(CurrentDataset, pVar.Sigle)
-                {
-                    Name = pVar.Name,
-                    Observations = pVar.Observations,
-                    Status = pVar.Status,
-                    VariableKind = pVar.VariableKind,
-                    VariableType = pVar.VariableType,
-                    IsModified = false,
-                    Id = pVar.Id,
-                    Rev = pVar.Rev
-                };
+                CurrentVariable = pVar.Clone();
             }
             else
             {
@@ -609,41 +513,51 @@ namespace InfoControls
         }// SelectVariable
         public async void RefreshVariables()
         {
-            ObservableCollection<Variable> col = null;
-            DomainManager pMan = Manager;
-            Dataset pSet = OldDataset;
-            if ((pMan != null) && (pSet != null) && pSet.IsPersisted)
+            if (!IsBusy)
             {
-                int n =  await pMan.GetDatasetVariablesCountAsync(pSet);
-                if (n > 0)
+                try
                 {
-                    var oList = await pMan.GetDatasetVariablesAsync(pSet, 0, n);
-                    if (oList != null)
+                    IsBusy = true;
+                    ObservableCollection<Variable> col = null;
+                    DomainManager pMan = Manager;
+                    Dataset pSet = OldDataset;
+                    if ((pMan != null) && (pSet != null) && pSet.IsPersisted)
                     {
-                        if (oList.Count() > 1)
+                        int n = await pMan.GetDatasetVariablesCountAsync(pSet);
+                        if (n > 0)
                         {
-                            col = new ObservableCollection<Variable>(oList.OrderBy(x => x.Sigle));
-                        }
-                        else
-                        {
-                            col = new ObservableCollection<Variable>(oList);
-                        }
-                    }// oList
-                }// n
-            }// pMan
-            if (col == null)
-            {
-                col = new ObservableCollection<Variable>();
-            }
-            Variables = col;
-            if (Variables.Count() > 0)
-            {
-                SelectVariable(Variables.First());
-            }
-            else
-            {
-                SelectVariable(null);
-            }
+                            var oList = await pMan.GetDatasetVariablesAsync(pSet, 0, n);
+                            if (oList != null)
+                            {
+                                if (oList.Count() > 1)
+                                {
+                                    col = new ObservableCollection<Variable>(oList.OrderBy(x => x.Sigle));
+                                }
+                                else
+                                {
+                                    col = new ObservableCollection<Variable>(oList);
+                                }
+                            }// oList
+                        }// n
+                    }// pMan
+                    if (col == null)
+                    {
+                        col = new ObservableCollection<Variable>();
+                    }
+                    Variables = col;
+                    IsBusy = false;
+                    if (Variables.Count() > 0)
+                    {
+                        SelectVariable(Variables.First());
+                    }
+                    else
+                    {
+                        SelectVariable(null);
+                    }
+                } catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// isBusy
+            
         }
         public void PerformVariableNew()
         {
@@ -661,66 +575,6 @@ namespace InfoControls
             NotifyPropertyChanged("IsVariableCancellable");
             NotifyPropertyChanged("IsVariableRemoveable");
         }
-        public String VariableDetailTitle
-        {
-            get
-            {
-                if (_bnewdataset)
-                {
-                    return "Nouvelle Variable";
-                }
-                else
-                {
-                    return String.IsNullOrEmpty(CurrentVariable.Name) ? CurrentVariable.Sigle : CurrentVariable.Name;
-                }
-            }
-            set {
-            }
-        }
-        public ObservableCollection<String> DataTypeStrings
-        {
-            get
-            {
-                if (_datatypes == null)
-                {
-                    lock (_syncObj)
-                    {
-                        _datatypes = new ObservableCollection<string>
-                    {
-                        "Réel",
-                        "Entier",
-                        "Logique",
-                        "Texte",
-                        "Autre"
-                    };
-                    }// lock
-                }// _datatypes
-                return _datatypes;
-            }
-            set {
-                NotifyPropertyChanged("DataTypeStrings");
-            }
-        }//DataTypeSStrings
-        public ObservableCollection<String> DataKindStrings
-        {
-            get
-            {
-                if (_datakind == null)
-                {
-                    lock (_syncObj)
-                    {
-                        _datakind = new ObservableCollection<string>
-                    {
-                        "Normal",
-                        "Modal",
-                        "Ordinal"
-                    };
-                    }// lock
-                }// _datakind
-                return _datakind;
-            }
-            set { }
-        }//DataKindStrings
         public ObservableCollection<Variable> Variables
         {
             get
@@ -751,13 +605,6 @@ namespace InfoControls
             {
                 _currentVariable = value;
                 NotifyPropertyChanged("CurrentVariable");
-                NotifyPropertyChanged("VariableDetailTitle");
-                NotifyPropertyChanged("VariableSigle");
-                NotifyPropertyChanged("VariableName");
-                NotifyPropertyChanged("VariableObservations");
-                NotifyPropertyChanged("VariableStatus");
-                NotifyPropertyChanged("VariableType");
-                NotifyPropertyChanged("VariableKind");
                 NotifyPropertyChanged("IsVariableStoreable");
             }
         }// Currentvariable
@@ -774,224 +621,15 @@ namespace InfoControls
                 NotifyPropertyChanged("IsVariableCancellable");
             }
         }// OldDataset
-        public String VariableSigle
-        {
-            get
-            {
-                return CurrentVariable.Sigle;
-            }
-            set
-            {
-                string old = VariableSigle;
-                CurrentVariable.Sigle = value;
-                string cur = VariableSigle;
-                if (old != cur)
-                {
-                    CurrentVariable.IsModified = true;
-                    NotifyPropertyChanged("VariableSigle");
-                    NotifyPropertyChanged("IsVariableStoreable");
-                }
-            }
-        }// VariableSigle
-        public String VariableName
-        {
-            get
-            {
-                return CurrentVariable.Name;
-            }
-            set
-            {
-                string old = VariableName;
-                CurrentVariable.Name = value;
-                string cur = VariableName;
-                if (old != cur)
-                {
-                    CurrentVariable.IsModified = true;
-                    NotifyPropertyChanged("VariableName");
-                    NotifyPropertyChanged("IsVariableStoreable");
-                }
-            }
-        }// VariableName
-        public String VariableObservations
-        {
-            get
-            {
-                return CurrentVariable.Observations;
-            }
-            set
-            {
-                string old = VariableObservations;
-                CurrentVariable.Observations = value;
-                string cur = VariableObservations;
-                if (cur != old)
-                {
-                    CurrentVariable.IsModified = true;
-                    NotifyPropertyChanged("VariableObservations");
-                    NotifyPropertyChanged("IsVariableStoreable");
-                }
-            }
-        }// VariableObservations
-        public String VariableStatus
-        {
-            get
-            {
-                String sRet;
-                InfoStatus st = CurrentVariable.Status;
-                switch (st)
-                {
-                    case InfoStatus.Inactive:
-                        sRet = "Inactif";
-                        break;
-                    case InfoStatus.Disabled:
-                        sRet = "Désactivé";
-                        break;
-                    case InfoStatus.Unknown:
-                        sRet = "Inconnu";
-                        break;
-                    default:
-                        sRet = "Normal";
-                        break;
-                }// st
-                return sRet;
-            }
-            set
-            {
-                string old = VariableStatus;
-                InfoStatus st = InfoStatus.Unknown;
-                if (value == "Désactivé")
-                {
-                    st = InfoStatus.Disabled;
-                    CurrentVariable.Status = st;
-                }
-                else if (value == "Inactif")
-                {
-                    st = InfoStatus.Inactive;
-                    CurrentVariable.Status = st;
-                }
-                else if (value == "Inconnu")
-                {
-                    st = InfoStatus.Unknown;
-                    CurrentVariable.Status = st;
-                }
-                else if (value == "Normal")
-                {
-                    st = InfoStatus.Normal;
-                    CurrentVariable.Status = st;
-                }
-                if (old != value)
-                {
-                    CurrentVariable.IsModified = true;
-                    NotifyPropertyChanged("VariableStatus");
-                    NotifyPropertyChanged("IsVariableStoreable");
-                }
-            }
-        }
-        public String VariableType
-        {
-            get
-            {
-                String sRet;
-                switch (CurrentVariable.VariableType)
-                {
-                    case InfoDataType.Integer:
-                        sRet = "Entier";
-                        break;
-                    case InfoDataType.Logical:
-                        sRet = "Logique";
-                        break;
-                    case InfoDataType.Text:
-                        sRet = "Texte";
-                        break;
-                    case InfoDataType.Other:
-                        sRet = "Autre";
-                        break;
-                    default:
-                        sRet = "Réel";
-                        break;
-                }// status
-                return sRet;
-            }
-            set
-            {
-                string old = VariableType;
-                if (value == "Entier")
-                {
-                    CurrentVariable.VariableType = InfoDataType.Integer;
-                }
-                else if (value == "Logique")
-                {
-                    CurrentVariable.VariableType = InfoDataType.Logical;
-                }
-                else if (value == "Texte")
-                {
-                    CurrentVariable.VariableType = InfoDataType.Text;
-                }
-                else if (value == "Réel")
-                {
-                    CurrentVariable.VariableType = InfoDataType.Real;
-                }
-                else if (value == "Autre")
-                {
-                    CurrentVariable.VariableType = InfoDataType.Other;
-                }
-                if (old != value)
-                {
-                    CurrentVariable.IsModified = true;
-                    NotifyPropertyChanged("VariableType");
-                    NotifyPropertyChanged("IsVariableStoreable");
-                }
-            }
-        }
-        public String VariableKind
-        {
-            get
-            {
-                String sRet;
-                switch (CurrentVariable.VariableKind)
-                {
-                    case InfoKind.Normal:
-                        sRet = "Normal";
-                        break;
-                    case InfoKind.Modal:
-                        sRet = "Modal";
-                        break;
-                    case InfoKind.Ordinal:
-                        sRet = "Ordinal";
-                        break;
-                    default:
-                        sRet = "Normal";
-                        break;
-                }
-                return sRet;
-            }
-            set
-            {
-                string old = VariableKind;
-                if (value == "Normal")
-                {
-                    CurrentVariable.VariableKind = InfoKind.Normal;
-                }
-                else if (value == "Modal")
-                {
-                    CurrentVariable.VariableKind = InfoKind.Modal;
-                }
-                else if (value == "Ordinal")
-                {
-                    CurrentVariable.VariableKind = InfoKind.Ordinal;
-                }
-                if (old != value)
-                {
-                    CurrentVariable.IsModified = true;
-                    NotifyPropertyChanged("VariableKind");
-                    NotifyPropertyChanged("IsVariableStoreable");
-                }
-            }
-        }
         public ObservableCollection<InfoValue> VariableValues
         {
             get
             {
-                return _varvalues ?? new ObservableCollection<InfoValue>();
+                if (_varvalues == null)
+                {
+                    _varvalues = new ObservableCollection<InfoValue>();
+                }
+                return _varvalues;
             }
             set
             {
@@ -1003,7 +641,7 @@ namespace InfoControls
         {
             get
             {
-                return (!_bnewvariable);
+                return (!_bnewvariable) && (!IsBusy);
             }
             set
             {
@@ -1014,7 +652,7 @@ namespace InfoControls
         {
             get
             {
-                return (CurrentVariable != null) && CurrentVariable.IsStoreable && CurrentVariable.IsModified;
+                return (CurrentVariable != null) && CurrentVariable.IsStoreable && (!IsBusy);
             }
             set {
                 NotifyPropertyChanged("IsVariableStoreable");
@@ -1024,7 +662,7 @@ namespace InfoControls
         {
             get
             {
-                return (OldVariable != null) && OldVariable.IsPersisted && (!_bnewvariable);
+                return (OldVariable != null) && OldVariable.IsPersisted && (!_bnewvariable) && (!IsBusy);
             }
             set {
                 NotifyPropertyChanged("IsVariableRemoveable");
@@ -1034,7 +672,7 @@ namespace InfoControls
         {
             get
             {
-                return (OldVariable != null) && OldVariable.IsPersisted && _bnewvariable;
+                return (OldVariable != null) && OldVariable.IsPersisted && _bnewvariable && (!IsBusy);
             }
             set
             {
@@ -1044,41 +682,51 @@ namespace InfoControls
         //
         public  async void RefreshIndivs()
         {
-            ObservableCollection<Indiv> col = null;
-            DomainManager pMan = Manager;
-            Dataset pSet = OldDataset;
-            if ((pMan != null) && (pSet != null) && pSet.IsPersisted)
+            if (!IsBusy)
             {
-                int n = await pMan.GetDatasetIndivsCountAsync(pSet);
-                if (n > 0)
+                try
                 {
-                    var oList = await pMan.GetDatasetIndivsAsync(pSet, 0, n);
-                    if (oList != null)
+                    IsBusy = true;
+                    ObservableCollection<Indiv> col = null;
+                    DomainManager pMan = Manager;
+                    Dataset pSet = OldDataset;
+                    if ((pMan != null) && (pSet != null) && pSet.IsPersisted)
                     {
-                        if (oList.Count() > 1)
+                        int n = await pMan.GetDatasetIndivsCountAsync(pSet);
+                        if (n > 0)
                         {
-                            col = new ObservableCollection<Indiv>(oList.OrderBy(x => x.Sigle));
-                        }
-                        else
-                        {
-                            col = new ObservableCollection<Indiv>(oList);
-                        }
-                    }// oList
-                }// n
-            }// pMan
-            if (col == null)
-            {
-                col = new ObservableCollection<Indiv>();
-            }
-            Indivs = col;
-            if (Indivs.Count() > 0)
-            {
-               SelectIndiv(Indivs.First());
-            }
-            else
-            {
-                SelectIndiv(null);
-            }
+                            var oList = await pMan.GetDatasetIndivsAsync(pSet, 0, n);
+                            if (oList != null)
+                            {
+                                if (oList.Count() > 1)
+                                {
+                                    col = new ObservableCollection<Indiv>(oList.OrderBy(x => x.Sigle));
+                                }
+                                else
+                                {
+                                    col = new ObservableCollection<Indiv>(oList);
+                                }
+                            }// oList
+                        }// n
+                    }// pMan
+                    if (col == null)
+                    {
+                        col = new ObservableCollection<Indiv>();
+                    }
+                    Indivs = col;
+                    IsBusy = false;
+                    if (Indivs.Count() > 0)
+                    {
+                        SelectIndiv(Indivs.First());
+                    }
+                    else
+                    {
+                        SelectIndiv(null);
+                    }
+                } catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// busy
+            
         }// RefreshIndivs
         public void SelectIndiv(Indiv pInd)
         {
@@ -1086,15 +734,7 @@ namespace InfoControls
             OldIndiv = pInd;
             if (pInd != null)
             {
-                CurrentIndiv = new Indiv(CurrentDataset, pInd.Sigle)
-                {
-                    Name = pInd.Name,
-                    Observations = pInd.Observations,
-                    Status = pInd.Status,
-                    IsModified = false,
-                    Id = pInd.Id,
-                    Rev = pInd.Rev
-                };
+                CurrentIndiv = pInd.Clone();
             }
             else
             {
@@ -1111,21 +751,41 @@ namespace InfoControls
         }// SelectIndiv
         public async void PerformIndivSave()
         {
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (CurrentIndiv != null) && CurrentIndiv.IsStoreable)
+            if (!IsBusy)
             {
-                bool b = await pMan.MaintainsIndivAsync(CurrentIndiv);
-                RefreshIndivs();
-            }
+                try
+                {
+                    IsBusy = true;
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (CurrentIndiv != null) && CurrentIndiv.IsStoreable)
+                    {
+                        bool b = await pMan.MaintainsIndivAsync(CurrentIndiv);
+                        IsBusy = false;
+                        RefreshIndivs();
+                    }
+                }
+                catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// busy
         }// PerformIndivSave
         public async void PerformIndivRemove()
         {
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (OldIndiv != null) && OldIndiv.IsPersisted)
+            if (!IsBusy)
             {
-                bool b = await pMan.RemoveIndivAsync(OldIndiv);
-                RefreshIndivs();
-            }
+                try
+                {
+                    IsBusy = true;
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (OldIndiv != null) && OldIndiv.IsPersisted)
+                    {
+                        bool b = await pMan.RemoveIndivAsync(OldIndiv);
+                        IsBusy = false;
+                        RefreshIndivs();
+                    }
+                } catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// isBusy
+            
         }// Performremoveindiv
         public void PerformIndivNew()
         {
@@ -1145,60 +805,55 @@ namespace InfoControls
         }
         public  async void RefreshIndivValues()
         {
-            List<InfoValue> bList = new List<InfoValue>();
-            DomainManager pMan = Manager;
-            if ((pMan != null) && (OldIndiv != null) && OldIndiv.IsPersisted)
+            if (!IsBusy)
             {
-                IList<InfoValue> oList = new List<InfoValue>();
-                int n = await pMan.GetIndivValuesCountAsync(OldIndiv);
-                if (n > 0)
+                try
                 {
-                    oList = await pMan.GetIndivValuesAsync(OldIndiv, 0, n);
-                    if (oList == null)
+                    IsBusy = true;
+                    List<InfoValue> bList = new List<InfoValue>();
+                    DomainManager pMan = Manager;
+                    if ((pMan != null) && (OldIndiv != null) && OldIndiv.IsPersisted)
                     {
-                        oList = new List<InfoValue>();
-                    }
-                }// n
-                var vars = this.Variables;
-                foreach (var v in vars)
-                {
-                    String sigle = v.Sigle;
-                    var col = oList.Where(x => x.VariableSigle == sigle);
-                    if (col.Count() > 0)
-                    {
-                        bList.Add(col.First());
-                    }
-                    else
-                    {
-                        bList.Add(new InfoValue(OldIndiv, v));
-                    }
+                        IList<InfoValue> oList = new List<InfoValue>();
+                        int n = await pMan.GetIndivValuesCountAsync(OldIndiv);
+                        if (n > 0)
+                        {
+                            oList = await pMan.GetIndivValuesAsync(OldIndiv, 0, n);
+                            if (oList == null)
+                            {
+                                oList = new List<InfoValue>();
+                            }
+                        }// n
+                        var vars = this.Variables;
+                        foreach (var v in vars)
+                        {
+                            String sigle = v.Sigle;
+                            var col = oList.Where(x => x.VariableSigle == sigle);
+                            if (col.Count() > 0)
+                            {
+                                bList.Add(col.First());
+                            }
+                            else
+                            {
+                                bList.Add(new InfoValue(OldIndiv, v));
+                            }
+                        }
+                    }// pMan
+                    IndivValues = new ObservableCollection<InfoValue>(bList.OrderBy(x => x.IndivSigle));
                 }
-            }// pMan
-            IndivValues = new ObservableCollection<InfoValue>(bList.OrderBy(x => x.IndivSigle));
-        }
-        public String IndivDetailTitle
-        {
-            get
-            {
-                if (_bnewindiv)
-                {
-                    return "Nouvel Individu";
-                }
-                else
-                {
-                    return CurrentIndiv.Name;
-                }
-            }
-            set
-            {
-                NotifyPropertyChanged("IndivDetailTitle");
-            }
+                catch(Exception /* ex */) { }
+                IsBusy = false;
+            }// busy
         }
         public ObservableCollection<Indiv> Indivs
         {
             get
             {
-                return _indivs ?? new ObservableCollection<Indiv>();
+                if (_indivs == null)
+                {
+                    _indivs = new ObservableCollection<Indiv>();
+                }
+                return _indivs;
             }
             set {
                 _indivs = value;
@@ -1222,11 +877,6 @@ namespace InfoControls
             {
                 _currentIndiv = value;
                 NotifyPropertyChanged("CurrentIndiv");
-                NotifyPropertyChanged("IndivDetailTitle");
-                NotifyPropertyChanged("IndivSigle");
-                NotifyPropertyChanged("IndivName");
-                NotifyPropertyChanged("IndivObservations");
-                NotifyPropertyChanged("IndivStatus");
                 NotifyPropertyChanged("IsIndivStoreable");
             }
         }// CurrentIndiv
@@ -1243,118 +893,6 @@ namespace InfoControls
                 NotifyPropertyChanged("IsIndivCancellable");
             }
         }// OldIndiv
-        public String IndivSigle
-        {
-            get
-            {
-                return CurrentIndiv.Sigle;
-            }
-            set
-            {
-                string old = IndivSigle;
-                CurrentIndiv.Sigle = value;
-                string cur = IndivSigle;
-                if (old != cur)
-                {
-                    CurrentIndiv.IsModified = true;
-                    NotifyPropertyChanged("IndivSigle");
-                    NotifyPropertyChanged("IsIndivStoreable");
-                }
-            }
-        }// IndivSigle
-        public String IndivName
-        {
-            get
-            {
-                return CurrentIndiv.Name;
-            }
-            set
-            {
-                string old = IndivName;
-                CurrentIndiv.Name = value;
-                string cur = IndivName;
-                if (old != cur)
-                {
-                    CurrentIndiv.IsModified = true;
-                    NotifyPropertyChanged("IndivName");
-                    NotifyPropertyChanged("IsIndivStoreable");
-                }
-            }
-        }// IndivName
-        public String IndivObservations
-        {
-            get
-            {
-                return CurrentIndiv.Observations;
-            }
-            set
-            {
-                string old = IndivObservations;
-                CurrentIndiv.Observations = value;
-                string cur = IndivObservations;
-                if (cur != old)
-                {
-                    CurrentIndiv.IsModified = true;
-                    NotifyPropertyChanged("IndivObservations");
-                    NotifyPropertyChanged("IsIndivStoreable");
-                }
-            }
-        }// IndivObservations
-        public String IndivStatus
-        {
-            get
-            {
-                String sRet;
-                InfoStatus st = CurrentIndiv.Status;
-                switch (st)
-                {
-                    case InfoStatus.Inactive:
-                        sRet = "Inactif";
-                        break;
-                    case InfoStatus.Disabled:
-                        sRet = "Désactivé";
-                        break;
-                    case InfoStatus.Unknown:
-                        sRet = "Inconnu";
-                        break;
-                    default:
-                        sRet = "Normal";
-                        break;
-                }// st
-                return sRet;
-            }
-            set
-            {
-                string old = IndivStatus;
-                InfoStatus st = InfoStatus.Unknown;
-                if (value == "Désactivé")
-                {
-                    st = InfoStatus.Disabled;
-                    CurrentIndiv.Status = st;
-                }
-                else if (value == "Inactif")
-                {
-                    st = InfoStatus.Inactive;
-                    CurrentIndiv.Status = st;
-                }
-                else if (value == "Inconnu")
-                {
-                    st = InfoStatus.Unknown;
-                    CurrentIndiv.Status = st;
-                }
-                else if (value == "Normal")
-                {
-                    st = InfoStatus.Normal;
-                    CurrentIndiv.Status = st;
-                }
-                if (value != old)
-                {
-                    CurrentIndiv.IsModified = true;
-                    NotifyPropertyChanged("IndivStatus");
-                    NotifyPropertyChanged("IsIndivStoreable");
-                }
-            }
-        }
         public ObservableCollection<InfoValue> IndivValues
         {
             get
@@ -1371,7 +909,7 @@ namespace InfoControls
         {
             get
             {
-                return (CurrentIndiv != null) && CurrentIndiv.IsStoreable && CurrentIndiv.IsModified;
+                return (CurrentIndiv != null) && CurrentIndiv.IsStoreable && (!IsBusy);
             }
             set {
                 NotifyPropertyChanged("IsIndivStoreable");
@@ -1381,7 +919,7 @@ namespace InfoControls
         {
             get
             {
-                return (OldIndiv != null) && OldIndiv.IsPersisted && (!_bnewindiv);
+                return (OldIndiv != null) && OldIndiv.IsPersisted && (!_bnewindiv) && (!IsBusy);
             }
             set {
                 NotifyPropertyChanged("IsIndivRemoveable");

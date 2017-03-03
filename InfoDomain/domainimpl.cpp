@@ -8,7 +8,7 @@ using namespace Windows::Foundation::Collections;
 using namespace Platform::Collections;
 using namespace InfoDomain;
 /////////////////////////////
-InfoItemImpl::InfoItemImpl() :m_modified(false),m_selected(false),m_status(InfoStatus::Unknown) {
+InfoItemImpl::InfoItemImpl() :m_modified(false), m_selected(false), m_status(InfoStatus::Unknown) {
 
 }
 InfoItemImpl::InfoItemImpl(IMap<String^, Object^>^ oMap) : m_modified(false), m_selected(false), m_status(InfoStatus::Unknown) {
@@ -25,7 +25,7 @@ InfoItemImpl::InfoItemImpl(IMap<String^, Object^>^ oMap) : m_modified(false), m_
 		Object^ o = oMap->Lookup(InfoStrings::KEY_STATUS);
 		if (o != nullptr) {
 			String^ s = o->ToString();
-			std::wstring ss{s->Data()};
+			std::wstring ss{ s->Data() };
 			std::wstringstream in{ ss };
 			int n = 0;
 			in >> n;
@@ -35,6 +35,67 @@ InfoItemImpl::InfoItemImpl(IMap<String^, Object^>^ oMap) : m_modified(false), m_
 }
 InfoItemImpl::~InfoItemImpl() {
 
+}
+String^ InfoItemImpl::get_StatusString(void) const {
+	String^ sRet{};
+	switch (this->get_Status()) {
+	case InfoStatus::Normal:
+		sRet = "Normal";
+		break;
+	case InfoStatus::Tail:
+		sRet = "Tail";
+		break;
+	case InfoStatus::Disabled:
+		sRet = "Disabled";
+		break;
+	case InfoStatus::Info:
+		sRet = "Info";
+		break;
+	case InfoStatus::Inactive:
+		sRet = "Inactive";
+		break;
+	case InfoStatus::Inserted:
+		sRet = "Inserted";
+	case InfoStatus::Updated:
+		sRet = "Updated";
+		break;
+	case InfoStatus::Deleted:
+		sRet = "Deleted";
+	default:
+		sRet = "Unknown";
+		break;
+	}// et
+	return (sRet);
+}
+void InfoItemImpl::set_StatusString(String^ s) {
+	InfoStatus r{ InfoStatus::Unknown };
+	if ((s != nullptr) && (!s->IsEmpty())) {
+		if (s == "Normal") {
+			r = InfoStatus::Normal;
+		}
+		else if (s == "Tail") {
+			r = InfoStatus::Tail;
+		}
+		else if (s == "Disabled") {
+			r = InfoStatus::Disabled;
+		}
+		else if (s == "Info") {
+			r = InfoStatus::Info;
+		}
+		else if (s == "Inactive") {
+			r = InfoStatus::Inactive;
+		}
+		else if (s == "Inserted") {
+			r = InfoStatus::Inserted;
+		}
+		else if (s == "Updated") {
+			r = InfoStatus::Updated;
+		}
+		else if (s == "Deleted") {
+			r = InfoStatus::Deleted;
+		}
+	}// s
+	this->set_Status(r);
 }
 String^ InfoItemImpl::get_Type(void) const {
 	String^ oRet;
@@ -233,7 +294,7 @@ void VariableImpl::GetMap(IMap<String^, Object^>^ oMap) const {
 		oMap->Insert(InfoStrings::KEY_MODALITES, m_modalites);
 	}// not empty
 }// GetMap
-IVector<String^>^ VariableImpl::get_Modalites(void)  {
+IVector<String^>^ VariableImpl::get_Modalites(void) {
 	if (m_modalites == nullptr) {
 		m_modalites = ref new Vector<String^>();
 	}
@@ -245,8 +306,87 @@ void VariableImpl::set_Modalites(IVector<String^>^ pVec) {
 String^ VariableImpl::get_Type(void) const {
 	return InfoStrings::TYPE_VARIABLE;
 }
+String^ VariableImpl::get_VariableTypeString(void) const {
+	String^ sRet{};
+	switch (this->get_VariableType()) {
+	case InfoDataType::Logical:
+		sRet = "Logical";
+		break;
+	case InfoDataType::Integer:
+		sRet = "Integer";
+		break;
+	case InfoDataType::Real:
+		sRet = "Real";
+		break;
+	case InfoDataType::Text:
+		sRet = "Text";
+		break;
+	case InfoDataType::Other:
+		sRet = "Other";
+		break;
+	default:
+		sRet = "Unknown";
+		break;
+	}
+	return sRet;
+}
+void VariableImpl::set_VariableTypeString(String^ s) {
+	InfoDataType r{ InfoDataType::Unknown };
+	if ((s != nullptr) && (!s->IsEmpty())) {
+		if (s == "Logical") {
+			r = InfoDataType::Logical;
+		}
+		else if (s == "Integer") {
+			r = InfoDataType::Integer;
+		}
+		else if (s == "Real") {
+			r = InfoDataType::Real;
+		}
+		else if (s == "Text") {
+			r = InfoDataType::Text;
+		}
+		else if (s == "Other") {
+			r = InfoDataType::Other;
+		}
+	}
+	this->set_VariableType(r);
+}
+String^ VariableImpl::get_VariableKindString(void) const {
+	String^ sRet{};
+	switch (this->get_VariableKind()) 
+	{
+	case InfoKind::Normal:
+		sRet = "Normal";
+		break;
+	case InfoKind::Modal:
+		sRet = "Modal";
+		break;
+	case InfoKind::Ordinal:
+		sRet = "Ordinal";
+		break;
+	default:
+		sRet = "Unknown";
+		break;
+	}
+	return sRet;
+}
+void VariableImpl::set_VariableKindString(String^ s) {
+	InfoKind r{ InfoKind::Unknown };
+	if ((s != nullptr) || (!s->IsEmpty())) {
+		if (s == "Normal") {
+			r = InfoKind::Normal;
+		}
+		else if (s == "Modal") {
+			r = InfoKind::Modal;
+		}
+		else if (s == "Ordinal") {
+			r = InfoKind::Ordinal;
+		}
+	}
+	this->set_VariableKind(r);
+}
 /////////////////////////////
-EtudiantImpl::EtudiantImpl(){
+EtudiantImpl::EtudiantImpl() {
 
 }
 EtudiantImpl::EtudiantImpl(IMap<String^, Object^>^ pMap) :InfoItemImpl(pMap) {

@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>f191c9ae-46c8-4e80-b43a-a9e708f44eb5</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="DomainDataset.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
+    <ClCompile Include="infostrings.cpp" />
+    <ClCompile Include="DomainVariable.cpp" />
+    <ClCompile Include="DomainIndiv.cpp" />
+    <ClCompile Include="DomainValue.cpp" />
+    <ClCompile Include="DomainEtudiant.cpp" />
+    <ClCompile Include="DomainDBManager.cpp" />
+    <ClCompile Include="DatasetEditModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="DomainDataset.h" />
+    <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="infostrings.h" />
+    <ClInclude Include="DomainVariable.h" />
+    <ClInclude Include="DomainIndiv.h" />
+    <ClInclude Include="DomainValue.h" />
+    <ClInclude Include="DomainEtudiant.h" />
+    <ClInclude Include="DomainDBManager.h" />
+    <ClInclude Include="DatasetEditModel.h" />
+  </ItemGroup>
+</Project>

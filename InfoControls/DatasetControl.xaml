@@ -3,11 +3,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:InfoControls"
+    xmlns:my="using:InfoDomain"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="350"
-    d:DesignWidth="540" DataContextChanged="UserControl_DataContextChanged">
+    d:DesignHeight="320"
+    d:DesignWidth="500" DataContextChanged="UserControl_DataContextChanged">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -22,7 +23,7 @@
                      ItemsSource="{Binding Path=Datasets}" SelectedItem="{Binding Path=CurrentDataset}"
                      VerticalAlignment="Stretch" SelectionChanged="listboxSets_SelectionChanged">
                 <ListBox.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="my:Dataset">
                         <StackPanel Orientation="Vertical" Margin="2,2">
                             <TextBlock Text="{Binding Sigle}" Margin="0,2" />
                             <TextBlock Text="{Binding Name}" Margin="0,2" />
@@ -31,43 +32,44 @@
                 </ListBox.ItemTemplate>
             </ListBox>
             <StackPanel Orientation="Horizontal" Margin="4,4">
-                <Button x:Name="buttonRefresh" Margin="4,0" Click="buttonRefresh_Click">Rafraîchir</Button>
-                <Button x:Name="buttonNew" Margin="4,0" Click="buttonNew_Click">Nouveau</Button>
+                <Button x:Name="buttonRefresh" Margin="4,0" IsEnabled="{Binding IsNotBusy}" Click="buttonRefresh_Click">Rafraîchir</Button>
+                <Button x:Name="buttonNew" IsEnabled="{Binding IsDatasetCreatable}" Margin="4,0" Click="buttonNew_Click">Nouveau</Button>
             </StackPanel>
         </StackPanel>
-        <Grid Grid.Row="0" Grid.Column="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding DatasetDetailTitle}" />
-            <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Abbréviation:</TextBlock>
-            <TextBox Margin="4,2" x:Name="textboxSigle" Grid.Row="1" Grid.Column="1" Text="{Binding DatasetSigle}" MinWidth="100" 
-                      LostFocus="textboxSigle_LostFocus"/>
-            <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Nom complet:</TextBlock>
-            <TextBox Margin="4,2" x:Name="textboxName" Grid.Row="2" Grid.Column="1" Text="{Binding DatasetName}" MinWidth="100"  LostFocus="textboxName_LostFocus"/>
-            <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Année:</TextBlock>
-            <TextBox Margin="4,2" x:Name="textboxAnnee" Grid.Row="3" Grid.Column="1" Text="{Binding DatasetAnnee}" MinWidth="100"  LostFocus="textboxAnnee_LostFocus"/>
-            <TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right">Observations:</TextBlock>
-            <TextBox Margin="4,2" x:Name="textboxObservations" Grid.Row="4" Grid.Column="1" Text="{Binding DatasetObservations}" 
-                     MinWidth="100" MinHeight="100" TextWrapping="Wrap"   LostFocus="textboxObservations_LostFocus"/>
-            <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Right">Etat:</TextBlock>
-            <ComboBox Grid.Row="5" Grid.Column="1" x:Name="comboboxStatus" Margin="4,2"  SelectedItem="{Binding Path=DatasetStatus}"
-                          ItemsSource="{Binding Path=StatusStrings}" SelectionChanged="comboboxStatus_SelectionChanged"/>
-            <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Horizontal" Margin="4,4">
-                <Button x:Name="buttonCancel" Margin="4,0" Click="buttonCancel_Click">Annuler</Button>
-                <Button x:Name="buttonSave" Margin="4,0" Click="buttonSave_Click">Enregistrer</Button>
-                <Button x:Name="buttonRemove" Margin="4,0" Click="buttonRemove_Click">Supprimer</Button>
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+            <Grid DataContext="{Binding CurrentDataset}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Sigle}" />
+                <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Abbréviation:</TextBlock>
+                <TextBox Margin="4,2" x:Name="textboxSigle" Grid.Row="1" Grid.Column="1" Text="{Binding Sigle}" MinWidth="80" />
+                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Nom complet:</TextBlock>
+                <TextBox Margin="4,2" x:Name="textboxName" Grid.Row="2" Grid.Column="1" Text="{Binding Name}" MinWidth="100" />
+                <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right">Année:</TextBlock>
+                <TextBox Margin="4,2" x:Name="textboxAnnee" Grid.Row="3" Grid.Column="1" Text="{Binding Annee}" MinWidth="50"/>
+                <TextBlock Grid.Row="4" Grid.Column="0" HorizontalAlignment="Right">Observations:</TextBlock>
+                <TextBox Margin="4,2" x:Name="textboxObservations" Grid.Row="4" Grid.Column="1" Text="{Binding Observations}" 
+                     MinWidth="100" MinHeight="100" TextWrapping="Wrap"/>
+                <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"  HorizontalAlignment="Right">Etat:</TextBlock>
+                <ComboBox Grid.Row="5" Grid.Column="1" x:Name="comboboxStatus" Margin="4,2"  SelectedItem="{Binding StatusString}"/>
+                
+            </Grid>
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="4,4">
+                <Button x:Name="buttonCancel" Margin="4,0" IsEnabled="{Binding IsDatasetCancellable}" Click="buttonCancel_Click">Annuler</Button>
+                <Button x:Name="buttonSave" Margin="4,0" IsEnabled="{Binding IsDatasetStoreable}" Click="buttonSave_Click">Enregistrer</Button>
+                <Button x:Name="buttonRemove" Margin="4,0" IsEnabled="{Binding IsDatasetRemoveable}" Click="buttonRemove_Click">Supprimer</Button>
             </StackPanel>
-        </Grid>
+        </StackPanel>
+        
     </Grid>
 </UserControl>

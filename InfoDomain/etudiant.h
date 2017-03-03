@@ -236,5 +236,13 @@ namespace InfoDomain {
 		//
 		IMap<String^, Object^>^ GetMap(void);
 		virtual String^ ToString(void) override;
+		property String^ StatusString {
+			String^ get() {
+				return m_pimpl->get_StatusString();
+			}
+			void set(String^ s) {
+				m_pimpl->set_StatusString(s);
+			}
+		}
 	};// class Etudiant
 }// namespace InfoDomain

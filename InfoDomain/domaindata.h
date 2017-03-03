@@ -111,6 +111,7 @@ namespace InfoDomain {
 		}// Value
 		void Clear(void);
 		virtual String^ ToString(void) override;
+		InfoDataValue^ Clone(void);
 	};// class InfoDataValue
 	  ///////////////////////////////
 	public ref class Dataset sealed {
@@ -198,6 +199,18 @@ namespace InfoDomain {
 			IVector<InfoBlob^>^ get();
 			void set(IVector<InfoBlob^>^ value);
 		}
+		Dataset^ Clone(void);
+		property String^ StatusString {
+			String^ get() {
+				return m_pimpl->get_StatusString();
+			}
+			void set(String^ s) {
+				m_pimpl->set_StatusString(s);
+			}
+		}
+		static IVector<String^>^ AllStatusStrings(void);
+		static IVector<String^>^ AllVariableTypesStrings(void);
+		static IVector<String^>^ AllVariableKindStrings(void);
 	};// class Dataset
 	  //////////////////////////////////
 	public ref class Indiv sealed {
@@ -230,6 +243,7 @@ namespace InfoDomain {
 		}// IsSelected
 		property String^ DatasetSigle {
 			String^ get();
+			void set(String^ s);
 		}// DatasetSigle
 		property String^ Id {
 			String^ get();
@@ -283,6 +297,15 @@ namespace InfoDomain {
 			IVector<InfoBlob^>^ get();
 			void set(IVector<InfoBlob^>^ value);
 		}
+		property String^ StatusString {
+			String^ get() {
+				return m_pimpl->get_StatusString();
+			}
+			void set(String^ s) {
+				m_pimpl->set_StatusString(s);
+			}
+		}
+		Indiv^ Clone(void);
 	};// Indiv
 	  ///////////////////////////////////////
 	public ref class Variable sealed {
@@ -315,6 +338,7 @@ namespace InfoDomain {
 		}// IsSelected
 		property String^ DatasetSigle {
 			String^ get();
+			void set(String^ s);
 		}// DatasetSigle
 		property String^ Id {
 			String^ get();
@@ -380,6 +404,31 @@ namespace InfoDomain {
 			IVector<InfoBlob^>^ get();
 			void set(IVector<InfoBlob^>^ value);
 		}
+		Variable^ Clone(void);
+		property String^ StatusString {
+			String^ get() {
+				return m_pimpl->get_StatusString();
+			}
+			void set(String^ s) {
+				m_pimpl->set_StatusString(s);
+			}
+		}
+		property String^ VariableTypeString {
+			String^ get() {
+				return m_pimpl->get_VariableTypeString();
+			}
+			void set(String^ s) {
+				m_pimpl->set_VariableTypeString(s);
+			}
+		}
+		property String^ VariableKindString {
+			String^ get() {
+				return m_pimpl->get_VariableKindString();
+			}
+			void set(String^ s) {
+				m_pimpl->set_VariableKindString(s);
+			}
+		}
 	};// Variable
 	  ////////////////////////////////////
 	public ref class InfoValue sealed {
@@ -443,12 +492,15 @@ namespace InfoDomain {
 		}// Observations
 		property String^ DatasetSigle {
 			String^ get();
+			void set(String^ s);
 		}// DatasetSigle
 		property String^ IndivSigle {
 			String^ get();
+			void set(String^ s);
 		}// IndivSigle
 		property String^ VariableSigle {
 			String^ get();
+			void set(String^ s);
 		}// VariableSigle
 		property String^ InfoType {
 			String^ get() {
@@ -570,6 +622,7 @@ namespace InfoDomain {
 			IVector<InfoBlob^>^ get();
 			void set(IVector<InfoBlob^>^ value);
 		}
+		InfoValue^ Clone(void);
 	};// InfoValue
 	  /////////////////////////////////////
 }// Namespace InfoDomain

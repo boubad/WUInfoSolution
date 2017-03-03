@@ -180,6 +180,8 @@ namespace InfoDomain
 		void set_Status(InfoStatus t) {
 			this->m_status = t; 
 		}
+		String^ get_StatusString(void) const;
+		void set_StatusString(String^ s);
 		String^ get_Observations(void) const {
 			return this->m_desc;
 		}
@@ -283,6 +285,10 @@ namespace InfoDomain
 		void set_VariableType(InfoDataType p) {
 			m_datatype = p;
 		}
+		String^ get_VariableTypeString(void) const;
+		void set_VariableTypeString(String^ s);
+		String^ get_VariableKindString(void) const;
+		void set_VariableKindString(String^ s);
 		InfoKind get_VariableKind(void) const {
 			return m_kind;
 		}
