@@ -122,11 +122,41 @@ void DomainDBManager::check_photo(DomainEtudiant ^p) {
 		}// name
 	}// p
 }//check_photo
+/////////////////////////////////////
 IAsyncAction^ DomainDBManager::CheckDatabaseAsync(String^ url, String^ databaseName) {
 	return create_async([url, databaseName]() {
 		create_task(CouchDBManager::CheckDatabaseAsync(url, databaseName)).wait();
 	});
 }//CheckDatabaseAsync
+IAsyncOperation<bool>^ DomainDBManager::ExistsDatabaseAsync(String^ url, String^ databaseName) {
+	return create_async([url, databaseName]()->bool {
+		bool bRet = create_task(CouchDBManager::ExistsDatabaseAsync(url, databaseName)).get();
+		return (bRet);
+	});
+}//ExistsDatabaseAsync
+//////////////////////////////////
+IAsyncOperation<IObservableVector<String^>^>^ DomainDBManager::GetFieldsDistinctAsync(String^ fname) {
+	return create_async([this, fname]()->IObservableVector<String^>^ {
+		IObservableVector<String^>^ pRet = ref new Vector<String^>();
+		CouchDBManager^ pMan = this->Manager;
+		IVector<Object^>^ oList = create_task(pMan->GetFieldsDistinctAsync(fname)).get();
+		if ((oList != nullptr) && (oList->Size > 0)) {
+			auto it = oList->First();
+			while (it->HasCurrent) {
+				Object^ o = it->Current;
+				if (o != nullptr) {
+					pRet->Append(o->ToString());
+				}
+			}// it
+			if (pRet->Size > 1) {
+				std::sort(begin(pRet), end(pRet), [](String^ s1, String^ s2)->bool {
+					return (s1 < s2);
+				});
+			}// bRet
+		}// oList
+		return pRet;
+	});
+}//GetFieldsDistinctAsync
 ///////////////////////////////
 IAsyncOperation<DomainEtudiant^>^ DomainDBManager::FindEtudiantByDossierAsync(String^ dossier) {
 	return create_async([this, dossier]()->DomainEtudiant^ {

@@ -42,13 +42,16 @@ namespace InfoCouchDB {
 		static String^ KEY_DESIGNDOC;
 		static String^ KEY_NAME;
 		//
+		static String^ OP_EXISTS;
+		//
 		static IJsonValue^ ConvertObject(Object^ obj);
 		static String^ ConvertFindFilter(IMap<String^, Object^>^ oFetch,
 			IVector<String^>^ oFields, int skip = 0, int count = 0);
+		static String^ ConvertFieldFilter(String^ field,int skip = 0, int count = 0);
 		static String^ MapToJson(IMap<String^, Object^>^ oMap);
 		static String^ MapToJson(IVector<IMap<String^, Object^>^>^ oAr);
 		static Object^ ConvertJsonObject(IJsonValue^ jsonVal);
-		static IMap<String^, Object^>^ StReadObject(IJsonValue^ json);
+		//static IMap<String^, Object^>^ StReadObject(IJsonValue^ json);
 		static IMap<String^, String^>^ StReadNamesMimes(String^ jsonText);
 		static int StDocsCount(String^ jsonText);
 		static IVector<IMap<String^, Object^>^>^ StReadDocs(String^ jsonText);
@@ -88,6 +91,11 @@ namespace InfoCouchDB {
 		task<bool> RemoveDocumentsAsync(IMap<String^, Object^>^ oFetch);
 		//
 		task<bool> CreateIndexAsync(IVector<String^>^ fields, String^ name = nullptr, String^ designDoc = nullptr);
+		//
+		task<int> GetFieldCountAsync(String^ fname);
+		task<IVector<IMap<String^, Object^>^>^> GetFieldsAsync(String^ fname, int offset, int count);
+		task<IVector<Object^>^> GetFieldsDistinctAsync(String^ fname);
+		//
 	};// class CouchDBProxy
 //////////////////////////////
 }// namespace InfoCouchDB

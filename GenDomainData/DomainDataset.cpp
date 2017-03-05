@@ -88,10 +88,10 @@ void DomainDataset::Id::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_id = cur;
-		m_modified = true;
 		OnPropertyChanged("Id");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 String^ DomainDataset::Rev::get() {
@@ -102,10 +102,10 @@ void DomainDataset::Rev::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_rev = cur;
-		m_modified = true;
 		OnPropertyChanged("Rev");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 InfoStatus DomainDataset::Status::get() {
@@ -114,10 +114,8 @@ InfoStatus DomainDataset::Status::get() {
 void DomainDataset::Status::set(InfoStatus value) {
 	if (value != m_status) {
 		m_status = value;
-		m_modified = true;
 		OnPropertyChanged("Status");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainDataset::StatusString::get() {
@@ -139,9 +137,8 @@ void DomainDataset::Observations::set(String^ value) {
 	String^ cur = StringUtils::FormatName(value);
 	if (old != cur) {
 		m_desc = cur;
-		m_modified = true;
 		OnPropertyChanged("Observations");
-		OnPropertyChanged("IsModified");
+		IsModified = true;
 	}
 }
 String^ DomainDataset::Annee::get() {
@@ -152,9 +149,8 @@ void DomainDataset::Annee::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_annee = cur;
-		m_modified = true;
 		OnPropertyChanged("Annee");
-		OnPropertyChanged("IsModified");
+		IsModified = true;
 	}
 }
 String^ DomainDataset::Sigle::get() {
@@ -165,10 +161,8 @@ void DomainDataset::Sigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_sigle = cur;
-		m_modified = true;
 		OnPropertyChanged("Sigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainDataset::Name::get() {
@@ -179,23 +173,22 @@ void DomainDataset::Name::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_name = cur;
-		m_modified = true;
 		OnPropertyChanged("Name");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;;
 	}
 }
 bool DomainDataset::IsModified::get() {
 	return m_modified;
 }
-bool DomainDataset::IsNew::get() {
-	return (!IsPersisted);
-}
 void DomainDataset::IsModified::set(bool value) {
 	if (m_modified != value) {
 		m_modified = value;
 		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsStoreable");
 	}
+}
+bool DomainDataset::IsNew::get() {
+	return (!IsPersisted);
 }
 bool DomainDataset::IsSelected::get() {
 	return m_selected;
@@ -207,13 +200,13 @@ void DomainDataset::IsSelected::set(bool value) {
 	}
 }
 bool DomainDataset::IsPersisted::get() {
-	return (m_id != nullptr) && (m_rev != nullptr) &&
-		(!m_id->IsEmpty()) && (!m_rev->IsEmpty());
+	return (Id != nullptr) && (Rev != nullptr) &&
+		(!Id->IsEmpty()) && (!Rev->IsEmpty());
 }
 bool DomainDataset::IsStoreable::get() {
-	return (m_sigle != nullptr) && (m_name != nullptr) &&
-		(!m_sigle->IsEmpty()) && (!m_name->IsEmpty()) &&
-		(m_status != InfoStatus::Unknown) && m_modified;
+	return (Sigle != nullptr) && (Name != nullptr) &&
+		(!Sigle->IsEmpty()) && (!Name->IsEmpty()) &&
+		(Status != InfoStatus::Unknown) && IsModified;
 }
 DomainDataset^ DomainDataset::Clone() {
 	DomainDataset^ p = ref new DomainDataset();
@@ -260,3 +253,7 @@ void DomainDataset::Copy(DomainDataset ^p) {
 		p->NotifyAll();
 	}// p
 }// Copy
+IVector<String^>^ DomainDataset::AllStatusStrings::get()
+{
+	return StringUtils::AllStatusStrings();
+}

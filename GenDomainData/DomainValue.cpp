@@ -11,14 +11,14 @@ DomainValue::DomainValue()
 {
 	m_modified = false;
 	m_selected = false;
-	m_status = InfoStatus::Unknown;
-	m_type = InfoDataType::Unknown;
+	m_status = InfoStatus::Normal;
+	m_type = InfoDataType::Real;
 }
 DomainValue::DomainValue(IMap<String^, Object^>^ oMap) {
 	m_modified = false;
 	m_selected = false;
-	m_status = InfoStatus::Unknown;
-	m_type = InfoDataType::Unknown;
+	m_status = InfoStatus::Normal;
+	m_type = InfoDataType::Real;
 	if ((oMap != nullptr) && (oMap->Size > 0)) {
 		if (oMap->HasKey(InfoStrings::KEY_ID)) {
 			m_id = oMap->Lookup(InfoStrings::KEY_ID)->ToString();
@@ -33,7 +33,7 @@ DomainValue::DomainValue(IMap<String^, Object^>^ oMap) {
 			m_varsigle = StringUtils::ToUpperFormat(oMap->Lookup(InfoStrings::KEY_VARIABLESIGLE)->ToString());
 		}
 		if (oMap->HasKey(InfoStrings::KEY_INDIVSIGLE)) {
-			m_indsigle = StringUtils::FormatName(oMap->Lookup(InfoStrings::KEY_INDIVSIGLE)->ToString());
+			m_indsigle = StringUtils::ToUpperFormat(oMap->Lookup(InfoStrings::KEY_INDIVSIGLE)->ToString());
 		}
 		if (oMap->HasKey(InfoStrings::KEY_STATUS)) {
 			Object^ o = oMap->Lookup(InfoStrings::KEY_STATUS);
@@ -52,7 +52,7 @@ DomainValue::DomainValue(IMap<String^, Object^>^ oMap) {
 			}
 		}// type
 		if (oMap->HasKey(InfoStrings::KEY_DATASETSIGLE)) {
-			m_datasetsigle = oMap->Lookup(InfoStrings::KEY_DATASETSIGLE)->ToString();
+			m_datasetsigle = StringUtils::ToUpperFormat(oMap->Lookup(InfoStrings::KEY_DATASETSIGLE)->ToString());
 		}
 		if (oMap->HasKey(InfoStrings::KEY_VALUE)) {
 			m_val = oMap->Lookup(InfoStrings::KEY_VALUE);
@@ -109,10 +109,10 @@ void DomainValue::Id::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_id = cur;
-		m_modified = true;
 		OnPropertyChanged("Id");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 String^ DomainValue::Rev::get() {
@@ -123,10 +123,10 @@ void DomainValue::Rev::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_rev = cur;
-		m_modified = true;
 		OnPropertyChanged("Rev");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 //
@@ -136,10 +136,8 @@ InfoStatus DomainValue::Status::get() {
 void DomainValue::Status::set(InfoStatus value) {
 	if (value != m_status) {
 		m_status = value;
-		m_modified = true;
 		OnPropertyChanged("Status");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainValue::StatusString::get() {
@@ -160,10 +158,8 @@ InfoDataType DomainValue::VariableType::get() {
 void DomainValue::VariableType::set(InfoDataType value) {
 	if (value != m_type) {
 		m_type = value;
-		m_modified = true;
 		OnPropertyChanged("VariableType");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainValue::VariableTypeString::get() {
@@ -177,7 +173,42 @@ void DomainValue::Value::set(Object^ value) {
 	if (m_val != value) {
 		m_val = value;
 		OnPropertyChanged("Value");
+		IsModified = true;
 	}
+}
+String^ DomainValue::StringValue::get() {
+	return (m_val != nullptr) ? m_val->ToString() : "";
+}
+void DomainValue::StringValue::set(String^ value) {
+	String^ old = (m_val != nullptr) ? m_val->ToString() : "";
+	String^ cur = (value != nullptr) ? StringUtils::ToUpperFormat(value) : "";
+	if (cur == nullptr) {
+		cur = "";
+	}
+	if (cur != old) {
+		Object^ obj = nullptr;
+		if (!cur->IsEmpty()) {
+			switch (m_type) {
+			case InfoDataType::Integer:
+				obj = StringUtils::StringToInteger(cur);
+				break;
+			case InfoDataType::Logical:
+				obj = StringUtils::StringToBoolean(cur);
+				break;
+			case InfoDataType::Real:
+				obj = StringUtils::StringToDouble(cur);
+				break;
+			case InfoDataType::Text:
+				obj = cur;
+				break;
+			default:
+				obj = cur;
+				break;
+			}
+		}// not empty
+		OnPropertyChanged("StringValue");
+		this->Value = obj;
+	}// cur
 }
 //
 String^ DomainValue::Observations::get() {
@@ -188,9 +219,8 @@ void DomainValue::Observations::set(String^ value) {
 	String^ cur = StringUtils::FormatName(value);
 	if (old != cur) {
 		m_desc = cur;
-		m_modified = true;
-		OnPropertyChanged("Observations");
-		OnPropertyChanged("IsModified");
+	    OnPropertyChanged("Observations");
+		IsModified = true;
 	}
 }
 String^ DomainValue::DatasetSigle::get() {
@@ -201,10 +231,8 @@ void DomainValue::DatasetSigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_datasetsigle = cur;
-		m_modified = true;
 		OnPropertyChanged("DatasetSigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainValue::VariableSigle::get() {
@@ -215,10 +243,8 @@ void DomainValue::VariableSigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_varsigle = cur;
-		m_modified = true;
 		OnPropertyChanged("VariableSigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainValue::IndivSigle::get() {
@@ -229,10 +255,8 @@ void DomainValue::IndivSigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_indsigle = cur;
-		m_modified = true;
 		OnPropertyChanged("IndivSigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 bool DomainValue::IsModified::get() {
@@ -242,6 +266,7 @@ void DomainValue::IsModified::set(bool value) {
 	if (m_modified != value) {
 		m_modified = value;
 		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsStoreable");
 	}
 }
 bool DomainValue::IsSelected::get() {
@@ -257,14 +282,18 @@ void DomainValue::IsSelected::set(bool value) {
 	}
 }
 bool DomainValue::IsPersisted::get() {
-	return (m_id != nullptr) && (m_rev != nullptr) &&
-		(!m_id->IsEmpty()) && (!m_rev->IsEmpty());
+	return (Id != nullptr) && (Rev != nullptr) &&
+		(!Id->IsEmpty()) && (!Rev->IsEmpty());
 }
 bool DomainValue::IsStoreable::get() {
-	return (m_varsigle != nullptr) && (m_indsigle != nullptr) && (m_datasetsigle != nullptr) &&
-		(!m_datasetsigle->IsEmpty()) && (m_type != InfoDataType::Unknown) &&
-		(!m_varsigle->IsEmpty()) && (!m_indsigle->IsEmpty()) &&
-		(m_status != InfoStatus::Unknown) && m_modified;
+	return (VariableSigle != nullptr) && (IndivSigle != nullptr) && (DatasetSigle != nullptr) &&
+		(!DatasetSigle->IsEmpty()) && (VariableType != InfoDataType::Unknown) &&
+		(!VariableSigle->IsEmpty()) && (!IndivSigle->IsEmpty()) &&
+		(Status != InfoStatus::Unknown) && IsModified;
+}
+IVector<String^>^ DomainValue::AllStatusStrings::get()
+{
+	return StringUtils::AllStatusStrings();
 }
 DomainValue^ DomainValue::Clone() {
 	DomainValue^ p = ref new DomainValue();
@@ -282,6 +311,7 @@ void DomainValue::NotifyAll(void) {
 	OnPropertyChanged("VariableSigle");
 	OnPropertyChanged("IndivSigle");
 	OnPropertyChanged("DatasetSigle");
+	OnPropertyChanged("ValueString");
 	OnPropertyChanged("Value");
 	OnPropertyChanged("IsSelected");
 	OnPropertyChanged("IsPersisted");

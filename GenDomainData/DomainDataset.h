@@ -33,6 +33,9 @@ namespace GenDomainData
         DomainDataset();
 		virtual event Windows::UI::Xaml::Data::PropertyChangedEventHandler^ PropertyChanged;
 	public:
+		property IVector<String^>^ AllStatusStrings {
+			IVector<String^>^ get();
+		}
 		property String^ Id {
 			String^ get();
 			void set(String^ value);

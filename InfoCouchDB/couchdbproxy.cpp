@@ -30,6 +30,7 @@ String^ CouchDBProxy::KEY_SKIP = "skip";
 String^  CouchDBProxy::KEY_INDEX = "index";
 String^  CouchDBProxy::KEY_DESIGNDOC = "ddoc";
 String^  CouchDBProxy::KEY_NAME = "name";
+String^  CouchDBProxy::OP_EXISTS = "$exists";
 ///////////////////////
 CouchDBProxy::CouchDBProxy(String^ url) {
 	m_url = url;
@@ -618,6 +619,42 @@ task<bool> CouchDBProxy::IsAliveAsync(void) {
 	}};
 }// IsAliveAsync
 ////////////////////////////////////////
+task<int> CouchDBProxy::GetFieldCountAsync(String^ fname) {
+	return task<int>{[this, fname]()->int {
+		String^ sUri = this->m_url + this->m_database + STRING_FIND;
+		Uri^ uri = ref new Uri(sUri);
+		int nTotal{ 0 };
+		int nCount{ 128 };
+		int nOffset{ 0 };
+		bool done{ false };
+		do {
+			String^ sp = ConvertFieldFilter(fname, nOffset, nCount);
+			HttpStringContent^ sc = ref new HttpStringContent(sp);
+			sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
+			auto operationTask = create_task(this->m_client->PostAsync(uri, sc));
+			int nx = operationTask.then([](HttpResponseMessage^ response)->int {
+				int nRet{ 0 };
+				auto status = response->StatusCode;
+				if (status == HttpStatusCode::Ok) {
+					auto myopx = response->Content->ReadAsStringAsync();
+					nRet = create_task(myopx).then([](String^ jsonText)->int {
+						return StDocsCount(jsonText);
+					}).get();
+				}// status
+				return (nRet);
+			}).get();
+			if (nx > 0) {
+				nTotal += nx;
+				nOffset += nx;
+			}
+			if (nx < nCount) {
+				done = true;
+				break;
+			}
+		} while (!done);
+		return nTotal;
+	}};
+}//GetFieldCountAsync
 task<int> CouchDBProxy::GetCountFilterAsync(IMap<String^, Object^>^ oFetch) {
 	return task<int>{[this, oFetch]()->int {
 		String^ sUri = this->m_url + this->m_database + STRING_FIND;
@@ -672,6 +709,74 @@ task<IMap<String^, Object^>^> CouchDBProxy::FindDocumentAsync(IMap<String^, Obje
 		}).get();
 	}};
 }//FindDocumentAsync
+task<IVector<IMap<String^, Object^>^>^> CouchDBProxy::GetFieldsAsync(String^ fname, int offset, int count) {
+	return task<IVector<IMap<String^, Object^>^>^>{[this, fname, offset, count]()->IVector<IMap<String^, Object^>^>^ {
+		String^ sUri = this->m_url + this->m_database + STRING_FIND;
+		Uri^ uri = ref new Uri(sUri);
+		IVector<String^>^ pFields = ref new Vector<String^>();
+		String^ sp = ConvertFieldFilter(fname, offset, count);
+		HttpStringContent^ sc = ref new HttpStringContent(sp);
+		sc->Headers->ContentType->MediaType = JSON_MIME_TYPE;
+		auto myop = this->m_client->PostAsync(uri, sc);
+		auto operationTask = create_task(myop);
+		return operationTask.then([](HttpResponseMessage^ response) {
+			auto status = response->StatusCode;
+			if (status != HttpStatusCode::Ok) {
+				String^ s;
+				return task_from_result(s);
+			}
+			else {
+				return create_task(response->Content->ReadAsStringAsync());
+			}
+		}).then([](String^ jsonText) {
+			IVector<IMap<String^, Object^>^>^ xRet = StReadDocs(jsonText);
+			return task_from_result(xRet);
+		}).get();
+	}};
+}//GetFieldsAsync
+task<IVector<Object^>^> CouchDBProxy::GetFieldsDistinctAsync(String^ fname) {
+	return task<IVector<Object^>^>{[this, fname]()->IVector<Object^>^ {
+		IMap<String^, Object^>^ oMap = ref new Map<String^, Object^>();
+		//
+		int nCount{ 128 };
+		int nOffset{ 0 };
+		bool done{ false };
+		while (!done) {
+			IVector<IMap<String^, Object^>^>^ vv = this->GetFieldsAsync(fname, nOffset, nCount).get();
+			if (vv == nullptr) {
+				done = true;
+				break;
+			}
+			auto it = vv->First();
+			while (it->HasCurrent) {
+				IMap<String^, Object^>^ xmap = it->Current;
+				if ((xmap != nullptr) && xmap->HasKey(fname)) {
+					Object^ o = xmap->Lookup(fname);
+					if (o != nullptr) {
+						String^ key = o->ToString();
+						if (!oMap->HasKey(key)) {
+							oMap->Insert(key, o);
+						}
+					}// o
+				}// key
+				it->MoveNext();
+			}// it
+			if (static_cast<int>(vv->Size) < nCount) {
+				done = true;
+				break;
+			}
+			nOffset += vv->Size;
+		}// not done
+		//
+		IVector<Object^>^ pRet = ref new Vector<Object^>();
+		auto it = oMap->First();
+		while (it->HasCurrent) {
+			auto p = it->Current;
+			pRet->Append(p->Value);
+		}// it
+		return (pRet);
+	}};
+}//GetFieldsDistinctAsync
 task<IVector<IMap<String^, Object^>^>^> CouchDBProxy::ReadDocumentsAsync(IMap<String^, Object^>^ oFetch, int offset, int count) {
 	return task<IVector<IMap<String^, Object^>^>^>{[this, oFetch, offset, count]()->IVector<IMap<String^, Object^>^>^ {
 		String^ sUri = this->m_url + this->m_database + STRING_FIND;
@@ -759,6 +864,26 @@ IJsonValue^ CouchDBProxy::ConvertObject(Object^ obj) {
 	}
 	return JsonValue::CreateNullValue();
 }// ConvertObject
+String^ CouchDBProxy::ConvertFieldFilter(String^ field, int skip /*= 0*/, int count /*= 0*/) {
+	JsonObject^ oRet = ref new JsonObject();
+	JsonObject^ oSel = ref new JsonObject();
+	JsonObject^ oOp = ref new JsonObject();
+	oOp->Insert(OP_EXISTS, JsonValue::CreateBooleanValue(true));
+	oSel->Insert(field, oOp);
+	oRet->Insert(KEY_SELECTOR, oSel);
+	JsonArray^ oAr = ref new JsonArray();
+	oAr->Append(JsonValue::CreateStringValue(field));
+	oAr->Append(JsonValue::CreateStringValue(KEY_ID));
+	oAr->Append(JsonValue::CreateStringValue(KEY_REV));
+	oRet->Insert(KEY_FIELDS, oAr);
+	if (skip > 0) {
+		oRet->Insert(KEY_SKIP, JsonValue::CreateNumberValue(skip));
+	}
+	if (count > 0) {
+		oRet->Insert(KEY_LIMIT, JsonValue::CreateNumberValue(count));
+	}
+	return (oRet->Stringify());
+}//ConvertFieldFilter
 String^ CouchDBProxy::ConvertFindFilter(IMap<String^, Object^>^ oFetch,
 	IVector<String^>^ oFields, int skip /*= 0*/, int count /*= 16*/) {
 	JsonObject^ oRet = ref new JsonObject();

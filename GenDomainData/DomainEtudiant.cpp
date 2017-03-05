@@ -209,10 +209,10 @@ void DomainEtudiant::Id::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_id = cur;
-		m_modified = true;
 		OnPropertyChanged("Id");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Rev::get() {
@@ -223,10 +223,11 @@ void DomainEtudiant::Rev::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_rev = cur;
-		m_modified = true;
 		OnPropertyChanged("Rev");
 		OnPropertyChanged("IsPersisted");
 		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 InfoStatus DomainEtudiant::Status::get() {
@@ -235,10 +236,8 @@ InfoStatus DomainEtudiant::Status::get() {
 void DomainEtudiant::Status::set(InfoStatus value) {
 	if (value != m_status) {
 		m_status = value;
-		m_modified = true;
 		OnPropertyChanged("Status");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::StatusString::get() {
@@ -262,6 +261,7 @@ void DomainEtudiant::DatasetsSigles::set(IVector<String^>^ value) {
 	m_sets = nullptr;
 	if ((value == nullptr) || (value->Size < 1)) {
 		OnPropertyChanged("DatasetsSigles");
+		IsModified = true;
 		return;
 	}
 	IMap<String^, String^>^ px = ref new Map<String^, String^>();
@@ -285,6 +285,7 @@ void DomainEtudiant::DatasetsSigles::set(IVector<String^>^ value) {
 		}// jt
 	}// px
 	OnPropertyChanged("DatasetSigles");
+	IsModified = true;
 }
 //
 String^ DomainEtudiant::Observations::get() {
@@ -295,9 +296,8 @@ void DomainEtudiant::Observations::set(String^ value) {
 	String^ cur = StringUtils::FormatName(value);
 	if (old != cur) {
 		m_desc = cur;
-		m_modified = true;
 		OnPropertyChanged("Observations");
-		OnPropertyChanged("IsModified");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::PhotoUrl::get() {
@@ -314,10 +314,8 @@ void DomainEtudiant::Annee::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_annee = cur;
-		m_modified = true;
 		OnPropertyChanged("Annee");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Dossier::get() {
@@ -328,10 +326,8 @@ void DomainEtudiant::Dossier::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_dossier = cur;
-		m_modified = true;
 		OnPropertyChanged("Dossier");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Sexe::get() {
@@ -345,12 +341,10 @@ void DomainEtudiant::Sexe::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_sexe = cur;
-		m_modified = true;
 		OnPropertyChanged("Sexe");
 		OnPropertyChanged("IsMale");
 		OnPropertyChanged("IsFemale");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 bool DomainEtudiant::IsMale::get() 
@@ -375,10 +369,8 @@ void DomainEtudiant::Birth::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_birth = cur;
-		m_modified = true;
 		OnPropertyChanged("Birth");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Firstname::get() {
@@ -389,11 +381,9 @@ void DomainEtudiant::Firstname::set(String^ value) {
 	String^ cur = StringUtils::FormatName(value);
 	if (old != cur) {
 		m_firstname = cur;
-		m_modified = true;
 		OnPropertyChanged("Firstname");
 		OnPropertyChanged("Fullname");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Lastname::get() {
@@ -404,11 +394,9 @@ void DomainEtudiant::Lastname::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_lastname = cur;
-		m_modified = true;
 		OnPropertyChanged("Lastname");
 		OnPropertyChanged("Fullname");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Fullname::get() {
@@ -424,10 +412,8 @@ void DomainEtudiant::Departement::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_dep = cur;
-		m_modified = true;
 		OnPropertyChanged("Departement");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Ville::get() {
@@ -438,10 +424,8 @@ void DomainEtudiant::Ville::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_ville = cur;
-		m_modified = true;
 		OnPropertyChanged("Ville");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Lycee::get() {
@@ -452,10 +436,8 @@ void DomainEtudiant::Lycee::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_lycee = cur;
-		m_modified = true;
 		OnPropertyChanged("Lycee");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Groupe::get() {
@@ -466,10 +448,8 @@ void DomainEtudiant::Groupe::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_groupe = cur;
-		m_modified = true;
 		OnPropertyChanged("Groupe");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::SerieBac::get() {
@@ -480,10 +460,8 @@ void DomainEtudiant::SerieBac::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_seriebac = cur;
-		m_modified = true;
 		OnPropertyChanged("SerieBac");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::OptionBac::get() {
@@ -494,10 +472,8 @@ void DomainEtudiant::OptionBac::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_optionbac = cur;
-		m_modified = true;
 		OnPropertyChanged("OptionBac");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::MentionBac::get() {
@@ -508,10 +484,8 @@ void DomainEtudiant::MentionBac::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_mentionbac = cur;
-		m_modified = true;
 		OnPropertyChanged("MentionBac");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::EtudesSuperieures::get() {
@@ -522,10 +496,8 @@ void DomainEtudiant::EtudesSuperieures::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_sup = cur;
-		m_modified = true;
 		OnPropertyChanged("EtudesSuperieures");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Apb::get() {
@@ -536,10 +508,8 @@ void DomainEtudiant::Apb::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_apb = cur;
-		m_modified = true;
 		OnPropertyChanged("Apb");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Redoublant::get() {
@@ -550,10 +520,8 @@ void DomainEtudiant::Redoublant::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_red = cur;
-		m_modified = true;
 		OnPropertyChanged("Redoublant");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Avatar::get() {
@@ -564,10 +532,8 @@ void DomainEtudiant::Avatar::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_avatar = cur;
-		m_modified = true;
 		OnPropertyChanged("Avatar");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainEtudiant::Email::get() {
@@ -578,10 +544,8 @@ void DomainEtudiant::Email::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_email = cur;
-		m_modified = true;
 		OnPropertyChanged("Email");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 //
@@ -595,6 +559,7 @@ void DomainEtudiant::IsModified::set(bool value) {
 	if (m_modified != value) {
 		m_modified = value;
 		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsStoreable");
 	}
 }
 bool DomainEtudiant::IsSelected::get() {
@@ -740,3 +705,7 @@ void DomainEtudiant::AddDatasetSigle(String^ s) {
 	OnPropertyChanged("DatasetsSigles");
 	OnPropertyChanged("IsStoreable");
 }//AddDatasetSigle
+IVector<String^>^ DomainEtudiant::AllStatusStrings::get()
+{
+	return StringUtils::AllStatusStrings();
+}

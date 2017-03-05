@@ -148,10 +148,10 @@ void DomainVariable::Id::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_id = cur;
-		m_modified = true;
 		OnPropertyChanged("Id");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::Rev::get() {
@@ -162,10 +162,10 @@ void DomainVariable::Rev::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_rev = cur;
-		m_modified = true;
 		OnPropertyChanged("Rev");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 //
@@ -175,10 +175,8 @@ InfoStatus DomainVariable::Status::get() {
 void DomainVariable::Status::set(InfoStatus value) {
 	if (value != m_status) {
 		m_status = value;
-		m_modified = true;
 		OnPropertyChanged("Status");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::StatusString::get() {
@@ -199,10 +197,8 @@ InfoDataType DomainVariable::VariableType::get() {
 void DomainVariable::VariableType::set(InfoDataType value) {
 	if (value != m_type) {
 		m_type = value;
-		m_modified = true;
 		OnPropertyChanged("VariableType");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::VariableTypeString::get() {
@@ -223,10 +219,8 @@ InfoKind DomainVariable::VariableKind::get() {
 void DomainVariable::VariableKind::set(InfoKind value) {
 	if (value != m_kind) {
 		m_kind = value;
-		m_modified = true;
 		OnPropertyChanged("VariableKind");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::VariableKindString::get() {
@@ -241,6 +235,32 @@ void DomainVariable::VariableKindString::set(String^ value) {
 	}
 }
 //
+String^ DomainVariable::ModalitesString::get() {
+	if ((m_modalitesstring == nullptr) || m_modalitesstring->IsEmpty()) {
+		IVector<String^>^ vv = Modalites;
+		if ((vv != nullptr) && (vv->Size > 0)) {
+			m_modalitesstring = "";
+			auto it = vv->First();
+			m_modalitesstring += it->Current;
+			it->MoveNext();
+			while (it->HasCurrent) {
+				m_modalitesstring += ";" + it->Current;
+				it->MoveNext();
+			}// it
+		}//vv
+	}// m_modalites
+	return m_modalitesstring;
+}
+void DomainVariable::ModalitesString::set(String^ value) {
+	String^ old = ModalitesString;
+	String^ cur = StringUtils::ToUpperFormat (value);
+	if (old != cur) {
+		IVector<String^>^ vv = StringUtils::SplitString(cur, ";:,\t_");
+		Modalites = vv;
+		m_modalitesstring = nullptr;
+		OnPropertyChanged("ModalitesString");
+	}
+}
 IVector<String^>^ DomainVariable::Modalites::get() {
 	if (m_modalites == nullptr) {
 		m_modalites = ref new Vector<String^>();
@@ -251,6 +271,7 @@ void DomainVariable::Modalites::set(IVector<String^>^ value) {
 	m_modalites = nullptr;
 	if ((value == nullptr) || (value->Size < 1)) {
 		OnPropertyChanged("Modalites");
+		IsModified = true;
 		return;
 	}
 	IMap<String^, String^>^ px = ref new Map<String^, String^>();
@@ -274,6 +295,7 @@ void DomainVariable::Modalites::set(IVector<String^>^ value) {
 		}// jt
 	}// px
 	OnPropertyChanged("Modalites");
+	IsModified = true;
 }
 //
 String^ DomainVariable::Observations::get() {
@@ -284,9 +306,8 @@ void DomainVariable::Observations::set(String^ value) {
 	String^ cur = StringUtils::FormatName(value);
 	if (old != cur) {
 		m_desc = cur;
-		m_modified = true;
 		OnPropertyChanged("Observations");
-		OnPropertyChanged("IsModified");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::DatasetSigle::get() {
@@ -297,10 +318,8 @@ void DomainVariable::DatasetSigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_datasetsigle = cur;
-		m_modified = true;
 		OnPropertyChanged("DatasetSigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::Sigle::get() {
@@ -311,10 +330,8 @@ void DomainVariable::Sigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_sigle = cur;
-		m_modified = true;
 		OnPropertyChanged("Sigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainVariable::Name::get() {
@@ -325,10 +342,8 @@ void DomainVariable::Name::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_name = cur;
-		m_modified = true;
 		OnPropertyChanged("Name");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 bool DomainVariable::IsModified::get() {
@@ -338,6 +353,7 @@ void DomainVariable::IsModified::set(bool value) {
 	if (m_modified != value) {
 		m_modified = value;
 		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsStoreable");
 	}
 }
 bool DomainVariable::IsSelected::get() {
@@ -350,18 +366,18 @@ void DomainVariable::IsSelected::set(bool value) {
 	}
 }
 bool DomainVariable::IsPersisted::get() {
-	return (m_id != nullptr) && (m_rev != nullptr) &&
-		(!m_id->IsEmpty()) && (!m_rev->IsEmpty());
+	return (Id != nullptr) && (Rev != nullptr) &&
+		(!Id->IsEmpty()) && (!Rev->IsEmpty());
 }
 bool DomainVariable::IsNew::get() {
 	return (!IsPersisted);
 }
 bool DomainVariable::IsStoreable::get() {
-	return (m_sigle != nullptr) && (m_name != nullptr) && (m_datasetsigle != nullptr) &&
-		(!m_datasetsigle->IsEmpty()) && (m_type != InfoDataType::Unknown) &&
-		(m_kind != InfoKind::Unknown) &&
-		(!m_sigle->IsEmpty()) && (!m_name->IsEmpty()) &&
-		(m_status != InfoStatus::Unknown) && m_modified;
+	return (Sigle != nullptr) && (Name != nullptr) && (DatasetSigle != nullptr) &&
+		(!DatasetSigle->IsEmpty()) && (VariableType != InfoDataType::Unknown) &&
+		(VariableKind != InfoKind::Unknown) &&
+		(!Sigle->IsEmpty()) && (!Name->IsEmpty()) &&
+		(Status != InfoStatus::Unknown) && IsModified;
 }
 DomainVariable^ DomainVariable::Clone() {
 	DomainVariable^ p = ref new DomainVariable();
@@ -421,3 +437,15 @@ void DomainVariable::Copy(DomainVariable ^p) {
 		p->NotifyAll();
 	}// p
 }// Copy
+IVector<String^>^ DomainVariable::AllStatusStrings::get()
+{
+	return StringUtils::AllStatusStrings();
+}
+IVector<String^>^ DomainVariable::AllDataTypeStrings::get()
+{
+	return StringUtils::AllDataTypeStrings();
+}
+IVector<String^>^ DomainVariable::AllDataKindStrings::get()
+{
+	return StringUtils::AllDataKindStrings();
+}

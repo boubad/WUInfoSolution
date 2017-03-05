@@ -4,20 +4,20 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProjectGuid>{8B86E718-3F4D-4180-BDFD-99BEAEBE5EAE}</ProjectGuid>
+    <ProjectGuid>{985A9B74-AFF4-4D19-B128-EF82D811AFEF}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StatDataApp</RootNamespace>
-    <AssemblyName>StatDataApp</AssemblyName>
+    <RootNamespace>GestInfoApp</RootNamespace>
+    <AssemblyName>GestInfoApp</AssemblyName>
     <DefaultLanguage>fr-FR</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.10586.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
-    <PackageCertificateKeyFile>StatDataApp_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>GestInfoApp_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -96,18 +96,30 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Data\DataUtils.cs" />
-    <Compile Include="Data\InfoParams.cs" />
+    <Compile Include="Common\InfoObservable.cs" />
+    <Compile Include="Controls\DatasetUserControl.xaml.cs">
+      <DependentUpon>DatasetUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditUserControl1.xaml.cs">
+      <DependentUpon>EditUserControl1.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\IndivUserControl.xaml.cs">
+      <DependentUpon>IndivUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\VariableUserControl.xaml.cs">
+      <DependentUpon>VariableUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\StatEditModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="StatDataApp_TemporaryKey.pfx" />
+    <None Include="GestInfoApp_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />
@@ -124,23 +136,36 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\DatasetUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\EditUserControl1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\IndivUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\VariableUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfoDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InfoCouchDB\InfoCouchDB.vcxproj">
-      <Project>{cbff9b0e-1d43-486e-ab27-1f4c6e487eb6}</Project>
-      <Name>InfoCouchDB</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\InfoDomain\InfoDomain.vcxproj">
-      <Project>{fa0e15c0-c31c-495c-9fb4-5fe315a4572b}</Project>
-      <Name>InfoDomain</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\InfoLocalDB\InfoLocalDB.csproj">
-      <Project>{1fce4cbd-7b73-4e01-bdea-e566b931ee14}</Project>
-      <Name>InfoLocalDB</Name>
+    <ProjectReference Include="..\GenDomainData\GenDomainData.vcxproj">
+      <Project>{d960cca5-3844-4cb7-b926-a0d6a1a8a3c5}</Project>
+      <Name>GenDomainData</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

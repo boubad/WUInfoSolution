@@ -16,7 +16,6 @@
     <ClCompile Include="DomainValue.cpp" />
     <ClCompile Include="DomainEtudiant.cpp" />
     <ClCompile Include="DomainDBManager.cpp" />
-    <ClCompile Include="DatasetEditModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -29,6 +28,5 @@
     <ClInclude Include="DomainValue.h" />
     <ClInclude Include="DomainEtudiant.h" />
     <ClInclude Include="DomainDBManager.h" />
-    <ClInclude Include="DatasetEditModel.h" />
   </ItemGroup>
 </Project>

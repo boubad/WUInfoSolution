@@ -85,15 +85,19 @@ void DomainIndiv::OnPropertyChanged(String^ propertyName)
 String^ DomainIndiv::Id::get() {
 	return m_id;
 }
+IVector<String^>^ DomainIndiv::AllStatusStrings::get()
+{
+	return StringUtils::AllStatusStrings();
+}
 void DomainIndiv::Id::set(String^ value) {
 	String^ old = ((m_id == nullptr) || m_id->IsEmpty()) ? "" : m_id;
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_id = cur;
-		m_modified = true;
 		OnPropertyChanged("Id");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 String^ DomainIndiv::Rev::get() {
@@ -104,10 +108,10 @@ void DomainIndiv::Rev::set(String^ value) {
 	String^ cur = StringUtils::Trim(value);
 	if (old != cur) {
 		m_rev = cur;
-		m_modified = true;
 		OnPropertyChanged("Rev");
 		OnPropertyChanged("IsPersisted");
-		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsNew");
+		IsModified = true;
 	}
 }
 //
@@ -117,10 +121,8 @@ InfoStatus DomainIndiv::Status::get() {
 void DomainIndiv::Status::set(InfoStatus value) {
 	if (value != m_status) {
 		m_status = value;
-		m_modified = true;
 		OnPropertyChanged("Status");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainIndiv::StatusString::get() {
@@ -143,9 +145,8 @@ void DomainIndiv::Observations::set(String^ value) {
 	String^ cur = StringUtils::FormatName(value);
 	if (old != cur) {
 		m_desc = cur;
-		m_modified = true;
 		OnPropertyChanged("Observations");
-		OnPropertyChanged("IsModified");
+		IsModified = true;
 	}
 }
 String^ DomainIndiv::DatasetSigle::get() {
@@ -156,10 +157,8 @@ void DomainIndiv::DatasetSigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_datasetsigle = cur;
-		m_modified = true;
 		OnPropertyChanged("DatasetSigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainIndiv::Sigle::get() {
@@ -170,10 +169,8 @@ void DomainIndiv::Sigle::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_sigle = cur;
-		m_modified = true;
 		OnPropertyChanged("Sigle");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 String^ DomainIndiv::Name::get() {
@@ -184,10 +181,8 @@ void DomainIndiv::Name::set(String^ value) {
 	String^ cur = StringUtils::ToUpperFormat(value);
 	if (old != cur) {
 		m_name = cur;
-		m_modified = true;
 		OnPropertyChanged("Name");
-		OnPropertyChanged("IsModified");
-		OnPropertyChanged("IsStoreable");
+		IsModified = true;
 	}
 }
 bool DomainIndiv::IsModified::get() {
@@ -197,6 +192,7 @@ void DomainIndiv::IsModified::set(bool value) {
 	if (m_modified != value) {
 		m_modified = value;
 		OnPropertyChanged("IsModified");
+		OnPropertyChanged("IsStoreable");
 	}
 }
 bool DomainIndiv::IsSelected::get() {
@@ -212,14 +208,14 @@ void DomainIndiv::IsSelected::set(bool value) {
 	}
 }
 bool DomainIndiv::IsPersisted::get() {
-	return (m_id != nullptr) && (m_rev != nullptr) &&
-		(!m_id->IsEmpty()) && (!m_rev->IsEmpty());
+	return (Id != nullptr) && (Rev != nullptr) &&
+		(!Id->IsEmpty()) && (!Rev->IsEmpty());
 }
 bool DomainIndiv::IsStoreable::get() {
-	return (m_sigle != nullptr) && (m_name != nullptr) && (m_datasetsigle != nullptr) &&
-		(!m_datasetsigle->IsEmpty()) &&
-		(!m_sigle->IsEmpty()) && (!m_name->IsEmpty()) &&
-		(m_status != InfoStatus::Unknown) && m_modified;
+	return (Sigle != nullptr) && (Name != nullptr) && (DatasetSigle != nullptr) &&
+		(!DatasetSigle->IsEmpty()) &&
+		(!Sigle->IsEmpty()) && (!Name->IsEmpty()) &&
+		(Status != InfoStatus::Unknown) && IsModified;
 }
 DomainIndiv^ DomainIndiv::Clone() {
 	DomainIndiv^ p = ref new DomainIndiv();

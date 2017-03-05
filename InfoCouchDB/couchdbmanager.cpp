@@ -133,6 +133,16 @@ CouchDBProxy *CouchDBManager::GetProxy(void) {
 	return p;
 }// GetProxt
 /////////////////////////////////////
+IAsyncOperation<IVector<Object^>^>^ CouchDBManager::GetFieldsDistinctAsync(String^ fname) {
+	return create_async([this, fname]()->IVector<Object^>^ {
+		if ((fname == nullptr) || fname->IsEmpty()) {
+			throw ref new InvalidArgumentException();
+		}
+		CouchDBProxy *pProxy = GetProxy();
+		IVector<Object^>^ pRet = pProxy->GetFieldsDistinctAsync(fname).get();
+		return (pRet);
+	});
+}//GetFieldsDistinctAsync
 IAsyncOperation<bool>^ CouchDBManager::MaintainsDocumentAttachmentAsync(String^ docid, String^ attachmentName, IStorageFile^ file) {
 	return create_async([this, docid, attachmentName, file]()->bool {
 		if ((docid == nullptr) || (attachmentName == nullptr) || (file == nullptr)) {

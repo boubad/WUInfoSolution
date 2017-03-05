@@ -50,6 +50,7 @@ namespace GenDomainData
 		}
 	public:
 		static IAsyncAction^ CheckDatabaseAsync(String^ url, String^ databaseName);
+		static IAsyncOperation<bool>^ ExistsDatabaseAsync(String^ url, String^ databaseName);
 		IAsyncOperation<int>^ GetDatasetsCountAsync(DomainDataset^ model);
 		IAsyncOperation<IVector<DomainDataset^>^>^ GetDatasetsAsync(DomainDataset^ model, int offset, int count);
 		IAsyncOperation<DomainDataset^>^ FindDatasetAsync(DomainDataset^ model);
@@ -100,6 +101,8 @@ namespace GenDomainData
 		IAsyncOperation<bool>^ RemoveDocumentAttachmentAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IBuffer^>^ GetDocumentAttachmentDataAsync(String^ docid, String^ attachmentName);
 		IAsyncOperation<IVector<byte>^>^ GetDocumentAttachmentDataVectorAsync(String^ docid, String^ attachmentName);
+		//
+		IAsyncOperation<IObservableVector<String^>^>^ GetFieldsDistinctAsync(String^ fname);
 		//
 	};// class DomainDBManager
 }// namespace GenDomainData

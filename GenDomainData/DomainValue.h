@@ -36,6 +36,9 @@ namespace GenDomainData
 		DomainValue();
 		virtual event Windows::UI::Xaml::Data::PropertyChangedEventHandler^ PropertyChanged;
 	public:
+		property IVector<String^>^ AllStatusStrings {
+			IVector<String^>^ get();
+		}
 		property InfoDataType VariableType {
 			InfoDataType get();
 			void set(InfoDataType value);
@@ -79,6 +82,10 @@ namespace GenDomainData
 		property Object^ Value {
 			Object^ get();
 			void set(Object^ value);
+		}
+		property String^ StringValue {
+			String^ get();
+			void set(String^ value);
 		}
 		property bool IsModified {
 			bool get();

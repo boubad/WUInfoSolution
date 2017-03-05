@@ -1,0 +1,95 @@
+﻿<UserControl
+    x:Class="GestInfoApp.Controls.VariableUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GestInfoApp.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="450"
+    d:DesignWidth="700" DataContextChanged="UserControl_DataContextChanged"  GotFocus="UserControl_GotFocus">
+
+    <Grid>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+            <TextBlock Text="{Binding ErrorString}" Foreground="Red" Margin="2,2" />
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical" Margin="2,2" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,2">
+                        <Button x:Name="buttonRefresh" Style="{StaticResource InfoButton}" Click="buttonRefresh_Click">Rafraîchir</Button>
+                        <Button x:Name="buttonNew" Style="{StaticResource InfoButton}" Click="buttonNew_Click">Nouveau</Button>
+                    </StackPanel>
+                    <ListBox x:Name="listboxItems" Margin="2,2" Style="{StaticResource InfoListbox}" ItemsSource="{Binding Variables}"
+                      ItemTemplate="{StaticResource InfoDatasetTemplate}" SelectionChanged="listboxItems_SelectionChanged"/>
+                </StackPanel>
+                <Grid DataContext="{Binding CurrentVariable}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource InfoLabel}">Sigle:</TextBlock>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="textboxSigle" Style="{StaticResource InfoTextBox}" LostFocus="textboxSigle_LostFocus" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource InfoLabel}">Nom complet:</TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="1"  x:Name="textboxName" Style="{StaticResource InfoTextName}" LostFocus="textboxName_LostFocus" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Style="{StaticResource InfoLabel}">Type de données:</TextBlock>
+                    <ComboBox Grid.Row="2" Grid.Column="1" x:Name="comboboxType" Style="{StaticResource InfoCombobox}" ItemsSource="{Binding AllDataTypeStrings}" SelectionChanged="comboboxType_SelectionChanged"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Style="{StaticResource InfoLabel}">Genre:</TextBlock>
+                    <ComboBox Grid.Row="3" Grid.Column="1" x:Name="comboboxKind" Style="{StaticResource InfoCombobox}" ItemsSource="{Binding AllDataKindStrings}" SelectionChanged="comboboxKind_SelectionChanged"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Style="{StaticResource InfoLabel}" VerticalAlignment="Top">Modalités:</TextBlock>
+                    <TextBox Grid.Row="4" Grid.Column="1" x:Name="textboxModalites" Style="{StaticResource   InfoTextArea}" LostFocus="textboxModalites_LostFocus" />
+                    <TextBlock Grid.Row="5" Grid.Column="0" Style="{StaticResource InfoLabel}" VerticalAlignment="Top">Observations:</TextBlock>
+                    <TextBox Grid.Row="5" Grid.Column="1" x:Name="textboxObservations" Style="{StaticResource   InfoTextArea}" LostFocus="textboxObservations_LostFocus" />
+                    <TextBlock Grid.Row="6" Grid.Column="0" Style="{StaticResource InfoLabel}">Status:</TextBlock>
+                    <ComboBox Grid.Row="6" Grid.Column="1" x:Name="comboboxStatus" Style="{StaticResource InfoCombobox}" ItemsSource="{Binding AllStatusStrings}" SelectionChanged="comboboxStatus_SelectionChanged"/>
+                    <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="2,2" Orientation="Horizontal">
+                        <Button x:Name="buttonCancel" Style="{StaticResource InfoButton}" IsEnabled="{Binding IsNew}" Click="buttonCancel_Click">Annuler</Button>
+                        <Button x:Name="buttonSave" Style="{StaticResource InfoButton}" IsEnabled="{Binding IsStoreable}" Click="buttonSave_Click">Enregistrer</Button>
+                        <Button Style="{StaticResource InfoButton}" IsEnabled="{Binding IsPersisted}" Content="Supprimer">
+                            <Button.Flyout>
+                                <Flyout>
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                        <TextBlock MinHeight="100" TextWrapping="Wrap" Width="150" FontWeight="Bold" Foreground="Yellow">
+		                                        La suppression de cet elément entrainera celle de toutes les données associées.
+                                        </TextBlock>
+                                        <Button x:Name="buttonRemove" Margin="0,2" Click="buttonRemove_Click">Confirmer la suppression!</Button>
+                                    </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                <Border BorderBrush="White" BorderThickness="1" Margin="2,2">
+                    <ListView x:Name="listboxIndivs" Margin="2,2" VerticalAlignment="Stretch" MaxHeight="400"
+                         ItemsSource="{Binding VariableValues}"  SelectionChanged="listboxIndivs_SelectionChanged">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="2,2" HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding IndivSigle}" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="2,0" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding StringValue}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Border>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="2,2" >
+                    <StackPanel DataContext="{Binding CurrentVariableValue}" Orientation="Vertical">
+                        <TextBlock Margin="2,8" Text="{Binding IndivSigle}" HorizontalAlignment="Center" FontWeight="SemiBold" />
+                        <TextBox x:Name="textboxValue"  Margin="2,8" LostFocus="textboxValue_LostFocus" />
+                        <Button x:Name="buttonDetailSave" Style="{StaticResource InfoButton}" Margin="2,8" IsEnabled="{Binding IsModified}" Click="buttonDetailSave_Click">Modifier</Button>
+                        <Button x:Name="buttonDetailCancel" Style="{StaticResource InfoButton}" Margin="2,8" IsEnabled="{Binding IsModified}" Click="buttonDetailCancel_Click">Annuler</Button>
+                    </StackPanel>
+                    <Button x:Name="buttonAllSave" Style="{StaticResource InfoButton}" IsEnabled="{Binding IsVariableValuesModified}" Margin="2,24" Click="buttonAllSave_Click">Eregistrer valeurs</Button>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

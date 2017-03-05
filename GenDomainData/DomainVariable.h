@@ -28,6 +28,7 @@ namespace GenDomainData
 		String^ m_name;
 		String^ m_datasetsigle;
 		IVector<String^>^ m_modalites;
+		String^ m_modalitesstring;
 	private:
 		void OnPropertyChanged(String^ propertyName);
 	internal:
@@ -37,6 +38,15 @@ namespace GenDomainData
 		DomainVariable();
 		virtual event Windows::UI::Xaml::Data::PropertyChangedEventHandler^ PropertyChanged;
 	public:
+		property IVector<String^>^ AllStatusStrings {
+			IVector<String^>^ get();
+		}
+		property IVector<String^>^ AllDataTypeStrings {
+			IVector<String^>^ get();
+		}
+		property IVector<String^>^ AllDataKindStrings{
+			IVector<String^>^ get();
+		}
 		property InfoDataType VariableType {
 			InfoDataType get();
 			void set(InfoDataType value);
@@ -56,6 +66,10 @@ namespace GenDomainData
 		property IVector<String^>^ Modalites {
 			IVector<String^>^ get();
 			void set(IVector<String^>^ value);
+		}
+		property String^ ModalitesString {
+			String^ get();
+			void set(String^ value);
 		}
 		//
 		property String^ Id {

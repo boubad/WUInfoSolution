@@ -1,0 +1,52 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GestInfoApp">
+    <Style TargetType="TextBlock" x:Key="InfoLabel">
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2,2"/>
+    </Style>
+    <Style TargetType="TextBox" x:Key="InfoTextBox">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2,2" />
+        <Setter Property="MinWidth" Value="100" />
+    </Style>
+    <Style TargetType="TextBox" x:Key="InfoTextName">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2,2" />
+        <Setter Property="MinWidth" Value="200" />
+    </Style>
+    <Style TargetType="TextBox" x:Key="InfoTextArea">
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2,2" />
+        <Setter Property="MinWidth" Value="200" />
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="MinHeight" Value="100" />
+    </Style>
+    <Style TargetType="ListBox" x:Key="InfoListbox">
+        <Setter Property="Margin" Value="2,2"/>
+        <Setter Property="MinHeight" Value="100" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="MaxHeight" Value="400" />
+    </Style>
+    <Style TargetType="Button" x:Key="InfoButton" >
+        <Setter Property="Margin" Value="4,0" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style TargetType="ComboBox" x:Key="InfoCombobox">
+        <Setter Property="Margin" Value="2,2" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <DataTemplate x:Key="InfoDatasetTemplate">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="1,1">
+            <TextBlock Text="{Binding Sigle}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Name}" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

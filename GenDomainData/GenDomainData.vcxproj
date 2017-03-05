@@ -207,7 +207,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
-    <ClInclude Include="DatasetEditModel.h" />
     <ClInclude Include="DomainDBManager.h" />
     <ClInclude Include="DomainEtudiant.h" />
     <ClInclude Include="DomainIndiv.h" />
@@ -219,7 +218,6 @@
     <ClInclude Include="StringUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DatasetEditModel.cpp" />
     <ClCompile Include="DomainDBManager.cpp" />
     <ClCompile Include="DomainEtudiant.cpp" />
     <ClCompile Include="DomainIndiv.cpp" />
